@@ -1,0 +1,9 @@
+# Xilinx 7-series synthesis for the open-source flow (read_verilog comes first,
+# from the Makefile). Same as synth_xilinx -arch xc7, except block RAMs are
+# mapped WITHOUT the RAMB36 cascade mode: nextpnr-xilinx cannot route
+# CASCADEOUT->CASCADEIN, and the placer does not keep cascaded pairs adjacent.
+synth_xilinx -flatten -abc9 -arch xc7 -top basys3_top -run begin:map_memory
+memory_libmap -logic-cost-rom 0.015625 -lib +/xilinx/lutrams_xc5v.txt -lib +/xilinx/brams_xc4v.txt -D HAS_SIZE_36 -D HAS_MIXWIDTH_SDP -no-auto-huge
+techmap -map +/xilinx/lutrams_xc5v_map.v
+techmap -map +/xilinx/brams_xc6v_map.v
+synth_xilinx -flatten -abc9 -arch xc7 -top basys3_top -run map_ffram:

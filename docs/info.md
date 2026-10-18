@@ -47,10 +47,10 @@ affect are marked for re-run rather than carried forward.
 
 | | |
 |---|---|
-| ✅ **RTL simulation (v20)** | 240 checks across fifteen suites (`cd test && make sim`), plus 6 cocotb tests from the pins only |
+| ✅ **RTL simulation (v20)** | 470 checks across sixteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
 | ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
 | ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
-| ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 17 checks (`make -C fpga/basys3 sim`) |
+| ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |
 | ✅ **Docs (v20)** | every link, image, `make` target and script mentioned exists (`make docs`, part of `make sim`) |
 | ⏳ **Official RISC-V tests** | 37/37 at v19 (12,521 signature words); **re-run on v20 required** (`make act`) |
 | ⏳ **Gate level** | cocotb on a sky130 netlist passed at v19 (5 pass, 1 skipped); **re-run on v20 required** (`make gl`) |

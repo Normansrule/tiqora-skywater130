@@ -55,6 +55,30 @@
 //
 // Not implemented, by design: interrupts, CSRs, misaligned access traps.
 // An illegal instruction is skipped and latches the ILLEGAL status bit.
+//
+// CPU / GPU / TPU modes (built only with +define+TIQORA_MODES)
+// -------------------------------------------------------------
+// The FPGA and full sky130 builds define TIQORA_MODES. The core then has a
+// 2-bit mode register and three more opcode groups: custom-1 switches mode
+// (MGET, MSET), custom-2 is GPU mode's byte SIMD (tp_simd), custom-3 is TPU
+// mode's dot-product accumulator (tp_mac). They run like a value-returning
+// Xpulse instruction: one pass gathers rs1 into mar and rs2 into mdr, one XP
+// clock computes, then a write-back pass if there is a result.
+//   - RV32E and Xpulse are legal in every mode: the scalar core is the
+//     controller, the mode decides which accelerator it may drive.
+//   - custom-2 is legal only in GPU mode and custom-3 only in TPU mode.
+//     Anywhere else they are illegal instructions: skipped, rd and the
+//     accumulator untouched, ILLEGAL latched.
+//   - MSET commits on its XP clock, the instruction boundary: every later
+//     instruction, including one already prefetched, is decoded in the new
+//     mode, because legality is decided at the end of its own first pass.
+//   - The timing unit takes no part in a switch, so deadlines and captures
+//     keep their exact tick (test/tb_modes.sv checks it at the pins).
+// Why a define and not a SystemVerilog parameter: the Tiny Tapeout tile must
+// stay byte-for-byte the same. Even with its default 0, a parameter changed
+// Yosys's tile netlist (6,047 -> 6,094 sky130 cells, measured): constant-0
+// logic still reorders the cells ABC maps. With the define absent the tile
+// compiles from exactly the tokens it did before. Proof: syn/tile_identity.sh.
 `default_nettype none
 
 module tp_ncore #(
@@ -136,6 +160,16 @@ module tp_ncore #(
     assign is_fence = (opc == tp_pkg::OPC_FENCE);
     assign is_sys   = (opc == tp_pkg::OPC_SYSTEM);
     assign is_xp    = (opc == tp_pkg::OPC_CUSTOM0);
+`ifdef TIQORA_MODES
+    logic [1:0] mode;
+    logic is_mx, is_gpu, is_tpu, is_acc, acc_writes;
+    assign is_mx  = (opc == tp_pkg::OPC_CUSTOM1);
+    assign is_gpu = (opc == tp_pkg::OPC_CUSTOM2);
+    assign is_tpu = (opc == tp_pkg::OPC_CUSTOM3);
+    assign is_acc = is_mx || is_gpu || is_tpu;
+    assign acc_writes = is_mx || is_gpu ||
+                        (is_tpu && (f3 == tp_pkg::UF3_RD || f3 == tp_pkg::UF3_RELU));
+`endif
 
     logic is_alu, is_shift, is_slt;
     assign is_alu   = is_op || is_opi;
@@ -145,6 +179,18 @@ module tp_ncore #(
     // Which register specifiers the instruction actually uses. RV32E has
     // x0..x15, so a specifier with bit 4 set is illegal.
     logic uses_rd, uses_rs1, uses_rs2;
+`ifdef TIQORA_MODES
+    assign uses_rd  = is_lui || is_auipc || is_jal || is_jalr || is_ld || is_alu ||
+                      (is_xp && (f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
+                                 f3 == tp_pkg::TF3_STAT || f3 == tp_pkg::TF3_MARK)) ||
+                      acc_writes;
+    assign uses_rs1 = is_jalr || is_br || is_ld || is_st || is_alu ||
+                      (is_xp && !(f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
+                                  f3 == tp_pkg::TF3_STAT)) ||
+                      is_gpu || (is_tpu && (f3 == tp_pkg::UF3_MAC || f3 == tp_pkg::UF3_SET));
+    assign uses_rs2 = is_br || is_st || is_op || (is_xp && f3 == tp_pkg::TF3_ARM) ||
+                      is_gpu || (is_tpu && f3 == tp_pkg::UF3_MAC);
+`else
     assign uses_rd  = is_lui || is_auipc || is_jal || is_jalr || is_ld || is_alu ||
                       (is_xp && (f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
                                  f3 == tp_pkg::TF3_STAT || f3 == tp_pkg::TF3_MARK));
@@ -152,6 +198,7 @@ module tp_ncore #(
                       (is_xp && !(f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
                                   f3 == tp_pkg::TF3_STAT));
     assign uses_rs2 = is_br || is_st || is_op || (is_xp && f3 == tp_pkg::TF3_ARM);
+`endif
 
     logic legal;
     always_comb begin
@@ -173,6 +220,17 @@ module tp_ncore #(
                              (f7 == tp_pkg::TCTL_CFG) || (f7 == tp_pkg::TCTL_PW);
             default: legal = 1'b0;
         endcase
+`ifdef TIQORA_MODES
+        // MGET: every field but rd zero. MSET: rs1 zero, imm a defined mode.
+        // GPU and TPU instructions only in their own mode.
+        if (is_mx)  legal = (f3 == tp_pkg::MF3_GET) ? (ir[31:15] == 17'd0)
+                          : (f3 == tp_pkg::MF3_SET) ? (ir[19:15] == 5'd0 &&
+                                                      ir[31:20] <= 12'd2)
+                          : 1'b0;
+        if (is_gpu) legal = (mode == tp_pkg::MODE_GPU) && (f7 == 7'h00);
+        if (is_tpu) legal = (mode == tp_pkg::MODE_TPU) && (f7 == 7'h00) &&
+                            (f3 <= tp_pkg::UF3_SET);
+`endif
         if ((uses_rd && ir[11]) || (uses_rs1 && ir[19]) || (uses_rs2 && ir[24]))
             legal = 1'b0;
     end
@@ -221,7 +279,11 @@ module tp_ncore #(
     logic       cin, cout;
     assign sub  = (is_op && f3 == 3'b000 && ir[30]) || is_slt || is_br;
     assign a_n  = is_auipc ? pc_n : is_lui ? 4'd0 : rs1_n;
+`ifdef TIQORA_MODES
+    assign b_n  = (is_op || is_br) ? rs2_n : (is_xp || is_acc) ? 4'd0 : imm_n;
+`else
     assign b_n  = (is_op || is_br) ? rs2_n : is_xp ? 4'd0 : imm_n;
+`endif
     assign bx_n = b_n ^ {4{sub}};
     assign cin  = (phase == 3'd0) ? sub : carry_q;
     assign {cout, sum_n} = {1'b0, a_n} + {1'b0, bx_n} + {4'd0, cin};
@@ -347,7 +409,11 @@ module tp_ncore #(
                        (f3 == tp_pkg::TF3_PULSE)|| (f3 == tp_pkg::TF3_MARK) ||
                        (f3 == tp_pkg::TF3_CTL);
 
+`ifdef TIQORA_MODES
+    assign t_valid = (state == S_XP) && xp_side && !is_acc;
+`else
     assign t_valid = (state == S_XP) && xp_side;
+`endif
     assign t_op    = f3;
     assign t_sub   = f7;
     assign t_rs1   = mar;
@@ -359,6 +425,25 @@ module tp_ncore #(
     assign t_delta          = t_now - mar;
     assign deadline_reached = !t_delta[31];
     wire  _unused_delta     = &{1'b0, t_delta[30:0], 1'b0};
+
+`ifdef TIQORA_MODES
+    // ------------------------------------------------------------------
+    // Accelerators and the mode register
+    // ------------------------------------------------------------------
+    // Both units read rs1 (mar) and rs2 (mdr) during the XP clock; the
+    // result is captured into mdr on that clock and written back by the
+    // second pass.
+    logic [31:0] simd_y, mac_y, acc_rdata;
+    tp_simd u_simd (.op(f3), .a(mar), .b(mdr), .y(simd_y));
+    tp_mac  u_mac  (.clk(clk), .rst(rst), .en(state == S_XP && is_tpu),
+                    .op(f3), .a(mar), .b(mdr), .y(mac_y));
+    assign acc_rdata = is_mx ? {30'd0, mode} : is_gpu ? simd_y : mac_y;
+
+    always_ff @(posedge clk) begin
+        if (rst)                                                  mode <= tp_pkg::MODE_CPU;
+        else if (state == S_XP && is_mx && f3 == tp_pkg::MF3_SET) mode <= ir[21:20];
+    end
+`endif
 
     // ------------------------------------------------------------------
     // Shifter step (on mdr)
@@ -436,7 +521,11 @@ module tp_ncore #(
                                 state  <= S_SHIFT;
                             end else if (is_ld || is_st) begin
                                 state  <= S_MEM;
+`ifdef TIQORA_MODES
+                            end else if (is_xp || is_acc) begin
+`else
                             end else if (is_xp) begin
+`endif
                                 state  <= S_XP;
                             end else begin
                                 state  <= S_FETCH;
@@ -469,7 +558,19 @@ module tp_ncore #(
                 end
 
                 S_XP: begin
+`ifdef TIQORA_MODES
+                    mdr <= is_acc ? acc_rdata : t_rdata;
+                    if (is_acc) begin
+                        if (acc_writes) begin
+                            second <= 1'b1;
+                            state  <= to_wb;
+                        end else begin
+                            state  <= S_FETCH;
+                        end
+                    end else
+`else
                     mdr <= t_rdata;
+`endif
                     if (f3 == tp_pkg::TF3_WAIT) begin
                         state <= deadline_reached ? S_FETCH : S_TWAIT;
                     end else if (xp_writes) begin

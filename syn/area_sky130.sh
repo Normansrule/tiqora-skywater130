@@ -9,6 +9,8 @@
 # the number that decides which tile to order.
 #
 # usage:  bash syn/area_sky130.sh [path/to/sky130_fd_sc_hd__tt_025C_1v80.lib]
+#         MODES=1 bash syn/area_sky130.sh [...]   the full-chip / FPGA build with
+#                                                 the CPU / GPU / TPU modes
 #
 # With no argument it looks in the usual PDK locations.
 set -euo pipefail
@@ -57,6 +59,12 @@ fi
 # reuse the source list and top module from the existing synth script
 TOP=$(grep -oP 'hierarchy -check -top \K\S+' syn/synth_check.ys)
 READS=$(grep '^read_verilog' syn/synth_check.ys)
+if [ "${MODES:-0}" = 1 ]; then
+    READS=$(printf '%s\n' "$READS" | sed 's/^read_verilog -sv /read_verilog -sv -DTIQORA_MODES /')
+    READS="$READS
+read_verilog -sv -DTIQORA_MODES src/accel/tp_simd.sv
+read_verilog -sv -DTIQORA_MODES src/accel/tp_mac.sv"
+fi
 
 # yowasp runs sandboxed to the working directory, so stage the library here
 cp "$LIB" syn/.lib.tmp
@@ -73,7 +81,7 @@ tee -o syn/.area.txt stat -liberty syn/.lib.tmp
 YS
 
 echo "library: $LIB"
-echo "top:     $TOP"
+echo "top:     $TOP${MODES:+ (MODES=$MODES)}"
 echo "yosys:   $YOSYS ($("$YOSYS" -V | grep -oP 'Yosys \S+'))"
 echo "running synthesis against the real cell library..."
 if ! "$YOSYS" -q -l syn/.area.log -s syn/.area.ys >/dev/null 2>&1; then

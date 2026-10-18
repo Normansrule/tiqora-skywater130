@@ -19,7 +19,7 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 
 ```bash
 cd ~/tiqora-skywater130/test
-make sim        # all fifteen self-checking suites, 240 checks, plus the docs and shared-file checks
+make sim        # all sixteen self-checking suites, 470 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
 ```
@@ -95,7 +95,7 @@ python3 docs/tools/silicon_views.py                # pin map at real positions, 
 ## On an FPGA
 
 ```bash
-make -C ../fpga/basys3 sim         # the whole Basys 3 design, three runs, ~5 minutes: 17 checks
+make -C ../fpga/basys3 sim         # the whole Basys 3 design, four runs: 26 checks, then the modes transcript against sw/modes_model.py
 make -C ../fpga/basys3 resources   # Yosys estimate for the XC7A35T (needs a Yosys with synth_xilinx)
 make -C ../fpga/basys3 bit prog    # Vivado: build and load the bitstream
 ```

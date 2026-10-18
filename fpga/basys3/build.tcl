@@ -16,7 +16,8 @@ if {!$use_pmod && ![file exists "$here/flash.mem"]} {
 }
 
 set rtl {
-    src/tp_pkg.sv src/core/tp_nregfile.sv src/core/tp_ncore.sv
+    src/tp_pkg.sv src/accel/tp_simd.sv src/accel/tp_mac.sv
+    src/core/tp_nregfile.sv src/core/tp_ncore.sv
     src/sync/sync_timebase.sv src/sync/sync_capture.sv src/sync/sync_event_fifo.sv
     src/sync/sync_compare.sv src/sync/sync_unit.sv src/periph/tp_uart.sv
     src/periph/tp_periph.sv src/boot/tp_bootrom.sv src/bus/tp_bus.sv
@@ -28,7 +29,8 @@ read_xdc "$here/basys3.xdc"
 if {!$use_pmod} { read_mem "$here/flash.mem" }
 
 cd $here                                  ;# $readmemh("flash.mem") resolves from here
-synth_design -top basys3_top -part $part -generic USE_PMOD=$use_pmod
+# TIQORA_MODES: the FPGA build has the CPU / GPU / TPU modes (docs/MODES.md)
+synth_design -top basys3_top -part $part -generic USE_PMOD=$use_pmod -verilog_define TIQORA_MODES
 opt_design
 place_design
 phys_opt_design

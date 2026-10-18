@@ -43,9 +43,12 @@ module qspi_emu #(
     (* ram_style = "block" *) logic [7:0] flash_mem [0:FLASH_BYTES-1];
     (* ram_style = "block" *) logic [7:0] rama_mem  [0:RAM_BYTES-1];
     (* ram_style = "block" *) logic [7:0] ramb_mem  [0:RAM_BYTES-1];
+    // One initializer per memory: Yosys (0.70) lets the for loop win over a
+    // later $readmemh on the same words, which baked an erased flash into the
+    // open-source bitstream. The Makefile pads every image to FLASH_BYTES with ff.
     initial begin
-        for (int i = 0; i < FLASH_BYTES; i++) flash_mem[i] = 8'hFF;   // erased flash
         if (FLASH_INIT != "") $readmemh(FLASH_INIT, flash_mem);
+        else for (int i = 0; i < FLASH_BYTES; i++) flash_mem[i] = 8'hFF;   // erased flash
     end
 
     typedef enum logic [2:0] {S_IDLE, S_CMD_SPI, S_CMD_QPI, S_ADDR, S_MODE, S_DUMMY, S_DOUT, S_DIN} st_t;

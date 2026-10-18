@@ -1,0 +1,454 @@
+{
+ "_source": "TinyTapeout/breakout-pcb commit 4b6545f (2026-09-19), breakout-sky-qfn: symbol TinyTapeout:Openframe_QFN_TT06_REV2 (pin names) and footprint Package_DFN_QFN:QFN-64-1EP_9x9mm_P0.5mm_EP7.65x7.65mm (pad positions, mm, top view, footprint frame). Regenerate with docs/tools/package_view.py --refresh <path to breakout-pcb>.",
+ "package": "QFN-64, 9 x 9 mm body, 0.5 mm pitch, 7.65 x 7.65 mm exposed pad",
+ "pins": [
+  {
+   "n": 1,
+   "name": "vssa2",
+   "type": "power_in",
+   "x": -4.45,
+   "y": -3.75
+  },
+  {
+   "n": 2,
+   "name": "uo_out[1]",
+   "type": "output",
+   "x": -4.45,
+   "y": -3.25
+  },
+  {
+   "n": 3,
+   "name": "uo_out[2]",
+   "type": "output",
+   "x": -4.45,
+   "y": -2.75
+  },
+  {
+   "n": 4,
+   "name": "uo_out[3]",
+   "type": "output",
+   "x": -4.45,
+   "y": -2.25
+  },
+  {
+   "n": 5,
+   "name": "uo_out[4]",
+   "type": "output",
+   "x": -4.45,
+   "y": -1.75
+  },
+  {
+   "n": 6,
+   "name": "uo_out[5]",
+   "type": "output",
+   "x": -4.45,
+   "y": -1.25
+  },
+  {
+   "n": 7,
+   "name": "uo_out[6]",
+   "type": "output",
+   "x": -4.45,
+   "y": -0.75
+  },
+  {
+   "n": 8,
+   "name": "uo_out[7]",
+   "type": "output",
+   "x": -4.45,
+   "y": -0.25
+  },
+  {
+   "n": 9,
+   "name": "vdda2",
+   "type": "power_in",
+   "x": -4.45,
+   "y": 0.25
+  },
+  {
+   "n": 10,
+   "name": "vssd2",
+   "type": "power_in",
+   "x": -4.45,
+   "y": 0.75
+  },
+  {
+   "n": 11,
+   "name": "analog[6]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 1.25
+  },
+  {
+   "n": 12,
+   "name": "analog[7]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 1.75
+  },
+  {
+   "n": 13,
+   "name": "analog[8]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 2.25
+  },
+  {
+   "n": 14,
+   "name": "analog[9]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 2.75
+  },
+  {
+   "n": 15,
+   "name": "analog[10]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 3.25
+  },
+  {
+   "n": 16,
+   "name": "analog[11]",
+   "type": "passive",
+   "x": -4.45,
+   "y": 3.75
+  },
+  {
+   "n": 17,
+   "name": "vddio",
+   "type": "power_in",
+   "x": -3.75,
+   "y": 4.45
+  },
+  {
+   "n": 18,
+   "name": "vccd",
+   "type": "power_in",
+   "x": -3.25,
+   "y": 4.45
+  },
+  {
+   "n": 19,
+   "name": "NC",
+   "type": "no_connect",
+   "x": -2.75,
+   "y": 4.45
+  },
+  {
+   "n": 20,
+   "name": "vssa",
+   "type": "power_in",
+   "x": -2.25,
+   "y": 4.45
+  },
+  {
+   "n": 21,
+   "name": "resetb",
+   "type": "input",
+   "x": -1.75,
+   "y": 4.45
+  },
+  {
+   "n": 22,
+   "name": "ctrl_ena",
+   "type": "input",
+   "x": -1.25,
+   "y": 4.45
+  },
+  {
+   "n": 23,
+   "name": "vssd",
+   "type": "power_in",
+   "x": -0.75,
+   "y": 4.45
+  },
+  {
+   "n": 24,
+   "name": "ctrl_sel_inc",
+   "type": "output",
+   "x": -0.25,
+   "y": 4.45
+  },
+  {
+   "n": 25,
+   "name": "ctrl_sel_rst_n",
+   "type": "output",
+   "x": 0.25,
+   "y": 4.45
+  },
+  {
+   "n": 26,
+   "name": "reserved",
+   "type": "bidirectional",
+   "x": 0.75,
+   "y": 4.45
+  },
+  {
+   "n": 27,
+   "name": "reserved",
+   "type": "bidirectional",
+   "x": 1.25,
+   "y": 4.45
+  },
+  {
+   "n": 28,
+   "name": "reserved",
+   "type": "bidirectional",
+   "x": 1.75,
+   "y": 4.45
+  },
+  {
+   "n": 29,
+   "name": "vssio",
+   "type": "power_in",
+   "x": 2.25,
+   "y": 4.45
+  },
+  {
+   "n": 30,
+   "name": "vdda",
+   "type": "power_in",
+   "x": 2.75,
+   "y": 4.45
+  },
+  {
+   "n": 31,
+   "name": "ui_in[0]",
+   "type": "input",
+   "x": 3.25,
+   "y": 4.45
+  },
+  {
+   "n": 32,
+   "name": "ui_in[1]",
+   "type": "input",
+   "x": 3.75,
+   "y": 4.45
+  },
+  {
+   "n": 33,
+   "name": "ui_in[2]",
+   "type": "input",
+   "x": 4.45,
+   "y": 3.75
+  },
+  {
+   "n": 34,
+   "name": "ui_in[3]",
+   "type": "input",
+   "x": 4.45,
+   "y": 3.25
+  },
+  {
+   "n": 35,
+   "name": "ui_in[4]",
+   "type": "input",
+   "x": 4.45,
+   "y": 2.75
+  },
+  {
+   "n": 36,
+   "name": "ui_in[5]",
+   "type": "input",
+   "x": 4.45,
+   "y": 2.25
+  },
+  {
+   "n": 37,
+   "name": "ui_in[6]",
+   "type": "input",
+   "x": 4.45,
+   "y": 1.75
+  },
+  {
+   "n": 38,
+   "name": "vssa1",
+   "type": "power_in",
+   "x": 4.45,
+   "y": 1.25
+  },
+  {
+   "n": 39,
+   "name": "vssd1",
+   "type": "power_in",
+   "x": 4.45,
+   "y": 0.75
+  },
+  {
+   "n": 40,
+   "name": "vdda1",
+   "type": "power_in",
+   "x": 4.45,
+   "y": 0.25
+  },
+  {
+   "n": 41,
+   "name": "analog[0]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -0.25
+  },
+  {
+   "n": 42,
+   "name": "analog[1]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -0.75
+  },
+  {
+   "n": 43,
+   "name": "analog[2]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -1.25
+  },
+  {
+   "n": 44,
+   "name": "analog[3]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -1.75
+  },
+  {
+   "n": 45,
+   "name": "analog[4]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -2.25
+  },
+  {
+   "n": 46,
+   "name": "analog[5]",
+   "type": "passive",
+   "x": 4.45,
+   "y": -2.75
+  },
+  {
+   "n": 47,
+   "name": "vdda1",
+   "type": "power_in",
+   "x": 4.45,
+   "y": -3.25
+  },
+  {
+   "n": 48,
+   "name": "ui_in[7]",
+   "type": "input",
+   "x": 4.45,
+   "y": -3.75
+  },
+  {
+   "n": 49,
+   "name": "vccd1",
+   "type": "power_in",
+   "x": 3.75,
+   "y": -4.45
+  },
+  {
+   "n": 50,
+   "name": "clk",
+   "type": "input",
+   "x": 3.25,
+   "y": -4.45
+  },
+  {
+   "n": 51,
+   "name": "rst_n",
+   "type": "input",
+   "x": 2.75,
+   "y": -4.45
+  },
+  {
+   "n": 52,
+   "name": "vssa1",
+   "type": "power_in",
+   "x": 2.25,
+   "y": -4.45
+  },
+  {
+   "n": 53,
+   "name": "uio[0]",
+   "type": "bidirectional",
+   "x": 1.75,
+   "y": -4.45
+  },
+  {
+   "n": 54,
+   "name": "uio[1]",
+   "type": "bidirectional",
+   "x": 1.25,
+   "y": -4.45
+  },
+  {
+   "n": 55,
+   "name": "uio[2]",
+   "type": "bidirectional",
+   "x": 0.75,
+   "y": -4.45
+  },
+  {
+   "n": 56,
+   "name": "vssio",
+   "type": "power_in",
+   "x": 0.25,
+   "y": -4.45
+  },
+  {
+   "n": 57,
+   "name": "uio[3]",
+   "type": "bidirectional",
+   "x": -0.25,
+   "y": -4.45
+  },
+  {
+   "n": 58,
+   "name": "uio[4]",
+   "type": "bidirectional",
+   "x": -0.75,
+   "y": -4.45
+  },
+  {
+   "n": 59,
+   "name": "uio[5]",
+   "type": "bidirectional",
+   "x": -1.25,
+   "y": -4.45
+  },
+  {
+   "n": 60,
+   "name": "uio[6]",
+   "type": "bidirectional",
+   "x": -1.75,
+   "y": -4.45
+  },
+  {
+   "n": 61,
+   "name": "uio[7]",
+   "type": "bidirectional",
+   "x": -2.25,
+   "y": -4.45
+  },
+  {
+   "n": 62,
+   "name": "uo_out[0]",
+   "type": "output",
+   "x": -2.75,
+   "y": -4.45
+  },
+  {
+   "n": 63,
+   "name": "vccd2",
+   "type": "power_in",
+   "x": -3.25,
+   "y": -4.45
+  },
+  {
+   "n": 64,
+   "name": "vddio",
+   "type": "power_in",
+   "x": -3.75,
+   "y": -4.45
+  }
+ ]
+}

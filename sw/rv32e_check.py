@@ -11,6 +11,10 @@ linker symbol _code_end) and rejects anything Tiqora does not implement:
     reserved funct3/funct7 combinations
 
     python3 sw/rv32e_check.py program.elf
+    python3 sw/rv32e_check.py --modes program.elf   also accept the CPU / GPU / TPU
+        mode instructions (custom-1, -2, -3; docs/MODES.md). Only for the Basys 3
+        and full-chip builds: on the Tiny Tapeout tile they are all illegal. This
+        checks encodings only; which mode is active when they run is not checked.
 
 A clean result prints a one-line summary and exits 0. Needs pyelftools.
 """
@@ -21,11 +25,32 @@ OPS = {0x37: "LUI", 0x17: "AUIPC", 0x6F: "JAL", 0x67: "JALR", 0x63: "BRANCH",
        0x03: "LOAD", 0x23: "STORE", 0x13: "OP-IMM", 0x33: "OP", 0x0F: "FENCE",
        0x73: "SYSTEM", 0x0B: "XPULSE"}
 
-def problem(w):
+MODE_OPS = {0x2B: "MODE", 0x5B: "GPU", 0x7B: "TPU"}
+
+
+def mode_problem(w):
+    op = w & 0x7F; f3 = (w >> 12) & 7; f7 = w >> 25
+    rd, rs1, rs2 = (w >> 7) & 31, (w >> 15) & 31, (w >> 20) & 31
+    if max(rd, rs1, rs2) > 15 and not (op == 0x2B and f3 == 1 and rd <= 15 and rs1 == 0):
+        return "uses a register above x15: RV32E has only x0..x15"
+    if op == 0x2B:
+        if f3 == 0: return None if w >> 15 == 0 else "MGET with nonzero rs1/rs2"
+        if f3 == 1: return None if rs1 == 0 and (w >> 20) <= 2 else "MSET needs rs1 = x0 and mode 0..2"
+        return f"custom-1 funct3={f3} is not a mode instruction"
+    if f7 != 0:
+        return f"{MODE_OPS[op]} instruction with funct7={f7:#x}"
+    if op == 0x7B and f3 > 4:
+        return f"TPU funct3={f3} is undefined"
+    return None
+
+
+def problem(w, modes=False):
     if w & 3 != 3:
         return "compressed (16-bit) instruction: build without the C extension"
     op = w & 0x7F; f3 = (w >> 12) & 7; f7 = w >> 25
     rd, rs1, rs2 = (w >> 7) & 31, (w >> 15) & 31, (w >> 20) & 31
+    if modes and w & 3 == 3 and op in MODE_OPS:
+        return mode_problem(w)
     if op not in OPS:
         return f"opcode {op:#04x} is not implemented"
     uses = {"LUI": "d", "AUIPC": "d", "JAL": "d", "JALR": "ds", "BRANCH": "st",
@@ -47,7 +72,7 @@ def problem(w):
     if op == 0x67 and f3 != 0: return "reserved JALR"
     return None
 
-def main(path):
+def main(path, modes=False):
     elf = ELFFile(open(path, "rb"))
     text = elf.get_section_by_name(".text")
     syms = {s.name: s["st_value"] for s in elf.get_section_by_name(".symtab").iter_symbols()}
@@ -58,7 +83,7 @@ def main(path):
     bad = 0
     for off in range(0, end, 4):
         w = int.from_bytes(data[off:off + 4], "little")
-        why = problem(w)
+        why = problem(w, modes)
         if why:
             bad += 1
             print(f"  {base + off:08x}: {w:08x}   {why}")
@@ -67,5 +92,6 @@ def main(path):
     return bad == 0
 
 if __name__ == "__main__":
-    ok = all(main(p) for p in sys.argv[1:])
+    modes = "--modes" in sys.argv
+    ok = all([main(p, modes) for p in sys.argv[1:] if p != "--modes"])
     sys.exit(0 if ok else 1)

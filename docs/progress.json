@@ -1,0 +1,200 @@
+{
+  "note": "Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the version and the command that measured it; re-run the command to check it.",
+  "milestones": [
+    {
+      "name": "FPGA simulation",
+      "steps": [
+        {
+          "step": "core and SoC RTL suites",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C test sim",
+            "result": "470 checks in 16 suites, plus 6 cocotb tests"
+          }
+        },
+        {
+          "step": "official RISC-V tests (RV32E)",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C test act",
+            "result": "37/37"
+          }
+        },
+        {
+          "step": "whole Basys 3 design in simulation",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C fpga/basys3 sim",
+            "result": "26 checks across 4 programs"
+          }
+        }
+      ]
+    },
+    {
+      "name": "CPU / GPU / TPU modes",
+      "steps": [
+        {
+          "step": "Python model, directed, random and mutant tests",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20 modes, 2026-10-18",
+            "command": "make -C test modes SEED=1",
+            "result": "230 checks, seeds 1 to 6; 8 of 8 mutants caught"
+          }
+        },
+        {
+          "step": "Tiny Tapeout tile unchanged with the modes off",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20 modes, 2026-10-18",
+            "command": "bash syn/tile_identity.sh v20",
+            "result": "gate netlist byte-identical, 6047 cells"
+          }
+        },
+        {
+          "step": "CPU, GPU, TPU, CPU program at the Basys 3 pins (simulated)",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20 modes, 2026-10-18",
+            "command": "make -C fpga/basys3 sim-modes",
+            "result": "9 checks; 25 printed lines match sw/modes_model.py"
+          }
+        },
+        {
+          "step": "the same program on a real Basys 3",
+          "state": "todo",
+          "next": "make bit && make prog in fpga/basys3, then read the USB serial port"
+        },
+        {
+          "step": "full sky130 chip with the modes",
+          "state": "todo",
+          "next": "70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh) does not fit 2x2; needs a larger die"
+        }
+      ]
+    },
+    {
+      "name": "Basys 3 board",
+      "steps": [
+        {
+          "step": "bitstream from the open flow",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C fpga/basys3 bit-open",
+            "result": "Yosys + nextpnr-xilinx + prjxray bitstream"
+          }
+        },
+        {
+          "step": "gate netlist of the bitstream at the pins",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C fpga/basys3 netlist",
+            "result": "4/4"
+          }
+        },
+        {
+          "step": "CPU, GPU, TPU demo on the bitstream's gate netlist",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20 modes, Yosys 0.70, 2026-10-18",
+            "command": "make -C fpga/basys3 netlist-modes",
+            "result": "4/4; every serial character matches sw/modes_model.py"
+          }
+        },
+        {
+          "step": "Vivado bitstream",
+          "state": "todo",
+          "next": "make bit in fpga/basys3 on a machine with Vivado"
+        },
+        {
+          "step": "running on a real board",
+          "state": "todo",
+          "next": "make prog in fpga/basys3, then check the LEDs and the serial port"
+        }
+      ]
+    },
+    {
+      "name": "Tiny Tapeout GDS and pre-flight",
+      "steps": [
+        {
+          "step": "cell area after synthesis, before placement",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, Yosys 0.33, 2026-10-18",
+            "command": "make -C test area",
+            "result": "50,880 µm², 1191 flip-flops: 67% of 2x2"
+          }
+        },
+        {
+          "step": "place and route at 2x2",
+          "state": "blocked",
+          "next": "LibreLane 3.0.14 stops at detailed placement (DPL-0036); a larger tile or less logic is the owner's call"
+        },
+        {
+          "step": "Tiny Tapeout pre-flight",
+          "state": "todo",
+          "next": "runs after a clean GDS"
+        }
+      ]
+    },
+    {
+      "name": "sky130 timing",
+      "steps": [
+        {
+          "step": "logic timing before wires, 50 MHz",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, Yosys 0.33, 2026-10-18",
+            "command": "make -C test timing",
+            "result": "worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns"
+          }
+        },
+        {
+          "step": "gate-level simulation on a sky130 netlist",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "v20, 2026-10-18",
+            "command": "make -C test gl",
+            "result": "5 pass, 1 skipped by design"
+          }
+        },
+        {
+          "step": "signoff timing after routing",
+          "state": "todo",
+          "next": "comes with a clean GDS"
+        }
+      ]
+    },
+    {
+      "name": "Silicon",
+      "steps": [
+        {
+          "step": "shuttle submission",
+          "state": "todo",
+          "next": "after a clean GDS and pre-flight"
+        },
+        {
+          "step": "first chip tested",
+          "state": "todo",
+          "next": "after the shuttle returns"
+        }
+      ]
+    }
+  ]
+}

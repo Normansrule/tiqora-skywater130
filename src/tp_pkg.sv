@@ -20,6 +20,38 @@ package tp_pkg;
     localparam logic [6:0] OPC_SYSTEM  = 7'b1110011;
     // Xpulse time extension lives in the RISC-V custom-0 encoding space.
     localparam logic [6:0] OPC_CUSTOM0 = 7'b0001011;
+`ifdef TIQORA_MODES
+    // CPU / GPU / TPU modes (FPGA and full sky130 builds, +define+TIQORA_MODES;
+    // in the Tiny Tapeout build these opcodes stay illegal). See tp_ncore.sv.
+    localparam logic [6:0] OPC_CUSTOM1 = 7'b0101011;  // mode switch: MGET, MSET
+    localparam logic [6:0] OPC_CUSTOM2 = 7'b1011011;  // GPU mode: 4-lane byte SIMD
+    localparam logic [6:0] OPC_CUSTOM3 = 7'b1111011;  // TPU mode: int8 dot-product MAC
+
+    localparam logic [1:0] MODE_CPU = 2'd0;
+    localparam logic [1:0] MODE_GPU = 2'd1;
+    localparam logic [1:0] MODE_TPU = 2'd2;
+
+    // custom-1 funct3
+    localparam logic [2:0] MF3_GET = 3'b000;    // MGET rd        rd = mode
+    localparam logic [2:0] MF3_SET = 3'b001;    // MSET rd, imm   rd = mode; mode = imm
+
+    // custom-2 funct3 (funct7 = 0): four independent byte lanes
+    localparam logic [2:0] GF3_ADD  = 3'b000;   // PADD.B   a + b         (mod 256)
+    localparam logic [2:0] GF3_SUB  = 3'b001;   // PSUB.B   a - b         (mod 256)
+    localparam logic [2:0] GF3_ADDS = 3'b010;   // PADDUS.B min(a + b, 255)
+    localparam logic [2:0] GF3_MAX  = 3'b011;   // PMAXU.B  max(a, b)
+    localparam logic [2:0] GF3_MIN  = 3'b100;   // PMINU.B  min(a, b)
+    localparam logic [2:0] GF3_AVG  = 3'b101;   // PAVGU.B  (a + b + 1) >> 1
+    localparam logic [2:0] GF3_MUL  = 3'b110;   // PMUL.B   low byte of a * b
+    localparam logic [2:0] GF3_ABSD = 3'b111;   // PABSD.B  |a - b|
+
+    // custom-3 funct3 (funct7 = 0): one 32-bit accumulator
+    localparam logic [2:0] UF3_MAC  = 3'b000;   // TMAC  rs1, rs2  acc += dot(int8 x4)
+    localparam logic [2:0] UF3_RD   = 3'b001;   // TRD   rd        rd = acc
+    localparam logic [2:0] UF3_RELU = 3'b010;   // TRELU rd        rd = max(acc, 0)
+    localparam logic [2:0] UF3_CLR  = 3'b011;   // TCLR            acc = 0
+    localparam logic [2:0] UF3_SET  = 3'b100;   // TSET  rs1       acc = rs1
+`endif
 
     // ---------------------------------------------------------------
     // Xpulse funct3 map (opcode = OPC_CUSTOM0)

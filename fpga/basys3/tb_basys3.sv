@@ -8,6 +8,10 @@
 //             runs there. Every printed character is checked.
 //   demo      basys3_demo.c: banner, a clean BTNL press and release, a
 //             bouncing BTNR press that must be reported once, and an echo.
+//   modes     modes_demo.c: CPU -> GPU -> TPU -> CPU in one program. Checked
+//             here at the pins (HALT and ILLEGAL LEDs, the program's own
+//             accelerator-vs-C comparison); the transcript goes to
+//             modes_uart.txt for sw/check_modes_demo.py and the Python model.
 `default_nettype none
 `timescale 1ns/1ps
 module tb_basys3;
@@ -79,6 +83,9 @@ module tb_basys3;
               show; chk(got == SELFTEST, "every character the program printed matches"); end
     endtask
 
+    integer trig0_rises = 0;
+    always @(posedge led[0]) if (dut.rst_n === 1'b1) trig0_rises = trig0_rises + 1;
+
     reg [31:0] img [0:4095]; integer nw, k; reg [31:0] w; string mode;
     initial begin
         if (!$value$plusargs("MODE=%s", mode)) mode = "selftest";
@@ -103,6 +110,20 @@ module tb_basys3;
             rx_n = 0; rx_div = PROG_DIV;
             wait_halt; expect_selftest;
             chk(dut.u_chip.u_soc.g_cpu.u_core.pc[31:28] == 4'h1, "the program ran from emulated RAM");
+        end else if (mode == "modes") begin
+            integer fd;
+            wait_halt;
+            show;
+            chk(led[5] === 1'b1, "LED 5 (HALT pin): main() returned");
+            chk(led[6] === 1'b0, "LED 6 (ILLEGAL pin): no instruction trapped in any mode");
+            chk(printed("gpu mode 1\n") && printed("tpu mode 2\n"), "the program saw GPU mode and TPU mode");
+            chk(printed("gpu matches cpu\n"), "GPU results equal the plain-C results");
+            chk(printed("tpu matches cpu\n"), "TPU results equal the plain-C results");
+            chk(printed("cpu mode 0\ndeadline Y\ndone\n"), "back in CPU mode, deadline met, done");
+            chk(trig0_rises == 1, "LED 0 (TRIG0 pin) fired once for the deadline armed across the switch");
+            fd = $fopen("modes_uart.txt", "w");
+            for (int i = 0; i < rx_n && i < 4096; i++) $fwrite(fd, "%c", rx_buf[i]);
+            $fclose(fd);
         end else begin
             wait_for("type something.\n", 600000);
             chk(printed("Tiqora on Basys 3"), "demo banner on the USB serial port");
@@ -129,6 +150,7 @@ module tb_basys3;
         end
         $display("\n%0d checks, %0d failures", checks, errors);
         if (errors == 0) $display("BASYS 3 SIMULATION PASSED\n"); else $display("BASYS 3 SIMULATION FAILED\n");
+        if (errors != 0) $fatal(1, "Basys 3 simulation failed");   // nonzero exit for make and CI
         $finish;
     end
 endmodule

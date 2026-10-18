@@ -14,6 +14,9 @@
 #   make xpulse     all eleven Xpulse instructions executed
 #   make boot       UART bootloader: load a program over serial into RAM, run it
 #   make wake       QSPI wake-up from cold, warm and pre-set memory states
+#   make modes      CPU / GPU / TPU modes (the TIQORA_MODES build): every GPU and
+#                   TPU instruction against sw/modes_model.py, wrong-mode traps,
+#                   switch latency, deadline edge across switches. SEED=n
 #   make c          a Clang-compiled C program, from flash and over the UART bootloader
 #                   (needs: pip install ziglang pyelftools)
 #   make run PROG=../sw/examples/hello.c
@@ -64,14 +67,28 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim
+.PHONY: modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim
 
-sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust shared docs
+sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust modes shared docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
-lint:
+lint: modes-lint
 	verilator --lint-only -Wall --timing $(RTL) --top-module tt_um_normansrule_tiqora
+
+# The CPU / GPU / TPU build: the same RTL plus src/accel, with TIQORA_MODES
+# defined. The Tiny Tapeout tile never defines it (syn/tile_identity.sh).
+MODES_RTL = $(SRC)/tp_pkg.sv $(SRC)/accel/tp_simd.sv $(SRC)/accel/tp_mac.sv $(filter-out $(SRC)/tp_pkg.sv,$(RTL))
+SEED ?= 1
+
+modes-lint:
+	verilator --lint-only -Wall --timing -DTIQORA_MODES $(MODES_RTL) --top-module tt_um_normansrule_tiqora
+
+modes:
+	python3 ../sw/modes_model.py
+	python3 ../sw/mkmodes.py $(SEED)
+	@sh iv.sh -g2012 -DTIQORA_MODES -o tb_modes.vvp -s tb_modes $(MODES_RTL) qspi_model.sv tb_modes.sv
+	vvp -n tb_modes.vvp
 
 area:
 	cd .. && bash syn/area_sky130.sh $(LIB)
@@ -231,6 +248,7 @@ spi:
 # every link, image, make target and script the docs mention must exist
 docs:
 	cd .. && python3 docs/tools/check_docs.py
+	cd .. && python3 docs/tools/progress.py --check
 
 # The README's "minimal program", compiled VERBATIM from README.md, run on the
 # real top level from flash and from RAM, with the promised behaviour checked
