@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""tpload.py — send a program to TinyPulse over its UART and run it.
+"""tpload.py — send a program to Tiqora over its UART and run it.
 
 Hardware: a USB-to-UART bridge (3.3 V) with its TX on ui_in[3] and its RX on
 uo_out[4], plus ground. Hold ui_in[7] high while you release reset: the chip

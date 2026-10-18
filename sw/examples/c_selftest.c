@@ -6,7 +6,7 @@
 // extension), function pointers, and the Xpulse timing instructions.
 // The testbench decodes the UART and compares the text line by line.
 #include <stdint.h>
-#include "../tinypulse.h"
+#include "../tiqora.h"
 #include "../tp_io.h"
 
 #ifndef BAUD_DIV

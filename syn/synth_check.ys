@@ -33,12 +33,12 @@ read_verilog -sv src/boot/tp_bootrom.sv
 read_verilog -sv src/bus/tp_bus.sv
 read_verilog -sv src/bus/qspi_ctrl.sv
 read_verilog -sv src/tp_soc.sv
-read_verilog -sv src/tt_um_normansrule_tinypulse.sv
+read_verilog -sv src/tt_um_normansrule_tiqora.sv
 
-hierarchy -check -top tt_um_normansrule_tinypulse
+hierarchy -check -top tt_um_normansrule_tiqora
 
 # elaborate and map to generic cells, but stop before technology mapping
-synth -top tt_um_normansrule_tinypulse -flatten -noabc
+synth -top tt_um_normansrule_tiqora -flatten -noabc
 
 # a latch here means an incomplete always_comb: treat it as a failure
 select -assert-none t:$dlatch t:$_DLATCH_*

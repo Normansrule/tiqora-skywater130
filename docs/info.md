@@ -1,22 +1,27 @@
-# TinyPulse — a RISC-V microcontroller the size of a grain of salt
+# Tiqora — a RISC-V microcontroller the size of a grain of salt
 
 ![RISC-V RV32E](https://img.shields.io/badge/RISC--V-RV32E-8a5cff)
 ![Tiny Tapeout 2x2](https://img.shields.io/badge/Tiny_Tapeout-2%C3%972_tiles-3ddc97)
-![official RISC-V tests 37/37](https://img.shields.io/badge/official_RISC--V_tests-37%2F37-4f8cff)
-![checks 226](https://img.shields.io/badge/self--checks-226_passing-4f8cff)
+![official RISC-V tests 37/37 at v19](https://img.shields.io/badge/official_RISC--V_tests-37%2F37_(v19)-4f8cff)
+![checks 240](https://img.shields.io/badge/self--checks-240_passing-4f8cff)
 ![sky130](https://img.shields.io/badge/SkyWater-130_nm-ff9f1c)
+![FPGA Basys 3](https://img.shields.io/badge/FPGA-Basys_3_(Artix--7)-e34c26)
 
-![Zooming from the whole TinyPulse chip down to single transistors](images/zoom.webp)
+![Zooming from the whole Tiqora chip down to single transistors](images/zoom.webp)
 
 <sub>From the whole chip to single transistors: the design's ~5,500 real sky130 logic cells,
 drawn from SkyWater's own cell geometry with KLayout (`docs/tools/zoom_animation.py`).</sub>
 
-**A complete 32-bit microcontroller in 0.075 mm² of silicon — two Tiny Tapeout tiles, 280 €.**
+> **Tiqora was called TinyPulse until October 2026.** Old links redirect; the C API, opcodes,
+> register map and bootloader protocol are unchanged, and `#include "tinypulse.h"` still works.
+
+**A complete 32-bit microcontroller in 0.076 mm² of silicon — four Tiny Tapeout tiles (a 2 × 2 block), 280 €.**
 It runs RISC-V code from a 16 MB flash chip — or straight from a USB serial link, no
 programmer needed — has 16 MB of RAM, 8 inputs, 8 outputs, a
 UART for `printf`, and something no ordinary microcontroller has: **instructions that treat
-time as an operand.** It timestamps pin edges in hardware, fires output pulses on an exact
-clock tick with zero jitter, and can be disciplined to an external reference.
+time as an operand.** It timestamps pin edges in hardware, fires output pulses on the exact
+clock tick it was told to (cycle-exact relative to the supplied clock; oscillator error and pad
+delay are separate matters), and can be disciplined to an external reference.
 
 | | |
 |---|---|
@@ -27,19 +32,49 @@ clock tick with zero jitter, and can be disciplined to an external reference.
 | **I/O** | 8 inputs · 8 outputs · UART on the demo board's USB bridge |
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
-| **Timing** | 6.9 ns worst logic path against 20 ns at 50 MHz (estimate from real cell delays) |
-| **Area** | 49,186 µm² of standard cells, measured against the real sky130 library |
+| **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
+| **Logic timing** | 6.9 ns worst path against 20 ns (v19 estimate from cell delays; routed timing comes from CI) |
+| **Area** | 49,200–50,800 µm² of standard cells measured at v19; v20's prefetch adds an estimated 1.7% (generic-gate count) — re-measure with `make area` |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 226 self-checking assertions, 6 cocotb tests, and **37/37 official RISC-V architecture tests**, RTL **and** gate-level |
+| **Verification** | 240 self-checking checks and 6 cocotb tests on RTL; cocotb on a sky130 gate netlist; the official RISC-V tests (37/37 at v19) |
+
+**Contents:** [Status](#status) · [What it looks like](#what-it-looks-like) · [Explore it interactively](#explore-it-interactively) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Repository](#repository)
+
+## Status
+
+Each row names the revision it applies to. Results from v19 that the v20 core change could
+affect are marked for re-run rather than carried forward.
+
+| | |
+|---|---|
+| ✅ **RTL simulation (v20)** | 240 checks across fifteen suites (`cd test && make sim`), plus 6 cocotb tests from the pins only |
+| ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
+| ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
+| ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 17 checks (`make -C fpga/basys3 sim`) |
+| ✅ **Docs (v20)** | every link, image, `make` target and script mentioned exists (`make docs`, part of `make sim`) |
+| ⏳ **Official RISC-V tests** | 37/37 at v19 (12,521 signature words); **re-run on v20 required** (`make act`) |
+| ⏳ **Gate level** | cocotb on a sky130 netlist passed at v19 (5 pass, 1 skipped); **re-run on v20 required** (`make gl`) |
+| ⏳ **Area and logic timing** | measured at v19; **re-run on v20 required** (`make area`, `make timing`) |
+| ⏳ **Tiny Tapeout pre-flight** | passed at v19 with the old top-module name; re-run after the rename |
+| ⏳ **Hardening** | runs on GitHub after a push (`gds` workflow): the real routing and timing at 50 MHz |
+| ⏳ **FPGA board** | Vivado build and a real Basys 3: `make bit && make prog` in `fpga/basys3` |
+| ⏳ **Silicon** | after submission to a Tiny Tapeout shuttle |
 
 ## What it looks like
 
-**The real, routed chip.** Every push runs Tiny Tapeout's full hardening flow on GitHub, which
+**From the board to the silicon.** The chip arrives in a QFN package on a carrier board that
+plugs into the demo board; inside, every project on the shuttle shares one die behind a
+multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
+
+![From the demo board to Tiqora's tiles on the die](images/board_to_silicon.svg)
+
+
+**The routed chip, once CI has built it.** Every push runs Tiny Tapeout's full hardening flow on GitHub, which
 places and wires every cell and publishes the result. Once the first `gds` run finishes, the
 image below is the actual layout that goes to the fab, and
-[this link opens it in 3D](https://normansrule.github.io/tinypulse-skywater130/):
+[this link opens it in 3D](https://normansrule.github.io/tiqora-skywater130/):
 
-![The routed TinyPulse layout, rendered by the Tiny Tapeout CI](https://normansrule.github.io/tinypulse-skywater130/gds_render.png)
+![The routed Tiqora layout, rendered by the Tiny Tapeout CI](https://normansrule.github.io/tiqora-skywater130/gds_render.png)
 
 <sub>(If that image is missing, the `gds` workflow hasn't run yet, or GitHub Pages isn't
 enabled: Settings → Pages → Source: GitHub Actions.)</sub>
@@ -48,7 +83,7 @@ enabled: Settings → Pages → Source: GitHub Actions.)</sub>
 inside the 334.9 × 225.8 µm tile — the register file's regular grid of flip-flops on the left,
 the irregular logic of the CPU beside it:
 
-![Every real sky130 standard cell in TinyPulse, placed block by block inside the 2x2 tile](images/layout_blocks.png)
+![Every real sky130 standard cell in Tiqora, placed block by block inside the 2x2 tile](images/layout_blocks.png)
 
 **One flip-flop, taken apart.** The register file is 480 copies of this cell. Its real
 manufacturing layers — N-well, diffusion, polysilicon gates, contacts, local interconnect, vias,
@@ -58,14 +93,14 @@ metal 1 — separate and rejoin:
 
 ## Explore it interactively
 
-[**Open the chip explorer**](https://htmlpreview.github.io/?https://github.com/Normansrule/tinypulse-skywater130/blob/main/docs/explorer.html)
+[**Open the chip explorer**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/explorer.html)
 (or open `docs/explorer.html` from a clone): zoom from the whole tile down to transistors,
 click any of the 24 pins to see what it does, step a 32-bit addition through the nibble adder
 one clock at a time, and browse all 48 instructions with their bit-level encodings.
 
 ## How small?
 
-![TinyPulse next to a human hair, a grain of salt and a red blood cell](images/scale.svg)
+![Tiqora next to a human hair, a grain of salt and a red blood cell](images/scale.svg)
 
 The whole chip — CPU, 480 flip-flops of registers, memory controller, timing unit, UART and
 GPIO — is about 335 µm across. A strand of hair is about 70 µm wide; a grain of table salt is
@@ -79,7 +114,20 @@ hatching is local interconnect. Every other row is mirrored so neighbours share 
 
 ## Pinout
 
-![TinyPulse pinout](images/pinout.svg)
+**Every pin, where it really is.** All 43 pins of the tile sit on metal 4 along its top edge, at
+the exact positions from Tiny Tapeout's own 2 × 2 template, above the design's real cells. The
+band names each one with its function; the pulses show which way signals flow:
+
+![All 43 pins of the 2x2 tile at their real positions](images/pin_map.svg)
+
+**What each pin connects to.** The complete system — the QSPI memory Pmod, the demo board's
+RP2350 as clock, reset and USB-serial bridge, plus sensors in and triggers out:
+
+![Every Tiqora pin wired to the device it connects to](images/connections.svg)
+
+The same pins, by function:
+
+![Tiqora pinout](images/pinout.svg)
 
 | Pin | Function | Pin | Function (reset) / GPIO |
 |---|---|---|---|
@@ -101,7 +149,7 @@ SD1, SCK, SD2, SD3, CS1 RAM A, CS2 RAM B). While reset is held, all eight are re
 demo board's RP2040 can program the flash without unplugging anything.
 
 **No setup script needed.** The Pmod's flash (W25Q128JV) and RAMs (APS6404L) power up in slow
-single-bit mode. Two microseconds after every reset, TinyPulse wakes them itself: it puts the
+single-bit mode. Two microseconds after every reset, Tiqora wakes them itself: it puts the
 flash into continuous quad read and both RAMs into quad (QPI) mode, and it does this correctly
 whether the chips are fresh from power-up or were left in fast mode by a previous run.
 
@@ -112,7 +160,7 @@ whether the chips are fresh from power-up or were left in fast mode by a previou
 ### Why nibble-serial
 
 The biggest block on a small RISC-V chip is the register file, and most of its area isn't
-storage — it's the multiplexers that pick one of 16 registers, 32 bits at a time. TinyPulse
+storage — it's the multiplexers that pick one of 16 registers, 32 bits at a time. Tiqora
 reads registers **4 bits at a time**, so those multiplexers shrink eightfold. Measured against
 the real sky130 library:
 
@@ -120,7 +168,7 @@ the real sky130 library:
 |---|---:|
 | Conventional: two 32-bit read ports | 21,837 µm² |
 | One 32-bit read port | 18,155 µm² |
-| **TinyPulse: two 4-bit ports, rotating** | **11,322 µm²** |
+| **Tiqora: two 4-bit ports, rotating** | **11,322 µm²** |
 
 Every register rotates by one nibble on every clock, in lockstep with a 3-bit phase counter,
 so at phase *k* every register presents its *k*-th nibble on the same four wires:
@@ -201,7 +249,7 @@ read-modify-write race against other code.
 | System | `FENCE` (no-op) · `ECALL`/`EBREAK` halt the core and raise `HALT` |
 
 **Xpulse** — eleven timing instructions on the custom-0 opcode (`0001011`), wrapped as C
-functions in `sw/tinypulse.h`:
+functions in `sw/tiqora.h`:
 
 | Instruction | C | What it does |
 |---|---|---|
@@ -226,29 +274,69 @@ No board and no silicon needed. The simulator runs the real RTL — the same des
 fabricated — booting from a model of the QSPI flash exactly as the chip will:
 
 ```bash
-cd tinypulse-skywater130/test
+cd tiqora-skywater130/test
 python -m pip install ziglang pyelftools          # a C compiler, no cross-toolchain needed
 make run PROG=../sw/examples/hello.c
 ```
 
 ```
---- TinyPulse (simulated RTL, 50 MHz) ---
-Hello from TinyPulse!
-tick 1: deadline t0+100000, woke 32 clocks after
-tick 2: deadline t0+200000, woke 32 clocks after
-tick 3: deadline t0+300000, woke 32 clocks after
+--- Tiqora (simulated RTL, 50 MHz) ---
+Hello from Tiqora!
+tick 1: deadline t0+100000, woke 16 clocks after
+tick 2: deadline t0+200000, woke 16 clocks after
+tick 3: deadline t0+300000, woke 16 clocks after
 ...
 ```
 
-Every wake-up lands the same 32 clocks after its deadline, however long the code in between took.
-That determinism is the point of the chip.
+Two different things are deterministic here, and they are worth keeping apart:
 
-![Deterministic timing: every wake-up lands the same 32 clocks after its deadline](images/deterministic_timing.svg) Point `PROG=` at any C file of your own.
+- **The trigger pin is exact.** A deadline armed with `tp_arm` drives its pin on the programmed
+  tick, whatever the CPU is doing (checked at the pin by `make soc`). Exact relative to the
+  supplied clock; oscillator error and pad delay are separate.
+- **Software resumes within a fixed window.** After `tp_wait`, the next instruction runs 10 to 17
+  clocks after the deadline. The spread is not noise: every instruction starts on phase 0 of the
+  register file's 8-clock rotation, so the delay depends on which phase the deadline falls on.
+  For deadlines on the same phase, as in this demo, it repeats exactly. `make latency` measures
+  all eight phases and checks the bound.
 
-It also shows the honest speed: about 25 clocks per instruction, roughly 2 million instructions
-a second at 50 MHz. Printing a line with three numbers costs about 37,000 clocks, so
-`tp_io.h`'s `uart_putu` avoids division entirely — the core has no hardware divider, and the
-usual `v % 10, v / 10` loop would cost tens of thousands of clocks per number.
+![Deadlines and trigger edges: the trigger pin lands on the deadline tick](images/deterministic_timing.svg)
+
+Point `PROG=` at any C file of your own.
+
+**Speed, measured** (RTL simulation at 50 MHz, `make run PROG=... RUNARGS=+PROFILE`):
+
+| Program | v19 | v20 | |
+|---|---:|---:|---|
+| Straight-line ALU code (`bench_alu.c`) | 32.2 clocks/instr | **18.3** | 1.76× |
+| Sort + checksum + CRC-32 (`bench_kernel.c`) | 50.2 | **40.3** | 1.24× |
+| The C self-test, from flash | 406,049 clocks | **337,417** | 1.20× |
+
+v20 starts fetching the next instruction while the current one executes, for every instruction
+that cannot change the flow or use the bus (63% of a typical stream). The word is held in the
+QSPI controller's own receive register until the core is ready, so the speedup costs one
+flip-flop, one 30-bit address mux and about 1.7% more logic. Two thirds of the remaining time is
+still the QSPI bus: loads, stores and taken branches each restart a memory transaction.
+
+Printing a line with three numbers costs about 30,000 clocks, so `tp_io.h`'s `uart_putu` avoids
+division entirely — the core has no hardware divider, and the usual `v % 10, v / 10` loop would
+cost tens of thousands of clocks per number.
+
+## Run it on an FPGA today: Digilent Basys 3
+
+The same RTL runs on a [Digilent Basys 3](../fpga/basys3/README.md) (Artix-7) with nothing else
+attached. The QSPI flash and RAMs are emulated in block RAM, following the same datasheet rules as
+the real chips, and the board's own USB port is Tiqora's serial port, so you load C programs
+with the bootloader exactly as on the chip:
+
+```bash
+cd fpga/basys3
+make sim          # simulate the whole board first: three runs, all checked
+make bit && make prog                 # Vivado: build and load
+```
+
+Then a terminal at 115,200 baud shows the demo: buttons timestamped to the 20 ns tick, LED 0
+blinking from the timebase, and an echo. With the real QSPI Pmod on port JA, `make bit PMOD=1`
+tests the actual memory chips. Full guide: [fpga/basys3/README.md](../fpga/basys3/README.md).
 
 ## Using it
 
@@ -258,7 +346,7 @@ Pmod header.
 1. **Flash your program** into the Pmod with the
    [Tiny Tapeout Flasher](https://github.com/TinyTapeout/tinytapeout-flasher) while the design
    is held in reset — the chip releases the Pmod pins for exactly this.
-2. **Select** `tt_um_normansrule_tinypulse` on the demo board. `ui_in[2:0]` set the QSPI read
+2. **Select** `tt_um_normansrule_tiqora` on the demo board. `ui_in[2:0]` set the QSPI read
    latency while reset is held (0 works for the Pmod at 50 MHz in simulation; raise it if
    reads come back shifted).
 3. **Release reset.** The heartbeat on `uo_out[7]` starts blinking, and the program runs from
@@ -268,16 +356,21 @@ Pmod header.
 A minimal program (see `sw/mkhello.py` for the exact instruction stream the tests run):
 
 ```c
-#include "tinypulse.h"
+#include "tiqora.h"
 #define PERIPH ((volatile uint32_t *)0x30000000)
+#ifndef ONE_SECOND
+#define ONE_SECOND 50000000u                // timebase ticks per second at 50 MHz
+#endif
 void uart_putc(char c) { while (PERIPH[4] & 1); PERIPH[3] = c; }   // UART_STAT, UART_DATA
 int main(void) {
-    PERIPH[2] = 0x10;                       // GPIO_SEL: keep only UART TX
-    for (const char *s = "Hi TinyPulse\n"; *s; s++) uart_putc(*s);
-    uint32_t t = tp_time() + 50000000;      // one second from now at 50 MHz
+    // GPIO_SEL: 1 = the pin keeps its built-in function, 0 = it becomes GPIO.
+    // Keep UART TX (uo_out[4]) and TRIG0 (uo_out[0]); uo_out[7] becomes a GPIO.
+    PERIPH[2] = (1u << 4) | (1u << 0);
+    for (const char *s = "Hi Tiqora\n"; *s; s++) uart_putc(*s);
+    uint32_t t = tp_time() + ONE_SECOND;    // one second from now
     tp_arm(t, 0);                           // TRIG0 fires on that exact tick
     tp_wait(t);
-    PERIPH[8] = 0x80;                       // GPIO_XOR: toggle uo_out[7]
+    PERIPH[8] = 0x80;                       // GPIO_XOR: toggle uo_out[7], now a GPIO
     return 0;
 }
 ```
@@ -294,7 +387,7 @@ make TOOLCHAIN=zig            # camera_sync.bin, for flash
 make TOOLCHAIN=zig RAM=1      # the same program linked for RAM, for the bootloader
 ```
 
-(With a GNU toolchain, drop `TOOLCHAIN=zig`.) Include `tinypulse.h` for the timing
+(With a GNU toolchain, drop `TOOLCHAIN=zig`.) Include `tiqora.h` for the timing
 instructions and `tp_io.h` for the UART and GPIO (`uart_puts`, `uart_putu`, `GPIO_OUT`, ...).
 `sw/lib/rt.c` supplies the multiply and divide routines the compiler calls, since the core
 has no hardware multiplier.
@@ -305,13 +398,13 @@ Two more libraries cover what you reach for first on any microcontroller:
   widths and zero padding, checked character for character against Python's `%` formatting.
   It prints numbers without dividing, so it stays fast on a core with no divider.
 - **`tp_spi.h`**: an SPI master in software on the GPIO pins (mode 0, about 100 kHz at 50 MHz),
-  for sensors, flash chips and small displays. TinyPulse spends its silicon on the core and the
+  for sensors, flash chips and small displays. Tiqora spends its silicon on the core and the
   timing unit instead of SPI hardware; the RP2040-style `GPIO_SET`/`GPIO_CLR` registers make
   a software SPI short and race-free. Tested against a simulated W25Q128 flash, whose JEDEC ID
   it reads correctly (`sw/examples/spi_flash_id.c`).
 
 Every build is checked by `sw/rv32e_check.py`, which decodes each instruction and refuses
-anything TinyPulse doesn't implement — a multiply, a CSR access, a compressed instruction, a
+anything Tiqora doesn't implement — a multiply, a CSR access, a compressed instruction, a
 register above x15 — so a wrong compiler flag fails at build time, not on the board.
 
 `sw/examples/c_selftest.c` is the proof it all works: initialized and zeroed globals, strings in
@@ -322,7 +415,7 @@ character it prints.
 ### Program it through the demo board's USB-C port
 
 No adapter needed: `sw/demoboard/tpboot.py` runs on the demo board and becomes the serial cable.
-It clocks TinyPulse at 4.17 MHz so the chip's UART lands at 9600 baud without changing
+It clocks Tiqora at 4.17 MHz so the chip's UART lands at 9600 baud without changing
 anything on the chip, holds the boot pin, sends your program and shows what it prints:
 
 ```bash
@@ -337,7 +430,7 @@ from first power-up, including what each status pin means when something's wrong
 
 ### Program it over USB serial — no flasher
 
-TinyPulse has a boot ROM, the way an RP2040 does. **Hold `ui_in[7]` high while you release
+Tiqora has a boot ROM, the way an RP2040 does. **Hold `ui_in[7]` high while you release
 reset** and, instead of running flash, the chip runs a 43-instruction bootloader that takes a
 program over the UART:
 
@@ -362,17 +455,17 @@ re-enter the bootloader, like `reset_usb_boot()` on an RP2040.
 
 ### Honest comparison with an RP2040
 
-| | TinyPulse | RP2040 |
+| | Tiqora | RP2040 |
 |---|---|---|
 | Cores | 1 × RV32E, nibble-serial | 2 × Cortex-M0+ |
-| Speed | ~1–2 million instructions/s at 50 MHz | ~133 MHz, ~1 instruction/clock |
+| Speed | 1.2–2.7 million instructions/s at 50 MHz (measured) | ~133 MHz, ~1 instruction/clock |
 | Memory | 16 MB flash + 16 MB RAM (external, QSPI) | 264 KB SRAM + external flash |
 | I/O | 8 in, 8 out, UART | 30 GPIO, USB, ADC, SPI, I2C, PWM, PIO |
 | Hardware timestamping | 20 ns, 8 channels, queued | — (software or PIO) |
-| Zero-jitter deadline outputs | yes, 2 | via PIO |
+| Cycle-exact deadline outputs | yes, 2 | via PIO |
 | You designed the silicon | **yes** | no |
 
-TinyPulse is not a replacement for an RP2040. It is a working RISC-V microcontroller you can
+Tiqora is not a replacement for an RP2040. It is a working RISC-V microcontroller you can
 read every line of, down to the transistors, with a timing unit most microcontrollers don't have.
 
 ## Verification
@@ -381,7 +474,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 
 | Test | What it proves | Checks |
 |---|---|---:|
-| `make isa` | every RV32I instruction, vs. Python-computed results | 51 |
+| `make isa` | every RV32E base instruction, vs. Python-computed results | 51 |
 | `make unit` | timing unit blocks, rotating register file, UART, GPIO | 48 |
 | `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover | 18 |
 | `make xpulse` | all eleven Xpulse instructions | 15 |
@@ -390,21 +483,26 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
-| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (12,521 words) |
+| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** at v19; re-run on v20 |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
+| `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 17 |
 | `make printf` | `tp_printf` against Python's `%` formatting, 23 cases | 23 |
 | `make spi` | software SPI reads a simulated W25Q128's JEDEC ID | 2 |
+| `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
+| `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
+| `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
+| `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
 | Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`): docs, ports, build config | passes |
-| `make timing` | critical-path estimate from real sky130 cell delays | 6.9 ns / 20 ns |
+| `make timing` | critical-path estimate from real sky130 cell delays | 6.9 ns / 20 ns at v19; re-run on v20 |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
-| `make GATES=yes` | the same cocotb tests on the synthesized sky130 netlist | 5 + 1 skipped |
+| `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped at v19; re-run on v20 |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
 | `make lint` | Verilator `-Wall`, no waivers | clean |
 
-TinyPulse was cross-checked against the RISC-V conformance suite and against TinyQV, the
+Tiqora was cross-checked against the RISC-V conformance suite and against TinyQV, the
 closest silicon-proven design; [docs/REFERENCES.md](../docs/REFERENCES.md) lists what matched and
 what changed. One item stands out: TinyQV avoids the RAM's 8 µs refresh rule by never running
-code from RAM, while TinyPulse deliberately does (for the bootloader), so the RAM model now
+code from RAM, while Tiqora deliberately does (for the bootloader), so the RAM model now
 enforces the datasheet's chip-select timing and every test that runs code from RAM checks it.
 
 The memory models are strict: like the real chips, they ignore fast transactions until they
@@ -434,10 +532,10 @@ src/sync/      timebase, capture, event queue, deadline comparators, Xpulse port
 src/periph/    tp_uart.sv, tp_periph.sv (GPIO + UART registers)
 src/boot/      tp_bootrom.sv, generated by sw/mkboot.py
 src/bus/       address decode, QSPI controller
-src/tp_soc.sv  the microcontroller;  tt_um_normansrule_tinypulse.sv  pin wrapper
+src/tp_soc.sv  the microcontroller;  tt_um_normansrule_tiqora.sv  pin wrapper
 src/config.json  hardening configuration
-sw/demoboard/  tpboot.py: program TinyPulse through the demo board's USB-C port
-sw/            tinypulse.h (timing), tp_io.h (UART/GPIO), tp_printf.h, tp_spi.h, crt0.S, link.ld, link_ram.ld,
+sw/demoboard/  tpboot.py: program Tiqora through the demo board's USB-C port
+sw/            tiqora.h (timing), tp_io.h (UART/GPIO), tp_printf.h, tp_spi.h, crt0.S, link.ld, link_ram.ld,
                lib/rt.c, rv32e_check.py, tpload.py (UART loader), examples/, program generators
 test/          every testbench above
 docs/tools/    layout_preview.py, figures.py, build_explorer.py — regenerate every image
@@ -446,7 +544,7 @@ syn/           synthesis and area scripts
 .github/       Tiny Tapeout CI: gds (hardening + 3D viewer), test, docs, fpga
 ```
 
-Sister project: [tinytapeout-tinypulse](https://github.com/Normansrule/tinytapeout-tinypulse)
+Sister project: [tinytapeout-tiqora](https://github.com/Normansrule/tinytapeout-tiqora)
 — the same timing unit with no CPU, controlled over USB serial, in 1 × 2 tiles (140 €).
 
 Apache 2.0 licensed. Credits: the nibble-serial approach follows TinyQV by Michael Bell;

@@ -12,6 +12,7 @@ import math, sys
 import klayout.db as db
 
 CELL = "sky130_fd_sc_hd__dfxtp_1"
+CAPTION = sys.argv[2] if len(sys.argv) > 2 else "The register file is 480 of these."
 LAYERS = [  # (gds layer, name, what it is, colour) bottom to top
     ((64, 20), "N-well",              "where the PMOS transistors sit",         "#3a4a6b"),
     ((65, 20), "Diffusion",           "doped silicon: transistor channels",     "#2a9d5c"),
@@ -78,7 +79,7 @@ svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" '
        f'<style>{css}</style><rect width="{W}" height="{H}" rx="16" fill="#0b0e14"/>'
        f'<text x="28" y="40" fill="#e9ecef" font-size="22" font-weight="800">One flip-flop, layer by layer</text>'
        f'<text x="28" y="64" fill="#8b949e" font-size="14">{CELL}: {w_um:.2f} × {h_um:.2f} µm. '
-       f'The register file is 480 of these. Real SkyWater GDS geometry.</text>'
+       f'{CAPTION} Real SkyWater GDS geometry.</text>'
        + "".join(groups) + "".join(labels) + "</svg>")
 open("docs/images/flipflop_exploded.svg", "w").write(svg)
 print(f"docs/images/flipflop_exploded.svg: {CELL} {w_um:.2f} x {h_um:.2f} um, {len(svg) / 1024:.0f} KB")

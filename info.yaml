@@ -1,4 +1,4 @@
-# info.yaml — Tiny Tapeout project metadata for TinyPulse-Skywater130.
+# info.yaml — Tiny Tapeout project metadata for Tiqora.
 # See https://tinytapeout.com for the current schema.
 #
 # `tiles: "2x2"` is MEASURED: 49,186 um^2 of sky130_fd_sc_hd cells (flattened
@@ -7,10 +7,10 @@
 # (The earlier 32-bit core measured 69,866 um^2 and needed 4x2.)
 
 project:
-  title:        "TinyPulse: RISC-V microcontroller with hardware timestamping"
+  title:        "Tiqora: RISC-V microcontroller with hardware timestamping"
   author:       "Aleksander Norman"
   discord:      ""
-  description:  "Nibble-serial RV32E microcontroller: QSPI flash + RAM, UART, 8 GPIO in/out, and Xpulse instructions for 20 ns event timestamps and zero-jitter deadline triggers"
+  description:  "Nibble-serial RV32E microcontroller: QSPI flash + RAM, UART, 8 GPIO in/out, and Xpulse instructions for 20 ns event timestamps and cycle-exact deadline triggers"
   language:     "SystemVerilog"
   clock_hz:     50000000            # 50 MHz signoff target; sweep in synthesis.
                                     # At 50 MHz: 21 clocks per sequential
@@ -18,7 +18,7 @@ project:
 
   tiles:        "2x2"
 
-  top_module:   "tt_um_normansrule_tinypulse"
+  top_module:   "tt_um_normansrule_tiqora"
 
   # Package first, then leaves, then the modules that instantiate them.
   source_files:
@@ -36,7 +36,7 @@ project:
     - "bus/tp_bus.sv"
     - "bus/qspi_ctrl.sv"
     - "tp_soc.sv"
-    - "tt_um_normansrule_tinypulse.sv"
+    - "tt_um_normansrule_tiqora.sv"
 
 # Pin assignments. This text appears on the datasheet page.
 pinout:

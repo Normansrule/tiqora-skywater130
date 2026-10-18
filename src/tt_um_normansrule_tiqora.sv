@@ -1,4 +1,4 @@
-// tt_um_normansrule_tinypulse.sv — Tiny Tapeout pin wrapper.
+// tt_um_normansrule_tiqora.sv — Tiny Tapeout pin wrapper.
 //
 //   ui_in[7:0]   GPIO inputs, all eight also timestamp-capture channels.
 //                ui_in[3] is the UART receive line (the demo board's RP2040
@@ -15,7 +15,7 @@
 // fighting the chip for the bus.
 `default_nettype none
 
-module tt_um_normansrule_tinypulse (
+module tt_um_normansrule_tiqora (
     input  wire [7:0] ui_in,
     output wire [7:0] uo_out,
     input  wire [7:0] uio_in,
@@ -51,4 +51,4 @@ module tt_um_normansrule_tinypulse (
                             1'b1, sd_oe[1], sd_oe[0], 1'b1};
 
     wire _unused = &{1'b0, ena, uio_in[7:6], uio_in[3], uio_in[0], 1'b0};
-endmodule : tt_um_normansrule_tinypulse
+endmodule : tt_um_normansrule_tiqora

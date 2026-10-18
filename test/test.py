@@ -1,4 +1,4 @@
-# test.py — cocotb tests for TinyPulse-Skywater130.
+# test.py — cocotb tests for Tiqora.
 #
 # Output pins at reset (every pin in its built-in function):
 #   uo_out[0] TRIG0   [1] TRIG1   [2] EVT   [3] OVF
@@ -181,10 +181,10 @@ async def test_hello_uart_and_gpio(dut):
         return value
 
     text = bytearray()
-    for _ in range(len(b"Hi TinyPulse\n")):
+    for _ in range(len(b"Hi Tiqora\n")):
         text.append(await uart_byte())
     dut._log.info(f"UART said: {bytes(text)!r}")
-    assert bytes(text) == b"Hi TinyPulse\n", f"got {bytes(text)!r}"
+    assert bytes(text) == b"Hi Tiqora\n", f"got {bytes(text)!r}"
 
     # after the message: echo, then three toggles of bit 7, then ECALL
     toggles, prev7 = 0, None

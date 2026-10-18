@@ -2,7 +2,7 @@
 """test_tpboot.py — tpboot.py's UART and boot protocol, tested on a PC.
 
 Runs the real BitBangUart and bootload() from tpboot.py against a simulated
-TinyPulse boot ROM, in virtual time, with the things that go wrong on a real
+Tiqora boot ROM, in virtual time, with the things that go wrong on a real
 demo board:
   * every tick read costs a random 1-15 us (MicroPython overhead, USB IRQs)
   * the chip's baud rate is off by up to +/-2% (the RP's clock generator
@@ -28,7 +28,7 @@ class Clock:
     def ticks_diff(a, b): return ((a - b + PERIOD // 2) % PERIOD) - PERIOD // 2
 
 
-class FakeTinyPulse:
+class FakeTiqora:
     """The boot ROM's behaviour, seen from its two pins."""
     def __init__(self, clock, rate_error, reply_sum_error=0, banner=True, after=b"Hi\n"):
         self.clock = clock
@@ -83,7 +83,7 @@ class FakeTinyPulse:
 
 def run(image, rate_error=0.0, jitter=15, start=0, seed=1, **chip):
     clk = Clock(start, jitter, seed)
-    chip_ = FakeTinyPulse(clk, rate_error, **chip)
+    chip_ = FakeTiqora(clk, rate_error, **chip)
     uart = tpboot.BitBangUart(chip_.tx_pin, chip_.rx_pin, tpboot.BAUD,
                               clk.ticks_us, clk.ticks_add, clk.ticks_diff)
     ok = tpboot.bootload(uart, image, log=lambda *a: None)
@@ -103,7 +103,7 @@ def check(cond, what):
     print(("  ok    " if cond else "  FAIL  ") + what)
 
 img = bytes((i * 37 + 11) & 255 for i in range(300))
-print("=== tpboot.py against a simulated TinyPulse boot ROM ===")
+print("=== tpboot.py against a simulated Tiqora boot ROM ===")
 ok, got, after = run(img)
 check(ok, "a clean load is verified (15 us of jitter per tick read)")
 check(got == img, "the chip received all 300 bytes, in order")

@@ -6,7 +6,7 @@
 // latency between those two events is tens of microseconds and it varies;
 // here both are timestamped in hardware and the shutter edge is exact.
 
-#include "tinypulse.h"
+#include "tiqora.h"
 #include "tp_io.h"
 
 #define FRAME_TICKS   500000u      // 100 Hz at 50 MHz

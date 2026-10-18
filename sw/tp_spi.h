@@ -1,7 +1,7 @@
 // tp_spi.h — SPI master in software, on the GPIO pins. Mode 0 (clock idles
 // low, data sampled on the rising edge), MSB first.
 //
-// TinyPulse has no SPI hardware — area goes to the core and the timing unit —
+// Tiqora has no SPI hardware — area goes to the core and the timing unit —
 // but GPIO_SET / GPIO_CLR change one pin per store, so a software SPI is short
 // and has no read-modify-write races. It runs at roughly 100 kHz at 50 MHz:
 // fine for sensors, flash IDs and small displays.

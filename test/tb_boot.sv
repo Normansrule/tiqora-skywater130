@@ -5,7 +5,7 @@
 //   expect "TP>" on uo_out[4]
 //   send a 4-byte length and the hello-world program on ui_in[3]
 //   expect the checksum byte and 'K'
-//   expect the program, now running from RAM, to print "Hi TinyPulse\n"
+//   expect the program, now running from RAM, to print "Hi Tiqora\n"
 //
 // The UART divider is overridden to 64 clocks per bit so this runs in
 // seconds; on silicon it is 434 (115,200 baud at 50 MHz). Each received byte
@@ -31,7 +31,7 @@ module tb_boot;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe), .ena(ena), .clk(clk), .rst_n(rst_n));
     defparam dut.u_soc.u_periph.DIV_RESET = DIV;
@@ -87,7 +87,7 @@ module tb_boot;
         nwords = 0;
         while (nwords < 128 && image[nwords] !== 32'hxxxx_xxxx) nwords = nwords + 1;
 
-        $display("\n=== TinyPulse UART bootloader ===");
+        $display("\n=== Tiqora UART bootloader ===");
         $display("  program: hello.hex, %0d bytes, sent at %0d clocks per bit", 4 * nwords, DIV);
         repeat (10) @(posedge clk);
         rst_n = 1'b1;
@@ -125,9 +125,15 @@ module tb_boot;
 
         // the loaded program switches the UART to 8 clocks per bit and prints
         text = 0;
-        for (k = 0; k < 13; k = k + 1) begin host_recv(8, b); text = {text[8*15:1], b}; end
-        chk(text[8*13:1] == "Hi TinyPulse\n", "the loaded program runs from RAM and prints Hi TinyPulse");
-        $display("        it said: \"%0s\"", text[8*13:9]);
+        // count derived from the expected text, never hard-coded: a rename once
+        // shortened the greeting and a fixed count waited for bytes never sent
+        begin : greeting
+            string want; string got;
+            want = "Hi Tiqora\n"; got = "";
+            for (k = 0; k < want.len(); k = k + 1) begin host_recv(8, b); got = {got, string'(b)}; end
+            chk(got == want, "the loaded program runs from RAM and prints its greeting");
+            $display("        it said: \"%0s\"", got.substr(0, got.len() - 2));
+        end
 
         k = 0;
         while (!dut.u_soc.g_cpu.u_core.halted && k < 20000) begin @(posedge clk); k = k + 1; end

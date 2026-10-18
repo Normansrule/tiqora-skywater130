@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""zoom_animation.py — an animated zoom from the whole TinyPulse tile down to
+"""zoom_animation.py — an animated zoom from the whole Tiqora tile down to
 single transistors, rendered frame by frame with KLayout from the real
 sky130 cell geometry. Run layout_preview.py first (it writes the GDS and the
 block positions this uses).
@@ -12,9 +12,13 @@ import klayout.lay as lay
 from PIL import Image, ImageDraw, ImageFont
 
 W, H = 640, 427
-TILE_W, TILE_H = 334.88, 225.76
 area = json.load(open("docs/area.json"))
-rx, ry, rw, rh = area["regions_um"]["Register file (15 x 32 bits)"]
+TILE_W, TILE_H = area["tile_um"]
+regs = area["regions_um"]
+TARGET = next((k for k in ("Register file (15 x 32 bits)", "Event queue") if k in regs),
+              max(regs, key=lambda k: regs[k][2] * regs[k][3]))
+rx, ry, rw, rh = regs[TARGET]
+TARGET_LABEL = TARGET.split(" (")[0].lower()
 cx, cy = rx + rw * 0.22, ry + rh * 0.34          # a spot inside the register file
 LAYERS = [("64/20", 0x10141c, 0), ("65/20", 0x2a9d5c, 0), ("66/20", 0xd6453d, 0),
           ("67/20", 0x4f8cff, 5), ("67/44", 0xe9ecef, 0), ("68/20", 0xb08cff, 9), ("235/4", 0xffd23f, 1)]
@@ -52,15 +56,16 @@ def frame(width_um, t):
     px = bar / width_um * W
     d.rectangle([24, H - 38, 24 + px, H - 32], fill=(255, 255, 255))
     d.text((24, H - 62), f"{bar:g} µm", fill=(255, 255, 255), font=small, stroke_width=2, stroke_fill=(0, 0, 0))
-    label = ("the whole chip: 335 × 226 µm, ~5,500 logic cells" if width_um > 150 else
-             "the register file: rows of flip-flops" if width_um > 40 else
+    label = (f"this project's {area['tile']} tiles: {TILE_W:.0f} × {TILE_H:.0f} µm, ~{area['instances']:,} logic cells"
+             if width_um > 0.45 * TILE_W else
+             f"the {TARGET_LABEL}: rows of real cells" if width_um > 40 else
              "single cells: each one a few transistors")
     d.text((24, 20), label, fill=(255, 255, 255), font=font, stroke_width=3, stroke_fill=(0, 0, 0))
     d.text((W - 24, H - 30), "real sky130 cell geometry · KLayout", fill=(200, 200, 200),
            font=small, anchor="rd", stroke_width=2, stroke_fill=(0, 0, 0))
     return im
 
-w0, w1, N = TILE_W * 1.03, 22.0, 26
+w0, w1, N = max(TILE_W, TILE_H * W / H) * 1.03, 22.0, 26   # fit the whole tile, landscape or portrait
 frames = []
 for i in range(N):
     t = i / (N - 1)

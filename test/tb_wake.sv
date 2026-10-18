@@ -26,7 +26,7 @@ module tb_wake;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe), .ena(ena), .clk(clk), .rst_n(rst_n));
     qspi_flash_model #(.DUMMY(4), .WORDS(512)) u_flash (
@@ -62,7 +62,7 @@ module tb_wake;
         $dumpfile("tb_wake.vcd");
         $dumpvars(0, tb_wake);
         #1 $readmemh("prog.hex", u_flash.mem);
-        $display("\n=== TinyPulse QSPI wake-up ===");
+        $display("\n=== Tiqora QSPI wake-up ===");
 
         $display("[cold: both chips straight from power-up]");
         chk(u_flash.cont === 1'b0 && u_psram.qpi === 1'b0, "cold: models start in plain SPI");

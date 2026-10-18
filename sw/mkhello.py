@@ -6,7 +6,7 @@ must do, and test/test.py checks every one from the pins alone:
   1. set the UART to 8 clocks per bit (fast, so simulation stays short;
      on a real board you would leave the reset value, 115,200 baud)
   2. hand uo_out[0..3] and [5..7] to software, keep UART TX on uo_out[4]
-  3. print "Hi TinyPulse\\n" over the UART, polling TX_BUSY between bytes
+  3. print "Hi Tiqora\\n" over the UART, polling TX_BUSY between bytes
   4. copy the input pins to the output pins (GPIO_IN -> GPIO_OUT), so a
      test can drive ui_in and see its pattern on uo_out
   5. toggle uo_out[7] three times with GPIO_XOR (an LED blink, minus the delay)
@@ -25,7 +25,7 @@ GPIO_SET, GPIO_CLR, GPIO_XOR = 0x18, 0x1C, 0x20
 def andi(rd, rs1, imm): return I(OPC_OPIMM, 7, rd, rs1, imm)
 def ecall():            return 0x00000073
 
-MESSAGE = b"Hi TinyPulse\n"
+MESSAGE = b"Hi Tiqora\n"
 
 prog, notes = [], []
 def emit(word, note):

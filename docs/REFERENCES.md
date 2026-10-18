@@ -1,6 +1,6 @@
-# What TinyPulse was checked against
+# What Tiqora was checked against
 
-TinyPulse is new, so it leans on designs and test suites that have already proven themselves —
+Tiqora is new, so it leans on designs and test suites that have already proven themselves —
 in silicon, or as the RISC-V community's own conformance standard. This is what each one was
 used for, what matched, and what changed because of it.
 
@@ -21,7 +21,7 @@ datasheet's timing throughout (below), with zero violations.
 cd test && make act          # fetches the suite (act/fetch.sh), ~10 minutes
 ```
 
-Setting it up found two things in TinyPulse's test environment, both fixed: the arch-test bench
+Setting it up found two things in Tiqora's test environment, both fixed: the arch-test bench
 needed the second RAM model the other benches never had, and the signature's end marker must
 not be padded.
 
@@ -29,15 +29,15 @@ not be padded.
 
 [MichaelBell/tinyQV](https://github.com/MichaelBell/tinyQV): an RV32EC microcontroller for Tiny
 Tapeout, 4-bit serial, on the same QSPI Pmod, in 2 × 2 tiles. It has worked in silicon on
-several shuttles and runs MicroPython. TinyPulse's core is an independent implementation of the
+several shuttles and runs MicroPython. Tiqora's core is an independent implementation of the
 same nibble-serial idea.
 
-| TinyQV | TinyPulse | |
+| TinyQV | Tiqora | |
 |---|---|---|
 | Pmod pins: CS0 flash uio[0], SD0/SD1 uio[1..2], SCK uio[3], SD2/SD3 uio[4..5], CS1/CS2 RAM uio[6..7] | identical | matches |
 | flash continuous read, mode bits 0xA0, 6 + 2 + 4 cycle preamble | identical | matches |
 | RAM in QPI mode | identical | matches |
-| expects the memories already set up when it starts | **wakes both itself** after every reset | TinyPulse needs no setup script |
+| expects the memories already set up when it starts | **wakes both itself** after every reset | Tiqora needs no setup script |
 | runs code only from flash, which "removes the need for handling the PSRAM refresh every 8 µs" | **runs code from RAM** (bootloader) | checked: every RAM transaction releases chip select within 0.88 µs; the RAM model now enforces tCEM ≤ 8 µs and tCPH ≥ 18 ns and every RAM-executing test asserts zero violations |
 | silicon runs at 64 MHz with read latency 1 | 50 MHz target | the bring-up guide starts at latency 1 |
 | its first silicon (TT06) had a broken UART receiver, worked around in software | UART receive is tested at unit level, through the bootloader and at gate level | a reminder to test anything that can be tested before tape-out |
@@ -51,7 +51,7 @@ confirms the basic premise: RV32E with no on-chip memory is a working microcontr
 ## FazyRV-ExoTiny — waking the RAM from the chip
 
 Another Tiny Tapeout RISC-V design on the QSPI Pmod, which "once released from reset, first
-enables Quad Mode in the RAM" — the approach TinyPulse takes for both the RAM and the flash,
+enables Quad Mode in the RAM" — the approach Tiqora takes for both the RAM and the flash,
 instead of relying on the demo board to set the memories up.
 
 ## Tiny Tapeout's own infrastructure

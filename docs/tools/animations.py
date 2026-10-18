@@ -93,9 +93,9 @@ def timing():
     css = [f"@keyframes sweep{{from{{transform:translateX(0)}}to{{transform:translateX({X1-X0}px)}}}}"
            f".cur{{animation:sweep 7s linear infinite}}"]
     body = [f"<text x='40' y='46' fill='{FG}' font-size='24' font-weight='800'>Deterministic timing</text>"
-            f"<text x='40' y='72' fill='{DIM}' font-size='15'>tp_wait(deadline) parks the core until the timebase reaches it. "
-            f"Every wake-up lands the same number of clocks after its deadline.</text>"]
-    rows = [(150, "TinyPulse", "measured: 32 clocks after every deadline", 0.004, [0.0]*5, DIFF),
+            f"<text x='40' y='72' fill='{DIM}' font-size='15'>tp_arm(deadline) drives the trigger pin on the deadline tick, "
+            f"whatever the CPU is doing at that moment.</text>"]
+    rows = [(150, "Tiqora pin", "on the deadline tick, every time (make soc)", 0.0, [0.0]*5, DIFF),
             (270, "typical MCU", "illustration: interrupt latency varies", 0.004, jitter, POLY)]
     for y, name, note, off, jit, col in rows:
         body.append(f"<text x='40' y='{y+8}' fill='{FG}' font-size='16' font-weight='700'>{name}</text>"
@@ -112,7 +112,7 @@ def timing():
                         f"<rect class='{k}' x='{xp}' y='{y+4}' width='14' height='36' fill='{col}'/>")
     body.append(f"<text x='{X0}' y='350' fill='{GOLD}' font-size='13'>- - - deadlines</text>"
                 f"<g class='cur'><line x1='{X0}' y1='118' x2='{X0}' y2='330' stroke='{FG}' stroke-width='2' opacity='.6'/></g>"
-                f"<text x='40' y='385' fill='{DIM}' font-size='12'>TinyPulse numbers are from `make run PROG=../sw/examples/hello.c`. "
+                f"<text x='40' y='385' fill='{DIM}' font-size='12'>Upper row: checked at the trigger pin in RTL simulation (make soc). "
                 f"The lower row is a qualitative illustration, not a measurement.</text>")
     open("docs/images/deterministic_timing.svg", "w").write(svg(W, H, "Deterministic timing", "".join(css), "".join(body)))
 

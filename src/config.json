@@ -9,7 +9,7 @@
 
   "//": "If you get stuck with this config, please open an issue or get in touch via the discord.",
 
-  "//": "TinyPulse: cells measure 49,186 um^2, about 68% of the 2x2 tile's placeable area, against the real sky130_fd_sc_hd library (make area). A placement target below the design's own utilization fails with GPL-0302, so the target is raised to 72, inside the range Tiny Tapeout reports working. If routing congests, 3x2 is the fallback.",
+  "//": "Tiqora: cells measure 49,186 um^2, about 68% of the 2x2 tile's placeable area, against the real sky130_fd_sc_hd library (make area). A placement target below the design's own utilization fails with GPL-0302, so the target is raised to 72, inside the range Tiny Tapeout reports working. If routing congests, 3x2 is the fallback.",
 
   "//": "Here are some of the variables you may want to change:",
 

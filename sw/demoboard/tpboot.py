@@ -1,4 +1,4 @@
-# tpboot.py — program and talk to TinyPulse through the demo board's own USB-C
+# tpboot.py — program and talk to Tiqora through the demo board's own USB-C
 # port. No USB-UART adapter, no flasher. Runs ON the Tiny Tapeout demo board
 # (MicroPython + the ttboard SDK that ships on it).
 #
@@ -10,11 +10,11 @@
 # or, for a program already in flash, just watch its serial output:
 #     mpremote exec "import tpboot; tpboot.console()"
 #
-# How: the demo board's RP2350 drives TinyPulse's ui_in pins and reads its
+# How: the demo board's RP2350 drives Tiqora's ui_in pins and reads its
 # uo_out pins, so it can act as the serial cable itself. It bit-bangs the
-# UART on ui_in[3] (TinyPulse RX) and uo_out[4] (TinyPulse TX) at 9600 baud,
+# UART on ui_in[3] (Tiqora RX) and uo_out[4] (Tiqora TX) at 9600 baud,
 # a rate MicroPython can time reliably. Rather than change anything on the
-# chip, it CLOCKS TinyPulse at 9600 x 434 = 4.17 MHz: the chip's UART divider
+# chip, it CLOCKS Tiqora at 9600 x 434 = 4.17 MHz: the chip's UART divider
 # resets to 434 clocks per bit, so the chip ends up at exactly 9600 baud.
 #
 # Trade-off: your program runs at 4.17 MHz, not 50. Everything is 12x slower
@@ -25,13 +25,13 @@
 #
 # Status: the protocol and bit timing are tested on a PC against a simulated
 # chip with timing jitter (sw/demoboard/test_tpboot.py). It has not yet been
-# run on a real board, because there is no TinyPulse silicon yet.
+# run on a real board, because there is no Tiqora silicon yet.
 
 import time
 
-PROJECT = "tt_um_normansrule_tinypulse"
+PROJECT = "tt_um_normansrule_tiqora"
 BAUD = 9600
-UART_DIV = 434                       # TinyPulse's reset value
+UART_DIV = 434                       # Tiqora's reset value
 CLOCK_HZ = BAUD * UART_DIV           # 4,166,400 Hz
 LATENCY = 1                          # QSPI read latency strap, ui_in[2:0]
 
@@ -90,7 +90,7 @@ def frame_program(image):
 
 
 def bootload(uart, image, log=print):
-    """Talk to TinyPulse's boot ROM. Returns True if the chip verified the load."""
+    """Talk to Tiqora's boot ROM. Returns True if the chip verified the load."""
     seen = b""
     while not seen.endswith(b"TP>"):
         c = uart.read(3000)

@@ -1,4 +1,4 @@
-// tp_soc.sv — the TinyPulse microcontroller: core, bus, external memory,
+// tp_soc.sv — the Tiqora microcontroller: core, bus, external memory,
 // timing unit, GPIO and UART.
 //
 //   0x0000_0000  flash      16 MB   QSPI Pmod CS0   code and constants
@@ -52,7 +52,7 @@ module tp_soc
     output logic [3:0]            sd_oe,
     input  wire  logic [3:0]      sd_in
 );
-    logic        imem_req, imem_rvalid;
+    logic        imem_req, imem_ready, imem_rvalid;
     logic [31:0] imem_addr, imem_rdata;
     logic        dmem_req, dmem_we, dmem_rvalid;
     logic [31:0] dmem_addr, dmem_wdata, dmem_rdata;
@@ -84,6 +84,7 @@ module tp_soc
             .boot       (ui[7]),
             .imem_req   (imem_req),
             .imem_addr  (imem_addr),
+            .imem_ready (imem_ready),
             .imem_rvalid(imem_rvalid),
             .imem_rdata (imem_rdata),
             .dmem_req   (dmem_req),
@@ -111,6 +112,7 @@ module tp_soc
         .rst        (rst),
         .imem_req   (imem_req),
         .imem_addr  (imem_addr),
+        .imem_ready (imem_ready),
         .imem_rvalid(imem_rvalid),
         .imem_rdata (imem_rdata),
         .dmem_req   (dmem_req),

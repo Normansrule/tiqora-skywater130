@@ -1,6 +1,6 @@
 // rt.c — the few routines a compiler calls behind your back.
 //
-// TinyPulse is RV32E with no M extension, so the compiler turns *, / and %
+// Tiqora is RV32E with no M extension, so the compiler turns *, / and %
 // into calls to these (the names are the ones GCC and Clang both use). It
 // may also call memcpy/memset for struct copies and array initializers even
 // when you never wrote them. All are small and slow on purpose: a

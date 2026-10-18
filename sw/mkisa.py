@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """mkisa.py — build test/isa.hex, a program that exercises every RV32I
-instruction TinyPulse implements and stores each result to PSRAM for checking.
+instruction Tiqora implements and stores each result to PSRAM for checking.
 
 The testbench (test/tb_isa.sv) knows the expected value of every slot, so a
 wrong answer names the instruction that produced it rather than just failing.

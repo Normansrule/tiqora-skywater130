@@ -30,7 +30,7 @@ module tb_c;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe), .ena(ena), .clk(clk), .rst_n(rst_n));
     defparam dut.u_soc.u_periph.DIV_RESET = BOOT_DIV;
@@ -117,7 +117,7 @@ module tb_c;
         exp_len = 0;
         for (i = 1; i <= 200; i = i + 1) if (expect_s[8*i -: 8] != 8'h00) exp_len = i;
         $readmemh("c_flash.hex", u_flash.mem);
-        $display("\n=== C on TinyPulse (compiled by Clang, RV32E) ===");
+        $display("\n=== C on Tiqora (compiled by Clang, RV32E) ===");
 
         $display("[1: from flash]");
         rx_n = 0; rx_on = 1'b1; rx_div = PROG_DIV;

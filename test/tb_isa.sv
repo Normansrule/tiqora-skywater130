@@ -1,5 +1,5 @@
 // tb_isa.sv — instruction set coverage. Runs a 168-instruction program that
-// exercises every RV32I instruction TinyPulse implements and stores each result
+// exercises every RV32I instruction Tiqora implements and stores each result
 // into the PSRAM, then checks all 49 results against sw/mkisa.py's
 // independently-computed expectations.
 //
@@ -39,7 +39,7 @@ module tb_isa;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe),
         .ena(ena), .clk(clk), .rst_n(rst_n)
@@ -96,7 +96,7 @@ module tb_isa;
         end
         $fclose(fd);
 
-        $display("\n=== TinyPulse-Skywater130 instruction set coverage ===");
+        $display("\n=== Tiqora instruction set coverage ===");
         $display("loaded %0d expected results", n_exp);
 
         repeat (20) @(posedge clk);

@@ -10,6 +10,14 @@ tpl = open("docs/tools/explorer_template.html").read()
 blocks = json.load(open("docs/area.json"))["blocks"]
 blocks.pop("Glue", None)
 html = tpl.replace("{{AREA_JSON}}", json.dumps(blocks))
+
+# The example program comes from the README itself (the "A minimal program"
+# block), the same text `make readme` compiles and checks at the pins, so the
+# explorer can never show a different, untested copy.
+import html as _html, re as _re
+_readme = open("README.md").read()
+_example = _re.search(r"```c\n(.*?)```", _readme[_readme.index("A minimal program"):], _re.S).group(1).rstrip("\n")
+html = html.replace("{{README_EXAMPLE}}", _html.escape(_example, quote=False))
 if len(sys.argv) > 2 and sys.argv[1] == "--inline":
     from PIL import Image
     def uri(path, width):

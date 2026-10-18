@@ -1,4 +1,4 @@
-# Hardening TinyPulse-Skywater130
+# Hardening Tiqora
 
 Everything in this file is work that has to happen on your machine, because
 it needs the SkyWater sky130 process design kit (PDK) and a full
@@ -61,8 +61,8 @@ design, it will simulate perfectly and then fail to harden.
 ```bash
 cd test
 make lint         # Verilator -Wall, must be clean
-make sim          # 207 assertions across six testbenches
-make synth        # Yosys elaboration, prints the real flip-flop count
+make sim          # 226 checks across twelve suites
+make area         # real sky130 area: cells, flip-flops, fit per tile size
 cd ..
 ```
 
@@ -196,7 +196,7 @@ reported-then-fixed ones are normal.
 
 ```bash
 sudo apt install klayout        # or download from klayout.de for a current build
-klayout runs/<latest>/final/gds/tt_um_normansrule_tinypulse.gds
+klayout runs/<latest>/final/gds/tt_um_normansrule_tiqora.gds
 ```
 
 KLayout needs the sky130 layer properties file to colour the layers
@@ -211,7 +211,7 @@ technology already selected:
 
 ```bash
 klayout -e -nn ~/.volare/sky130A/libs.tech/klayout/tech/sky130A.lyt \
-        runs/<latest>/final/gds/tt_um_normansrule_tinypulse.gds
+        runs/<latest>/final/gds/tt_um_normansrule_tiqora.gds
 ```
 
 ### What to actually look at
@@ -225,7 +225,7 @@ worth checking with your eyes:
 2. **Density.** Pan around at moderate zoom. You are looking for large empty
    regions next to congested ones, which means placement struggled. Even
    density is what you want.
-3. **The register file.** It is 512 flip-flops, 37% of the design, and it
+3. **The register file.** It is 480 flip-flops, 40% of the design, and it
    will be visible as a large regular block. If it is smeared across the
    whole tile rather than clustered, routing is probably fighting it.
 4. **Routing congestion on metal 1 and metal 2.** Turn off the upper metals
@@ -259,47 +259,36 @@ timing-dependent bug.
 
 ```bash
 # the netlist is usually at:
-runs/<latest>/final/nl/tt_um_normansrule_tinypulse.nl.v
+runs/<latest>/final/nl/tt_um_normansrule_tiqora.nl.v
 ```
 
-Run the existing testbenches against it instead of the RTL, with the sky130
-cell models:
+Run the cocotb tests against it. They drive the chip only through its pins,
+so they work on any netlist:
 
 ```bash
-iverilog -g2012 -o gl.vvp -s tb_soc \
-  -DFUNCTIONAL -DUSE_POWER_PINS \
-  ~/.volare/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v \
-  ~/.volare/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v \
-  runs/<latest>/final/nl/tt_um_normansrule_tinypulse.nl.v \
-  test/qspi_model.sv test/tb_soc.sv
-vvp gl.vvp
+cp runs/<latest>/final/nl/tt_um_normansrule_tiqora.nl.v test/gate_level_netlist.v
+cd test && make GATES=yes PDK_ROOT=~/pdk
 ```
 
-The testbenches in this repository were written to drive the chip through
-its pins, with only a few hierarchy probes, specifically so this works. The
-probes that reach inside (`dut.u_soc.u_sync.now`, the core state) will not
-exist in a gate-level netlist — comment those assertions out or use
-`tb_isa.sv`, which checks results through the PSRAM model and touches no
-internal signals.
-
-**`tb_isa.sv` is the one to run at gate level.** 51 checks, all observed
-through the pins, comparing against expectations computed independently in
-Python.
+This is exactly what Tiny Tapeout's `test` workflow does with the hardened
+netlist. Before hardening, `make gl` does the same with a netlist synthesized
+locally from your PDK: 5 tests pass and 1 (which needs internal signals) is
+skipped.
 
 ---
 
 ## Step 7 — before you submit
 
 - [ ] `make lint` clean
-- [ ] `make sim` — 207 assertions passing
-- [ ] `make synth` — flip-flop count as expected
+- [ ] `make sim` — 226 checks passing
+- [ ] `make area` — area and flip-flop count as expected
 - [ ] Hardening completes with no DRC and no LVS violations
 - [ ] Setup worst negative slack positive at the clock in `info.yaml`
 - [ ] Hold slack positive
 - [ ] `tiles` in `info.yaml` matches what actually fit
-- [ ] Gate-level `tb_isa.sv` passing
+- [ ] Gate-level tests passing (`make gl` locally, `make GATES=yes` on the post-layout netlist)
 - [ ] `docs/info.md` describes what the chip really does
-- [ ] Pinout in `info.yaml` matches `src/tt_um_normansrule_tinypulse.sv`
+- [ ] Pinout in `info.yaml` matches `src/tt_um_normansrule_tiqora.sv`
 
 That last one is worth double-checking by hand. The pinout in `info.yaml` is
 what gets printed on the datasheet other people read; nothing checks it
@@ -309,39 +298,32 @@ against the RTL.
 
 ## If it does not fit
 
-The measured flip-flop budget, by module, from `syn/stat.txt`:
+The flip-flop budget, by module (Yosys, hierarchy kept; 1,190 in total):
 
 | Module | Flip-flops | Share |
 |---|---:|---:|
-| `tp_regfile` | 512 | 37% |
-| `qspi_ctrl` | 165 | 12% |
-| `sync_compare` (3 channels) | 163 | 12% |
-| `tp_fetch` | 133 | 10% |
-| `tp_core` | 115 | 8% |
-| `sync_timebase` | 81 | 6% |
-| `sync_event_fifo` | 70 | 5% |
-| `sync_unit` | 60 | 4% |
-| `tp_shifter` | 40 | 3% |
-| `sync_capture` | 24 | 2% |
-| `tp_soc`, `tp_bus` | 6 | – |
-| **Total** | **1,369** | |
+| `tp_nregfile` (15 × 32-bit registers) | 480 | 40% |
+| `tp_ncore` | 147 | 12% |
+| `qspi_ctrl` | 120 | 10% |
+| `sync_compare` (2 channels) | 114 | 10% |
+| `sync_timebase` | 81 | 7% |
+| `sync_event_fifo` (2 entries) | 70 | 6% |
+| `sync_unit` | 60 | 5% |
+| `tp_uart` | 60 | 5% |
+| `tp_periph` | 28 | 2% |
+| `sync_capture` (8 channels) | 24 | 2% |
+| `tp_soc`, `tp_bus` | 6 | 1% |
 
-Knobs, cheapest first:
+Knobs, all parameters of `tp_soc`, cheapest first:
 
-1. **`sync_compare` to 2 channels** (`NCMP=2`): about 54 flip-flops. You lose
-   TRIG2 on `uio[6]`.
-2. **`qspi_ctrl`'s `prefix_q`**: 32 flip-flops. It exists only to hold the
-   command prefix across the deselect state and could be rebuilt
-   combinationally from `cur_addr`, `cur_dev` and `cur_we`.
-3. **`FRACW` from 24 to 16**: 8 flip-flops, and the rate trim resolution goes
+1. **`FRACW` from 24 to 16**: 8 flip-flops, and the rate trim resolution goes
    from 0.06 to 15 parts per million. Only worth it if you are not
    disciplining the clock.
-4. **`next_seq_addr` narrower**: it is 24 bits to cover a 16 MB flash; 16
-   bits covers 64 KB of streaming reach and saves 8.
-5. **The register file.** 512 flip-flops is 37% of the design and dropping to
-   8 registers saves 256. It is also the one change that costs you the stock
-   toolchain: `-march=rv32e` assumes 16 registers, so you would be
-   hand-writing assembly or patching a compiler. Do this last.
+2. **`NCH` from 8 to 4 capture channels**: about 12 flip-flops plus the
+   per-channel edge logic.
+3. **`NCMP` from 2 to 1 trigger channel**: about 57 flip-flops. You lose TRIG1.
 
-Do not reach for the register file first just because it is the biggest
-number. The first four are free in every sense.
+`DEPTH` (the event queue) is already at its useful minimum of 2. The register
+file is the largest block, but RV32E fixes it at 15 registers and the stock
+compilers assume all of them, so it is not a knob. If routing still fails,
+the honest fix is a bigger tile: 3 × 2 costs 140 € more and leaves ample room.

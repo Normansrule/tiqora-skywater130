@@ -1,4 +1,4 @@
-// tp_io.h — GPIO and UART from C. Pairs with tinypulse.h (the timing unit).
+// tp_io.h — GPIO and UART from C. Pairs with tiqora.h (the timing unit).
 #ifndef TP_IO_H
 #define TP_IO_H
 #include <stdint.h>
@@ -14,6 +14,23 @@
 #define GPIO_CLR     TP_PERIPH[7]
 #define GPIO_XOR     TP_PERIPH[8]
 
+// Output pins by built-in function, for GPIO_SEL (1 = built-in function, 0 = GPIO).
+#define PIN_TRIG0      (1u << 0)
+#define PIN_TRIG1      (1u << 1)
+#define PIN_EVT        (1u << 2)
+#define PIN_OVF        (1u << 3)
+#define PIN_UART_TX    (1u << 4)
+#define PIN_HALT       (1u << 5)
+#define PIN_ILLEGAL    (1u << 6)
+#define PIN_HEARTBEAT  (1u << 7)
+
+// Change only the pins named in `mask`, leaving every other pin as it was.
+// Writing GPIO_SEL directly replaces all eight at once: writing PIN_UART_TX
+// alone would silently turn TRIG0 into a GPIO, and an armed trigger would
+// then fire inside the chip without ever reaching its pin.
+static inline void pins_use_function(uint32_t mask) { GPIO_SEL = GPIO_SEL | mask; }
+static inline void pins_use_gpio(uint32_t mask)     { GPIO_SEL = GPIO_SEL & ~mask; }
+
 static inline void uart_putc(char c) { while (UART_STAT & 1u) { } UART_DATA = (uint8_t)c; }
 static inline int  uart_ready(void)  { return (UART_STAT >> 1) & 1u; }
 static inline char uart_getc(void)   { while (!uart_ready()) { } return (char)UART_DATA; }
@@ -21,7 +38,7 @@ static inline void uart_flush(void)  { while (UART_STAT & 1u) { } }
 
 static inline void uart_puts(const char *s) { while (*s) uart_putc(*s++); }
 
-// Unsigned decimal WITHOUT dividing. TinyPulse has no hardware divider, so
+// Unsigned decimal WITHOUT dividing. Tiqora has no hardware divider, so
 // the obvious "v % 10, v / 10" loop costs two 32-step software divisions per
 // digit — tens of thousands of clocks per number. Subtracting powers of ten
 // takes at most 9 steps per digit.

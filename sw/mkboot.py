@@ -1,4 +1,4 @@
-"""mkboot.py — the TinyPulse boot ROM: a UART bootloader, and the Verilog for it.
+"""mkboot.py — the Tiqora boot ROM: a UART bootloader, and the Verilog for it.
 
 Hold ui_in[7] HIGH while reset is released and the core starts here, at
 0x4000_0000, instead of at flash address 0. This program:

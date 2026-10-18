@@ -18,8 +18,8 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 ## The everyday run — about 5 minutes
 
 ```bash
-cd ~/tinypulse-skywater130/test
-make sim        # all twelve self-checking suites, 226 checks
+cd ~/tiqora-skywater130/test
+make sim        # all fifteen self-checking suites, 240 checks, plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
 ```
@@ -30,7 +30,7 @@ Each testbench ends with a line like `51 checks, 0 failures`. `make sim` covers:
 |---|---:|---|
 | unit | 48 | timing-unit blocks, rotating register file, UART, GPIO |
 | soc | 12 | boots, arms a deadline, the trigger lands on the exact tick |
-| isa | 51 | every RV32I instruction vs Python-computed results |
+| isa | 51 | every RV32E base instruction vs Python-computed results |
 | stress | 18 | 8 simultaneous captures, queue overflow, 2³² rollover |
 | wrap | 10 | `TWAIT` across the timebase rollover |
 | xpulse | 15 | all eleven timing instructions |
@@ -40,6 +40,17 @@ Each testbench ends with a line like `51 checks, 0 failures`. `make sim` covers:
 | bridge | 10 | the demo-board bridge vs a simulated chip with jitter and clock error |
 | printf | 23 | `tp_printf`, character for character against Python's `%` formatting |
 | spi | 2 | the software SPI reads a simulated W25Q128 flash's JEDEC ID (`EF 40 18`) |
+| readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
+| latency | 1 | software resumes 10–17 clocks after a `TWAIT` deadline, on all 8 rotation phases |
+| adjust | 3 | a time step neither skips nor repeats a deadline |
+| shared | 5 files | the timing unit matches Tiqora-Serial's, by SHA-256 manifest |
+
+## Measuring speed
+
+```bash
+make run PROG=../sw/examples/bench_kernel.c RUNARGS=+PROFILE   # clocks per state, fetch lengths, instruction mix
+make run PROG=../sw/examples/bench_alu.c RUNARGS=+PROFILE      # the best case: straight-line ALU code
+```
 
 ## Run your own program on the simulated chip
 
@@ -70,7 +81,7 @@ cd ../sw && make TOOLCHAIN=zig && make TOOLCHAIN=zig RAM=1    # build the exampl
 ## Regenerating the images
 
 ```bash
-cd ~/tinypulse-skywater130
+cd ~/tiqora-skywater130
 python3 docs/tools/figures.py                      # pinout, block diagram, scale
 python3 docs/tools/animations.py                   # the animated diagrams
 python3 -m pip install klayout pillow
@@ -78,7 +89,18 @@ python3 docs/tools/layout_preview.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd    #
 python3 docs/tools/zoom_animation.py               # the tile-to-transistor zoom
 python3 docs/tools/exploded_cell.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd     # the exploded flip-flop
 python3 docs/tools/build_explorer.py               # the interactive explorer page
+python3 docs/tools/silicon_views.py                # pin map at real positions, packaging, connections
 ```
+
+## On an FPGA
+
+```bash
+make -C ../fpga/basys3 sim         # the whole Basys 3 design, three runs, ~5 minutes: 17 checks
+make -C ../fpga/basys3 resources   # Yosys estimate for the XC7A35T (needs a Yosys with synth_xilinx)
+make -C ../fpga/basys3 bit prog    # Vivado: build and load the bitstream
+```
+
+See [fpga/basys3/README.md](../fpga/basys3/README.md).
 
 ## Tiny Tapeout's own pre-flight check
 
@@ -88,7 +110,7 @@ conda environment):
 
 ```bash
 python3 -m venv ~/tt-venv && . ~/tt-venv/bin/activate
-cd ~/tinypulse-skywater130
+cd ~/tiqora-skywater130
 git clone --depth 1 https://github.com/TinyTapeout/tt-support-tools tt
 pip install -r tt/requirements.txt
 python tt/tt_tool.py --check-docs            # expect: Documentation check passed successfully.
@@ -111,8 +133,8 @@ The `gds` workflow hardens the design with the full Tiny Tapeout flow (LibreLane
 succeeds, the `viewer` job publishes the real routed layout to GitHub Pages — enable
 **Settings → Pages → Source: GitHub Actions** once — at:
 
-- `https://normansrule.github.io/tinypulse-skywater130/gds_render.png` (image)
-- `https://normansrule.github.io/tinypulse-skywater130/` (opens the 3D viewer)
+- `https://normansrule.github.io/tiqora-skywater130/gds_render.png` (image)
+- `https://normansrule.github.io/tiqora-skywater130/` (opens the 3D viewer)
 
 The `test` workflow runs the cocotb tests on the post-layout netlist. Its routing and timing
 reports are the final word on whether the design fits and meets 50 MHz.

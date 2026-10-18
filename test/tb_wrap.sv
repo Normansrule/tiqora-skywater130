@@ -46,7 +46,7 @@ module tb_wrap;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe),
         .ena(ena), .clk(clk), .rst_n(rst_n)
@@ -78,7 +78,7 @@ module tb_wrap;
         $dumpvars(0, tb_wrap);
         #1 $readmemh("wrap.hex", u_flash.mem);
 
-        $display("\n=== TinyPulse-Skywater130 rollover test ===");
+        $display("\n=== Tiqora rollover test ===");
 
         repeat (20) @(posedge clk);
         rst_n = 1'b1;

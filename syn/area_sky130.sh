@@ -89,7 +89,9 @@ AREA=$(grep -oP "Chip area for (top )?module .*?: \K[0-9.]+" syn/.area.txt | tai
 CELLS=$(grep -oP "^\s*\K[0-9]+(?=\s+cells\s*$)" syn/.area.txt | tail -1 || true)
 [ -z "$CELLS" ] && CELLS=$(grep -oP "Number of cells:\s+\K[0-9]+" syn/.area.txt | tail -1 || true)
 FLOPS=$(grep -E "sky130_fd_sc_hd__(dfxtp|dfrtp|dfrbp|dfstp|dfsbp|dfbbp|edfxtp|sdf)" syn/.area.txt \
-        | awk '{s+=$1} END{print s+0}' || true)
+        | awk '{for (i = 1; i <= NF; i++) if ($i ~ /^[0-9]+$/) { s += $i; break }} END {print s+0}' || true)
+# (the count is the first whole number on each line: Yosys 0.33 prints the cell
+#  name first, newer versions print the count first)
 
 if [ -z "$AREA" ]; then
     echo "error: could not find the chip area in the Yosys report:" >&2

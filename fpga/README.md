@@ -1,4 +1,4 @@
-# Prototyping TinyPulse-Skywater130 on an FPGA
+# Prototyping Tiqora on an FPGA
 
 Prototype before you tape out. The ASIC run then becomes a re-run of
 something that already works rather than a first attempt, which matters when
@@ -6,7 +6,7 @@ a mistake costs a shuttle slot and three months.
 
 ## What to instantiate
 
-Instantiate `tp_soc` directly, not `tt_um_normansrule_tinypulse`. The Tiny
+Instantiate `tp_soc` directly, not `tt_um_normansrule_tiqora`. The Tiny
 Tapeout wrapper only exists to map onto the fixed 24-pin tile interface; on a
 board you have real pins.
 

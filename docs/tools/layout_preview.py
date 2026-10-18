@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""layout_preview.py — draw TinyPulse's real standard cells in a 2x2 tile.
+"""layout_preview.py — draw Tiqora's real standard cells in a 2x2 tile.
 
 What this is: every cell Yosys maps the design onto (about 5,000 instances of
 real sky130_fd_sc_hd cells, the same library the fab uses), each drawn with
@@ -27,7 +27,7 @@ import json, os, re, shutil, subprocess, sys, collections, math
 import klayout.db as db
 import klayout.lay as lay
 
-TOP = "tt_um_normansrule_tinypulse"
+TOP = "tt_um_normansrule_tiqora"
 TILE_W, TILE_H = 334.88, 225.76            # Tiny Tapeout 2x2
 SITE_W, ROW_H = 0.46, 2.72                 # sky130 unithd site
 MARGIN_X, MARGIN_Y = 6 * SITE_W, ROW_H     # LEFT/RIGHT_MARGIN_MULT 6, TOP/BOTTOM 1
@@ -188,7 +188,7 @@ def main():
     ly = db.Layout()
     ly.read(f"{libdir}/gds/sky130_fd_sc_hd.gds")
     ly.dbu = ly.dbu
-    top = ly.create_cell("TINYPULSE_PREVIEW")
+    top = ly.create_cell("TIQORA_PREVIEW")
     idx = {c.name: c.cell_index() for c in ly.each_cell()}
     for t, x, y, flip in placements + fills:
         if t not in idx: continue

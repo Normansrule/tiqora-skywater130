@@ -1,6 +1,6 @@
 // tp_nregfile.sv — RV32E register file, read and written four bits at a time.
 //
-// This is the reason TinyPulse fits in a 2x2 tile. Measured against the
+// This is the reason Tiqora fits in a 2x2 tile. Measured against the
 // real sky130_fd_sc_hd library:
 //
 //     two 32-bit read ports, conventional       21,837 um^2

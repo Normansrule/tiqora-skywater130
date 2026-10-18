@@ -1,0 +1,310 @@
+{
+ "source": "tt_block_2x2_pg.def",
+ "die_um": [
+  334.88,
+  225.76
+ ],
+ "pins": [
+  {
+   "name": "uio_oe[7]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 30.82,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[6]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 33.58,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[5]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 36.34,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[4]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 39.1,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[3]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 41.86,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[2]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 44.62,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[1]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 47.38,
+   "y": 225.26
+  },
+  {
+   "name": "uio_oe[0]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 50.14,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[7]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 52.9,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[6]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 55.66,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[5]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 58.42,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[4]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 61.18,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[3]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 63.94,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[2]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 66.7,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[1]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 69.46,
+   "y": 225.26
+  },
+  {
+   "name": "uio_out[0]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 72.22,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[7]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 74.98,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[6]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 77.74,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[5]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 80.5,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[4]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 83.26,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[3]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 86.02,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[2]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 88.78,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[1]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 91.54,
+   "y": 225.26
+  },
+  {
+   "name": "uo_out[0]",
+   "dir": "output",
+   "layer": "met4",
+   "x": 94.3,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[7]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 97.06,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[6]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 99.82,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[5]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 102.58,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[4]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 105.34,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[3]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 108.1,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[2]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 110.86,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[1]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 113.62,
+   "y": 225.26
+  },
+  {
+   "name": "uio_in[0]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 116.38,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[7]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 119.14,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[6]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 121.9,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[5]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 124.66,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[4]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 127.42,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[3]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 130.18,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[2]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 132.94,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[1]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 135.7,
+   "y": 225.26
+  },
+  {
+   "name": "ui_in[0]",
+   "dir": "input",
+   "layer": "met4",
+   "x": 138.46,
+   "y": 225.26
+  },
+  {
+   "name": "rst_n",
+   "dir": "input",
+   "layer": "met4",
+   "x": 141.22,
+   "y": 225.26
+  },
+  {
+   "name": "clk",
+   "dir": "input",
+   "layer": "met4",
+   "x": 143.98,
+   "y": 225.26
+  },
+  {
+   "name": "ena",
+   "dir": "input",
+   "layer": "met4",
+   "x": 146.74,
+   "y": 225.26
+  }
+ ]
+}

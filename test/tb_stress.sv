@@ -152,7 +152,7 @@ module tb_stress;
     initial begin
         $dumpfile("tb_stress.vcd");
         $dumpvars(0, tb_stress);
-        $display("\n=== TinyPulse-Skywater130 stress tests ===");
+        $display("\n=== Tiqora stress tests ===");
 
         repeat (4) @(negedge clk);
         rst = 1'b0;

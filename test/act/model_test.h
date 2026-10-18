@@ -1,9 +1,9 @@
-// model_test.h — TinyPulse as a target for the official RISC-V architecture
+// model_test.h — Tiqora as a target for the official RISC-V architecture
 // tests (riscv-arch-test, rv32e_unratified/E, old-framework-2.x references).
 //
 // Boot: the flash holds a two-instruction stub that jumps to 0x1000_0000,
 //       where the whole test is loaded (its data must be writable).
-// Halt: ECALL, which stops the TinyPulse core and raises HALT.
+// Halt: ECALL, which stops the Tiqora core and raises HALT.
 // Signature: the words between begin_signature and end_signature, read out
 //       of the RAM model by test/tb_act.sv and compared with the reference.
 #ifndef _COMPLIANCE_MODEL_H

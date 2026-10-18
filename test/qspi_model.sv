@@ -3,7 +3,7 @@
 // These match the parts on the Tiny Tapeout QSPI Pmod: a Winbond W25Q128JV
 // flash and AP Memory APS6404L PSRAMs. They are deliberately STRICT about
 // the state the real chips power up in. Both start in plain single-bit SPI
-// mode and do not understand the fast four-bit transactions TinyPulse uses
+// mode and do not understand the fast four-bit transactions Tiqora uses
 // until they have been woken up with the right commands. An earlier version
 // of these models accepted fast transactions from time zero, which hid the
 // fact that the chip never woke the memories up: it simulated perfectly and
@@ -140,7 +140,7 @@ module qspi_psram_model #(
     // Datasheet timing the controller must respect. The APS6404L refreshes
     // itself only while deselected, so chip select may stay low for at most
     // 8 us (tCEM), and it needs 18 ns high between transactions (tCPH).
-    // TinyQV avoided the 8 us rule by never running code from RAM; TinyPulse
+    // TinyQV avoided the 8 us rule by never running code from RAM; Tiqora
     // does run code from RAM, so every test that does checks this counter.
     integer    violations = 0;
     realtime   t_low = 0, t_high = -1000;

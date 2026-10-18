@@ -1,4 +1,4 @@
-// tb_act.sv — runs one official RISC-V architecture test on TinyPulse.
+// tb_act.sv — runs one official RISC-V architecture test on Tiqora.
 // Driven by act/run_act.py, which assembles each test, loads it here, and
 // compares the signature this bench writes with the reference signature.
 `default_nettype none
@@ -19,7 +19,7 @@ module tb_act;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : (!cs_b ? psramb_sd : 4'hF)));
     wire [7:0] uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe), .ena(ena), .clk(clk), .rst_n(rst_n));
     qspi_flash_model #(.DUMMY(4), .WORDS(64)) u_flash (

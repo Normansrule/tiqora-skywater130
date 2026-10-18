@@ -4,7 +4,7 @@
 // (0.04% error); at 10 MHz, 87 gives 114,943 (0.2%). Anything within about
 // 2% works with any PC serial port.
 //
-// The receiver expects `rx` to be synchronized already. TinyPulse feeds it
+// The receiver expects `rx` to be synchronized already. Tiqora feeds it
 // from the capture unit, which runs every ui_in pin through two flip-flops
 // anyway, so the UART does not pay for its own synchronizer.
 //

@@ -57,7 +57,7 @@ module tb_soc;
                       : (!cs_f ? flash_sd : (!cs_r ? psram_sd : 4'hF));
     assign uio_in = {2'b00, sd_bus[3], sd_bus[2], 1'b0, sd_bus[1], sd_bus[0], 1'b0};
 
-    tt_um_normansrule_tinypulse dut (
+    tt_um_normansrule_tiqora dut (
         .ui_in  (ui_in),
         .uo_out (uo_out),
         .uio_in (uio_in),
@@ -107,7 +107,7 @@ module tb_soc;
 
         #1 $readmemh("prog.hex", u_flash.mem);   // after the model's init
 
-        $display("\n=== TinyPulse-Skywater130 system test ===");
+        $display("\n=== Tiqora system test ===");
 
         repeat (20) @(posedge clk);
         rst_n = 1'b1;
@@ -157,7 +157,7 @@ module tb_soc;
             check(t0 != 0, "TIME returned a running timebase");
             // the headline claim: the edge lands on the programmed tick
             check(trig_rise_time == (t0 + 32'd400),
-                  "trigger edge is on the exact programmed tick (zero jitter)");
+                  "trigger edge is on the exact programmed tick");
             check(evword[31] == 1'b0, "queued event came from hardware capture");
             check(evword[30:28] == 3'd1, "event channel is CAP1");
             check(evword[27] == 1'b1, "event edge is rising");

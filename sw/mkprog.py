@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""mkprog.py — assemble the TinyPulse-Skywater130 self-test program into test/prog.hex.
+"""mkprog.py — assemble the Tiqora self-test program into test/prog.hex.
 
 A deliberately tiny assembler: explicit encoders for each RV32I format plus
 the Xpulse custom-0 instructions, so the exact bit pattern of every word is
 visible here rather than hidden behind a toolchain. Extend it, or drop it and
-use riscv32-unknown-elf-gcc with the .insn macros in sw/tinypulse.h.
+use riscv32-unknown-elf-gcc with the .insn macros in sw/tiqora.h.
 """
 
 OPC_LUI, OPC_AUIPC = 0x37, 0x17

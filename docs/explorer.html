@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>TinyPulse — a RISC-V microcontroller the size of a grain of salt</title>
+<title>Tiqora — a RISC-V microcontroller the size of a grain of salt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
@@ -134,10 +134,10 @@ footer{padding:48px 0 64px;color:var(--muted);font-size:15px;border-top:1px soli
 
 <header class="wrap">
   <h1>A RISC-V microcontroller the size of a grain of salt</h1>
-  <p class="lede">TinyPulse is a 32-bit computer in 0.076 mm² of silicon. It runs C code from flash, talks over a serial port, and has instructions that timestamp pin edges and fire pulses on an exact clock tick.</p>
+  <p class="lede">Tiqora is a 32-bit computer in 0.076 mm² of silicon. It runs C code from flash, talks over a serial port, and has instructions that timestamp pin edges and fire pulses on an exact clock tick.</p>
 
   <div class="scope" id="scope" data-level="0">
-    <img class="whole" src="images/layout_blocks.png" alt="All of TinyPulse's standard cells placed inside a 334.9 by 225.8 micrometre tile, grouped and labelled by block">
+    <img class="whole" src="images/layout_blocks.png" alt="All of Tiqora's standard cells placed inside a 334.9 by 225.8 micrometre tile, grouped and labelled by block">
     <img class="zoom" src="images/layout_zoom.png" alt="Close-up of the register file: rows of sky130 flip-flops showing polysilicon gates, diffusion and contacts">
     <div class="scale-bar"><i id="barline" style="width:33px"></i><span id="barlabel">100 µm</span></div>
   </div>
@@ -182,7 +182,7 @@ footer{padding:48px 0 64px;color:var(--muted);font-size:15px;border-top:1px soli
 <section id="adder">
   <div class="wrap">
     <h2>How it adds, four bits at a time</h2>
-    <p class="measure">Most chips add all 32 bits at once. TinyPulse uses one 4-bit adder eight times and holds the carry in a flip-flop between clocks. That makes its register file half the size of a conventional one, which is the difference between a 280 € chip and a 560 € one. Try your own numbers.</p>
+    <p class="measure">Most chips add all 32 bits at once. Tiqora uses one 4-bit adder eight times and holds the carry in a flip-flop between clocks. That makes its register file half the size of a conventional one, which is the difference between a 280 € chip and a 560 € one. Try your own numbers.</p>
     <div class="adder">
       <div class="adder-in">
         <label>First number (hex)<input id="ia" value="1234ABCD" maxlength="8" spellcheck="false" aria-label="First number in hexadecimal"></label>
@@ -229,24 +229,28 @@ footer{padding:48px 0 64px;color:var(--muted);font-size:15px;border-top:1px soli
       <li><div><h3>Select the design and release reset</h3><p>The heartbeat on uo[7] starts blinking and your code runs from address 0.</p></div></li>
       <li><div><h3>Read its output</h3><p>The serial port sits on the pins wired to the demo board's RP2040, at 115,200 baud.</p></div></li>
     </ol>
-<pre><code>#include "tinypulse.h"
+<pre><code>#include "tiqora.h"
 #define PERIPH ((volatile uint32_t *)0x30000000)
-
-void uart_putc(char c) { while (PERIPH[4] &amp; 1); PERIPH[3] = c; }
-
+#ifndef ONE_SECOND
+#define ONE_SECOND 50000000u                // timebase ticks per second at 50 MHz
+#endif
+void uart_putc(char c) { while (PERIPH[4] &amp; 1); PERIPH[3] = c; }   // UART_STAT, UART_DATA
 int main(void) {
-    PERIPH[2] = 0x10;                     // keep only UART TX on its function
-    for (const char *s = "Hi TinyPulse\n"; *s; s++) uart_putc(*s);
-    uint32_t t = tp_time() + 50000000;    // one second from now
-    tp_arm(t, 0);                         // TRIG0 fires on exactly that tick
+    // GPIO_SEL: 1 = the pin keeps its built-in function, 0 = it becomes GPIO.
+    // Keep UART TX (uo_out[4]) and TRIG0 (uo_out[0]); uo_out[7] becomes a GPIO.
+    PERIPH[2] = (1u &lt;&lt; 4) | (1u &lt;&lt; 0);
+    for (const char *s = "Hi Tiqora\n"; *s; s++) uart_putc(*s);
+    uint32_t t = tp_time() + ONE_SECOND;    // one second from now
+    tp_arm(t, 0);                           // TRIG0 fires on that exact tick
     tp_wait(t);
+    PERIPH[8] = 0x80;                       // GPIO_XOR: toggle uo_out[7], now a GPIO
     return 0;
 }</code></pre>
   </div>
 </section>
 
 <footer class="wrap">
-  TinyPulse by Aleksander Norman. Apache 2.0. Built for SkyWater sky130 through Tiny Tapeout. The nibble-serial approach follows TinyQV by Michael Bell.
+  Tiqora by Aleksander Norman. Apache 2.0. Built for SkyWater sky130 through Tiny Tapeout. The nibble-serial approach follows TinyQV by Michael Bell.
 </footer>
 
 <script>
@@ -298,7 +302,7 @@ int main(void) {
   const svg = document.getElementById('pinsvg'), NS = 'http://www.w3.org/2000/svg';
   const el = (t, a, p) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); (p || svg).appendChild(e); return e; };
   el('rect', {x:190, y:40, width:260, height:380, rx:14, fill:'var(--paper)', stroke:'var(--ink)', 'stroke-width':2});
-  const title = el('text', {x:320, y:222, 'text-anchor':'middle', 'font-size':30, 'font-weight':800}); title.textContent = 'TinyPulse';
+  const title = el('text', {x:320, y:222, 'text-anchor':'middle', 'font-size':30, 'font-weight':800}); title.textContent = 'Tiqora';
   const sub = el('text', {x:320, y:250, 'text-anchor':'middle', 'font-size':14, fill:'var(--muted)'}); sub.textContent = '2 × 2 tiles, sky130';
   const detail = i => {
     const [id, k, fn, text] = P[i];

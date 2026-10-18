@@ -1,4 +1,4 @@
-# crt0.S — start-up code for TinyPulse, for both link.ld (from flash) and
+# crt0.S — start-up code for Tiqora, for both link.ld (from flash) and
 # link_ram.ld (loaded over the UART bootloader).
 #
 #   1. set the stack pointer and global pointer

@@ -1,4 +1,4 @@
-# Makefile — build C for TinyPulse-Skywater130 with a stock RISC-V toolchain.
+# Makefile — build C for Tiqora with a stock RISC-V toolchain.
 #
 # RV32E means 16 registers, which is what fits on the tile. There is no M
 # extension, no compressed extension and no control and status registers
@@ -36,7 +36,7 @@ endif
 
 all: $(TARGET).bin $(TARGET).lst
 
-$(TARGET).elf: $(SRCS) $(LDSCRIPT) tinypulse.h tp_io.h
+$(TARGET).elf: $(SRCS) $(LDSCRIPT) tiqora.h tp_io.h
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRCS)
 	python3 rv32e_check.py $@
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""run_act.py — the official RISC-V architecture tests for RV32E, on TinyPulse.
+"""run_act.py — the official RISC-V architecture tests for RV32E, on Tiqora.
 
 Source: github.com/riscv-non-isa/riscv-arch-test, branch old-framework-2.x,
 riscv-test-suite/rv32e_unratified/E: 37 tests, one per RV32E base
@@ -25,7 +25,7 @@ if not os.path.isdir(SRC):
     sys.exit(f"no tests at {SRC}: run act/fetch.sh first")
 
 # every test compiles from scratch: a private cache, wiped per test (see test/Makefile)
-ZIG_CACHE = os.path.join(TEST, ".zig-cache-act")
+ZIG_CACHE = os.path.join(TEST, ".zig-cache-act", str(os.getpid()))   # per run: parallel runs never collide
 os.environ["ZIG_GLOBAL_CACHE_DIR"] = os.environ["ZIG_LOCAL_CACHE_DIR"] = ZIG_CACHE
 CC = [sys.executable, "-m", "ziglang", "cc", "-target", "riscv32-freestanding-none",
       "-mcpu=generic_rv32+e-i", "-mabi=ilp32e", "-nostdlib", "-g", "-DXLEN=32", "-DRVTEST_E=True",

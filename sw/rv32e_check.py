@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""rv32e_check.py — will this program run on TinyPulse?
+"""rv32e_check.py — will this program run on Tiqora?
 
 Decodes every instruction in an ELF's code (from the start of .text to the
-linker symbol _code_end) and rejects anything TinyPulse does not implement:
+linker symbol _code_end) and rejects anything Tiqora does not implement:
 
-    compressed (16-bit) instructions      TinyPulse has no C extension
+    compressed (16-bit) instructions      Tiqora has no C extension
     multiply / divide                     no M extension: link sw/lib/rt.c
     CSR and other SYSTEM instructions     only ECALL and EBREAK exist
     registers x16..x31                    RV32E has x0..x15
@@ -63,7 +63,7 @@ def main(path):
             bad += 1
             print(f"  {base + off:08x}: {w:08x}   {why}")
     n = end // 4
-    print(f"{path}: {n} instructions, {'all runnable on TinyPulse' if not bad else f'{bad} NOT runnable'}")
+    print(f"{path}: {n} instructions, {'all runnable on Tiqora' if not bad else f'{bad} NOT runnable'}")
     return bad == 0
 
 if __name__ == "__main__":

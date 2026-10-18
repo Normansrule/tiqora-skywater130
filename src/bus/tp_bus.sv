@@ -22,6 +22,7 @@ module tp_bus
     // instruction master
     input  wire  logic        imem_req,
     input  wire  logic [31:0] imem_addr,
+    input  wire  logic        imem_ready,   // the core can take a word this clock
     output logic              imem_rvalid,
     output logic [31:0]       imem_rdata,
 
@@ -88,9 +89,15 @@ module tp_bus
     // ---- QSPI ownership ----
     logic busy, owner;                 // owner: 0 = fetch, 1 = data
 
+    // A prefetched instruction that arrives while the core is still busy is
+    // HELD: the QSPI controller's receive register keeps the word until the
+    // next transaction starts, so holding is one flag. No new fetch starts
+    // while a word is held. A data access may still start; it overwrites the
+    // register, so it drops the held word and the core refetches it.
+    logic i_hold;
     logic start_d, start_i;
     assign start_d = !busy && dmem_req && d_is_ext;
-    assign start_i = !busy && !start_d && imem_req && i_is_ext;
+    assign start_i = !busy && !i_hold && !start_d && imem_req && i_is_ext;
 
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -102,6 +109,12 @@ module tp_bus
         end else if (q_rvalid) begin
             busy <= 1'b0;
         end
+    end
+
+    always_ff @(posedge clk) begin
+        if (rst)                                     i_hold <= 1'b0;
+        else if (q_rvalid && !owner && !imem_ready)  i_hold <= 1'b1;
+        else if (imem_ready || start_d)              i_hold <= 1'b0;
     end
 
     // While busy the mux follows `owner`; on the starting cycle it follows
@@ -120,7 +133,7 @@ module tp_bus
     assign q_dev   = use_data ? (d_dev == tp_pkg::DEV_PSRAM) : (i_dev == tp_pkg::DEV_PSRAM);
 
     // ---- responses ----
-    assign imem_rvalid = (imem_req && i_is_rom) || (q_rvalid && !owner);
+    assign imem_rvalid = imem_ready && ((imem_req && i_is_rom) || (q_rvalid && !owner) || i_hold);
     assign imem_rdata  = i_is_rom ? rom_data : q_rdata;
 
     assign dmem_rvalid = (dmem_req && (d_is_sync || d_is_periph)) ||  // same cycle

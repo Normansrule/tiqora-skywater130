@@ -1,6 +1,6 @@
 // qspi_ctrl.sv — four-bit-wide external memory interface.
 //
-// TinyPulse has no on-chip program memory, because it cannot have one: a 32-word
+// Tiqora has no on-chip program memory, because it cannot have one: a 32-word
 // instruction RAM built from flip-flops is 1024 flops, which is more than a
 // 1x2 tile holds in total. So code lives in an external QSPI flash and data
 // in an external QSPI pseudo-static RAM, and this controller is the thing
@@ -293,8 +293,23 @@ module qspi_ctrl #(
                         rx      <= {rx[27:0], sd_in};
                         tx      <= {tx[27:0], 4'd0};
                         nib_cnt <= nib_cnt - 4'd1;
-                        if (nib_cnt == 4'd1)
-                            state <= Q_END;
+                        if (nib_cnt == 4'd1) begin
+                            if (!cur_dev && !cur_we) begin
+                                // Flash read: the word is complete in rx at this
+                                // edge, so answer now instead of spending a clock
+                                // in Q_END. Chip select stays low (the stream
+                                // continues), so no device hold time is involved.
+                                // RAM reads and writes keep Q_END: there chip
+                                // select rises, and it must not rise on the same
+                                // edge as the final clock fall.
+                                rvalid        <= 1'b1;
+                                state         <= Q_IDLE;
+                                stream_open   <= 1'b1;
+                                next_seq_addr <= {addr[23:2], 2'b00} + 24'd4;
+                            end else begin
+                                state <= Q_END;
+                            end
+                        end
                     end
                     phase <= ~phase;
                 end

@@ -30,11 +30,11 @@ uo = [("uo[0]","OUT0 / TRIG0","time","deadline trigger 0"),
 uio = [("uio[0]","CS0 flash"),("uio[1]","SD0"),("uio[2]","SD1"),("uio[3]","SCK"),
        ("uio[4]","SD2"),("uio[5]","SD3"),("uio[6]","CS1 RAM A"),("uio[7]","CS2 RAM B")]
 W, H = 1200, 760
-b = [f"<text x='600' y='48' fill='{FG}' font-size='28' font-weight='700' text-anchor='middle'>TinyPulse pinout — 24 signals</text>",
+b = [f"<text x='600' y='48' fill='{FG}' font-size='28' font-weight='700' text-anchor='middle'>Tiqora pinout — 24 signals</text>",
      f"<text x='600' y='76' fill='{DIM}' font-size='15' text-anchor='middle'>8 inputs · 8 outputs (GPIO or built-in function, per pin) · 8 to the QSPI Pmod</text>"]
 cx, cy, cw, ch = 430, 120, 340, 440
 b.append(f"<rect x='{cx}' y='{cy}' width='{cw}' height='{ch}' rx='18' fill='{CARD}' stroke='#30363d' stroke-width='3'/>")
-b.append(f"<text x='600' y='{cy+190}' fill='{FG}' font-size='30' font-weight='800' text-anchor='middle'>TinyPulse</text>")
+b.append(f"<text x='600' y='{cy+190}' fill='{FG}' font-size='30' font-weight='800' text-anchor='middle'>Tiqora</text>")
 b.append(f"<text x='600' y='{cy+222}' fill='{DIM}' font-size='15' text-anchor='middle'>RV32E microcontroller</text>")
 b.append(f"<text x='600' y='{cy+246}' fill='{DIM}' font-size='15' text-anchor='middle'>sky130 · 2×2 tiles · 50 MHz</text>")
 for i,(p,n,k,note) in enumerate(ui):
@@ -60,7 +60,7 @@ b.append(f"<text x='600' y='{H-22}' fill='{C['qspi']}' font-size='15' text-ancho
 leg = [("gpio","GPIO / timestamp capture"),("uart","UART"),("time","deadline trigger"),("status","status")]
 for i,(k,t) in enumerate(leg):
     b.append(f"<rect x='{40+i*220}' y='96' width='14' height='14' rx='3' fill='{C[k]}'/><text x='{60+i*220}' y='108' fill='{DIM}' font-size='13'>{t}</text>")
-open("docs/images/pinout.svg","w").write(svg(W,H,"".join(b),"TinyPulse pinout"))
+open("docs/images/pinout.svg","w").write(svg(W,H,"".join(b),"Tiqora pinout"))
 
 # ------------------------------------------------------------------ block diagram
 W, H = 1200, 560
@@ -73,7 +73,7 @@ def arrow(x1,y1,x2,y2,col=DIM,label=""):
     if label: s += f"<text x='{(x1+x2)/2+6}' y='{(y1+y2)/2-6}' fill='{DIM}' font-size='12'>{label}</text>"
     return s
 b = [f"<defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7' markerHeight='7' orient='auto-start-reverse'><path d='M0,0L10,5L0,10z' fill='{DIM}'/></marker></defs>",
-     f"<text x='600' y='44' fill='{FG}' font-size='26' font-weight='700' text-anchor='middle'>Inside TinyPulse</text>",
+     f"<text x='600' y='44' fill='{FG}' font-size='26' font-weight='700' text-anchor='middle'>Inside Tiqora</text>",
      box(60,90,300,150,C['core'],"CPU core","RV32E · 4 bits per clock · 8-clock ALU op"),
      box(60,300,300,110,C['reg'],"Register file","15 × 32 bits, rotating, 2 × 4-bit ports"),
      box(450,90,300,150,C['bus'],"Bus","address decode · data port has priority"),
@@ -85,7 +85,7 @@ b = [f"<defs><marker id='a' viewBox='0 0 10 10' refX='9' refY='5' markerWidth='7
      "<path d='M360 200 C 600 330, 700 255, 838 255' stroke='#ff5d73' stroke-width='3' fill='none' marker-end='url(#a)'/>",
      f"<text x='540' y='300' fill='{C['time']}' font-size='13'>Xpulse instructions (direct port)</text>",
      f"<text x='600' y='515' fill='{DIM}' font-size='14' text-anchor='middle'>0x0000_0000 flash · 0x1000_0000 RAM A · 0x1080_0000 RAM B · 0x3000_0000 GPIO/UART</text>"]
-open("docs/images/block_diagram.svg","w").write(svg(W,H,"".join(b),"TinyPulse block diagram"))
+open("docs/images/block_diagram.svg","w").write(svg(W,H,"".join(b),"Tiqora block diagram"))
 
 # ------------------------------------------------------------------ scale
 W, H = 1200, 460
@@ -95,7 +95,7 @@ b = [f"<text x='600' y='44' fill='{FG}' font-size='26' font-weight='700' text-an
 x0, base = 90, 390
 tw, th = 334.88*s, 225.76*s
 b.append(f"<rect x='{x0}' y='{base-th}' width='{tw}' height='{th}' fill='#1f2a44' stroke='{C['core']}' stroke-width='3'/>")
-b.append(f"<text x='{x0+tw/2}' y='{base-th/2}' fill='{FG}' font-size='17' font-weight='700' text-anchor='middle'>TinyPulse</text>")
+b.append(f"<text x='{x0+tw/2}' y='{base-th/2}' fill='{FG}' font-size='17' font-weight='700' text-anchor='middle'>Tiqora</text>")
 b.append(f"<text x='{x0+tw/2}' y='{base-th/2+22}' fill='{DIM}' font-size='13' text-anchor='middle'>0.335 × 0.226 mm</text>")
 b.append(f"<text x='{x0+tw/2}' y='{base-th/2+40}' fill='{DIM}' font-size='13' text-anchor='middle'>≈ 5,000 logic cells</text>")
 hx = x0+tw+80
@@ -108,7 +108,7 @@ rx = sx+sw+70
 b.append(f"<circle cx='{rx}' cy='{base-8}' r='{7.5*s/2+1}' fill='#ff5d73'/>")
 b.append(f"<text x='{rx}' y='{base+22}' fill='{FG}' font-size='14' text-anchor='middle'>red blood cell</text><text x='{rx}' y='{base+40}' fill='{DIM}' font-size='12' text-anchor='middle'>~7.5 µm</text>")
 b.append(f"<line x1='{x0}' y1='{base+60}' x2='{x0+110}' y2='{base+60}' stroke='{FG}' stroke-width='3'/><text x='{x0+120}' y='{base+65}' fill='{DIM}' font-size='13'>100 µm</text>")
-open("docs/images/scale.svg","w").write(svg(W,H,"".join(b),"TinyPulse size comparison"))
+open("docs/images/scale.svg","w").write(svg(W,H,"".join(b),"Tiqora size comparison"))
 
 # (the nibble adder is animated now: see animations.py)
 print("wrote pinout.svg, block_diagram.svg, scale.svg")
