@@ -87,6 +87,7 @@ python3 docs/tools/animations.py                   # the animated diagrams
 python3 -m pip install klayout pillow
 python3 docs/tools/layout_preview.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd    # cell-level layout
 python3 docs/tools/zoom_animation.py               # the tile-to-transistor zoom
+python3 docs/tools/datasheet_stills.py              # three stills of the zoom for the PDF datasheet
 python3 docs/tools/exploded_cell.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd     # the exploded flip-flop
 python3 docs/tools/build_explorer.py               # the interactive explorer page
 python3 docs/tools/silicon_views.py                # pin map at real positions, packaging, connections

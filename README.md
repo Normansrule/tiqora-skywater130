@@ -589,5 +589,3 @@ Sister project: [tinytapeout-tiqora](https://github.com/Normansrule/tinytapeout-
 
 Apache 2.0 licensed. Credits: the nibble-serial approach follows TinyQV by Michael Bell;
 the sky130 PDK is by SkyWater and Google; fabrication via Tiny Tapeout.
-
-Maintained by [@Normansrule](https://github.com/Normansrule) ([MAINTAINERS.md](MAINTAINERS.md)).

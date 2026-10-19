@@ -1,16 +1,11 @@
 # Tiqora — a RISC-V microcontroller the size of a grain of salt
 
-![RISC-V RV32E](https://img.shields.io/badge/RISC--V-RV32E-8a5cff)
-![Tiny Tapeout 2x2](https://img.shields.io/badge/Tiny_Tapeout-2%C3%972_tiles-3ddc97)
-![official RISC-V tests 37/37 at v19](https://img.shields.io/badge/official_RISC--V_tests-37%2F37_(v19)-4f8cff)
-![checks 240](https://img.shields.io/badge/self--checks-240_passing-4f8cff)
-![sky130](https://img.shields.io/badge/SkyWater-130_nm-ff9f1c)
-![FPGA Basys 3](https://img.shields.io/badge/FPGA-Basys_3_(Artix--7)-e34c26)
+**RISC-V RV32E · Tiny Tapeout 2×2 tiles · SkyWater 130 nm · runs on a Basys 3 FPGA (Artix-7)**
 
-![Zooming from the whole Tiqora chip down to single transistors](images/zoom.webp)
+![Zooming from the whole Tiqora chip down to single transistors: the whole tile, one block, single cells](images/zoom_steps.png)
 
 <sub>From the whole chip to single transistors: the design's ~5,500 real sky130 logic cells,
-drawn from SkyWater's own cell geometry with KLayout (`docs/tools/zoom_animation.py`).</sub>
+drawn from SkyWater's own cell geometry with KLayout (`docs/tools/zoom_animation.py`, stills by `docs/tools/datasheet_stills.py`).</sub>
 
 > **Tiqora was called TinyPulse until October 2026.** Old links redirect; the C API, opcodes,
 > register map and bootloader protocol are unchanged, and `#include "tinypulse.h"` still works.
@@ -38,7 +33,6 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
 | **Verification** | 240 self-checking checks and 6 cocotb tests on RTL; cocotb on a sky130 gate netlist; the official RISC-V tests (37/37 at v19) |
 
-**Contents:** [Status](#status) · [What it looks like](#what-it-looks-like) · [Explore it interactively](#explore-it-interactively) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Repository](#repository)
 
 ## Status
 
@@ -70,14 +64,12 @@ multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
 
 
 **The routed chip, once CI has built it.** Every push runs Tiny Tapeout's full hardening flow on GitHub, which
-places and wires every cell and publishes the result. Once the first `gds` run finishes, the
-image below is the actual layout that goes to the fab, and
-[this link opens it in 3D](https://normansrule.github.io/tiqora-skywater130/):
+places and wires every cell and publishes the actual layout that goes to the fab, with
+[a 3D view of it](https://normansrule.github.io/tiqora-skywater130/).
 
-![The routed Tiqora layout, rendered by the Tiny Tapeout CI](https://normansrule.github.io/tiqora-skywater130/gds_render.png)
-
-<sub>(If that image is missing, the `gds` workflow hasn't run yet, or GitHub Pages isn't
-enabled: Settings → Pages → Source: GitHub Actions.)</sub>
+Once the first `gds` run finishes, the render is at
+https://normansrule.github.io/tiqora-skywater130/gds_render.png. If it is missing, the `gds`
+workflow hasn't finished yet, or GitHub Pages isn't enabled: Settings → Pages → Source: GitHub Actions.
 
 **Before routing, block by block.** Every cell of the synthesized design, placed by block
 inside the 334.9 × 225.8 µm tile — the register file's regular grid of flip-flops on the left,
