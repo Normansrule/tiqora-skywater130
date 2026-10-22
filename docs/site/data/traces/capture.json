@@ -1,0 +1,607 @@
+{
+ "captions": [
+  {
+   "at": 1222,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "The word 0x00000000 arrives. No RV32E or Xpulse instruction has opcode 0, so the core runs one pass without writing anything, latches ILLEGAL and moves on."
+  },
+  {
+   "at": 1236,
+   "blocks": [
+    "tp_ncore",
+    "tp_soc"
+   ],
+   "text": "ILLEGAL (uo_out[6]) is high and stays high until reset. Execution continues with the next instruction."
+  },
+  {
+   "at": 1247,
+   "blocks": [
+    "sync_capture",
+    "sync_unit"
+   ],
+   "text": "ui_in[0] rises. Two synchronizer flip-flops later the edge is an event, stamped with the timebase."
+  },
+  {
+   "at": 1251,
+   "blocks": [
+    "sync_capture",
+    "sync_event_fifo"
+   ],
+   "text": "ui_in[1] rises 4 clocks later: the second event, stamped exactly 4 ticks after the first."
+  },
+  {
+   "at": 1255,
+   "blocks": [
+    "sync_event_fifo"
+   ],
+   "text": "ui_in[2] rises, but the queue is already full (2 of 2). This event is lost."
+  },
+  {
+   "at": 1258,
+   "blocks": [
+    "sync_event_fifo",
+    "tp_soc"
+   ],
+   "text": "OVF (uo_out[3]) goes high and stays high: software can tell an event was dropped."
+  },
+  {
+   "at": 1380,
+   "blocks": [
+    "sync_unit",
+    "sync_event_fifo"
+   ],
+   "text": "tpop x2: pin channel 0, rising, timestamp 1253."
+  },
+  {
+   "at": 1412,
+   "blocks": [
+    "sync_unit",
+    "sync_event_fifo"
+   ],
+   "text": "tpop x3: pin channel 1, rising, timestamp 1257."
+  },
+  {
+   "at": 1444,
+   "blocks": [
+    "sync_unit",
+    "sync_event_fifo"
+   ],
+   "text": "tpop x4: empty (0)."
+  },
+  {
+   "at": 1508,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "ecall: the core halts and raises HALT (uo_out[5])."
+  }
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "text": "the all-zero word raises ILLEGAL at uo_out[6]"
+  },
+  {
+   "ok": true,
+   "text": "three events into a 2-deep queue: full at 2, OVF at uo_out[3]"
+  },
+  {
+   "ok": true,
+   "text": "first TPOP: hardware event, channel 0, rising"
+  },
+  {
+   "ok": true,
+   "text": "second TPOP: channel 1, timestamp exactly 4 ticks later"
+  },
+  {
+   "ok": true,
+   "text": "third TPOP: queue empty, reads 0"
+  },
+  {
+   "ok": true,
+   "text": "a load from 0x5000_0000 stalls in MEM: no HALT, no ILLEGAL"
+  }
+ ],
+ "cycles": [
+  1218,
+  1514
+ ],
+ "event_format": {
+  "26:0": "timestamp, low 27 bits of the timebase",
+  "27": "1 = rising edge",
+  "30:28": "channel or tag",
+  "31": "source: 0 pin, 1 TMARK"
+ },
+ "id": "capture",
+ "kind": "recorded",
+ "kind_text": "Recorded from an RTL simulation, not computed in the browser",
+ "marks": [
+  {
+   "at": 1258,
+   "label": "overflow"
+  }
+ ],
+ "provenance": {
+  "command": "make -C test tour  (then python3 docs/tools/traces.py)",
+  "program": "sw/mktour.py",
+  "sampling": "one sample per clock, on the falling edge, after every flip-flop has updated; cycle 0 is the first rising edge after reset is released; 1 cycle = 20 ns at 50 MHz",
+  "simulator": "Icarus Verilog version 12.0 (stable) ()",
+  "sources": {
+   "src/boot/tp_bootrom.sv": "7c543243b98372361b1ee8b071fae004617e0c08a9e2edd2eb91b9bec6e18790",
+   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
+   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/core/tp_ncore.sv": "78238b1fae525f200681cc44d2059921c63923adb2b6400c52343a5b4822201b",
+   "src/core/tp_nregfile.sv": "dd376d3ba50e2ee57d1ebb5ac33eb63aeb4f47236b690058ef4b26b1dc2df3fa",
+   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
+   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
+   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
+   "src/sync/sync_compare.sv": "532fda2a6751b3b1134744324ca9260de87b18ccb572aa18e21f0da8df998224",
+   "src/sync/sync_event_fifo.sv": "8072350d74f351b9ad8bbfbf90613ebb21058e3ccea1e7ea7e41ffdc945d1304",
+   "src/sync/sync_timebase.sv": "c7a8d227e898022290a6fd1fade22e451c9b5adf532139151d7c8872ceb1f1ef",
+   "src/sync/sync_unit.sv": "9b659ce29646ac5f536a629f6fcf83acc039761c72c61e4e8a1b4b592be4f270",
+   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
+   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
+   "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
+   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
+   "test/tb_tour.sv": "e4d90d112b50a4b2fa35432b94bc1d1be1a6be99f03f7422588dcc771d7d99d6"
+  },
+  "testbench": "test/tb_tour.sv"
+ },
+ "schema": 1,
+ "signals": [
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     1218,
+     "009c bne  x13, x11, fail"
+    ],
+    [
+     1222,
+     "00a0 .word 0"
+    ],
+    [
+     1254,
+     "00a4 time x1"
+    ],
+    [
+     1285,
+     "00a8 addi x1, x1, 96"
+    ],
+    [
+     1303,
+     "00ac twait x1"
+    ],
+    [
+     1366,
+     "00b0 tpop x2"
+    ],
+    [
+     1397,
+     "00b4 tpop x3"
+    ],
+    [
+     1429,
+     "00b8 tpop x4"
+    ],
+    [
+     1461,
+     "00bc tstat x15"
+    ],
+    [
+     1493,
+     "00c0 ecall"
+    ]
+   ],
+   "id": "instr",
+   "kind": "text",
+   "label": "instruction",
+   "meaning": "the instruction in ir, labelled from sw/mktour.py's listing",
+   "width": 0
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1222,
+     1
+    ],
+    [
+     1228,
+     2
+    ],
+    [
+     1236,
+     0
+    ],
+    [
+     1254,
+     1
+    ],
+    [
+     1260,
+     2
+    ],
+    [
+     1268,
+     6
+    ],
+    [
+     1269,
+     1
+    ],
+    [
+     1276,
+     2
+    ],
+    [
+     1284,
+     0
+    ],
+    [
+     1285,
+     1
+    ],
+    [
+     1292,
+     2
+    ],
+    [
+     1300,
+     0
+    ],
+    [
+     1303,
+     1
+    ],
+    [
+     1308,
+     2
+    ],
+    [
+     1316,
+     6
+    ],
+    [
+     1317,
+     3
+    ],
+    [
+     1365,
+     0
+    ],
+    [
+     1366,
+     1
+    ],
+    [
+     1372,
+     2
+    ],
+    [
+     1380,
+     6
+    ],
+    [
+     1381,
+     1
+    ],
+    [
+     1388,
+     2
+    ],
+    [
+     1396,
+     0
+    ],
+    [
+     1397,
+     1
+    ],
+    [
+     1404,
+     2
+    ],
+    [
+     1412,
+     6
+    ],
+    [
+     1413,
+     1
+    ],
+    [
+     1420,
+     2
+    ],
+    [
+     1428,
+     0
+    ],
+    [
+     1429,
+     1
+    ],
+    [
+     1436,
+     2
+    ],
+    [
+     1444,
+     6
+    ],
+    [
+     1445,
+     1
+    ],
+    [
+     1452,
+     2
+    ],
+    [
+     1460,
+     0
+    ],
+    [
+     1461,
+     1
+    ],
+    [
+     1468,
+     2
+    ],
+    [
+     1476,
+     6
+    ],
+    [
+     1477,
+     1
+    ],
+    [
+     1484,
+     2
+    ],
+    [
+     1492,
+     0
+    ],
+    [
+     1493,
+     1
+    ],
+    [
+     1500,
+     2
+    ],
+    [
+     1508,
+     4
+    ]
+   ],
+   "enum": [
+    "FETCH",
+    "ALIGN",
+    "PASS",
+    "TWAIT",
+    "HALT",
+    "MEM",
+    "XP",
+    "SHIFT"
+   ],
+   "id": "state",
+   "kind": "enum",
+   "label": "core state",
+   "meaning": "tp_ncore's state register",
+   "width": 3
+  },
+  {
+   "block": "sync_capture",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1247,
+     1
+    ]
+   ],
+   "id": "ui0",
+   "kind": "bit",
+   "label": "ui_in[0] IN0",
+   "meaning": "capture channel 0",
+   "width": 1
+  },
+  {
+   "block": "sync_capture",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1251,
+     1
+    ]
+   ],
+   "id": "ui1",
+   "kind": "bit",
+   "label": "ui_in[1] IN1",
+   "meaning": "capture channel 1",
+   "width": 1
+  },
+  {
+   "block": "sync_capture",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1255,
+     1
+    ]
+   ],
+   "id": "ui2",
+   "kind": "bit",
+   "label": "ui_in[2] IN2",
+   "meaning": "capture channel 2",
+   "width": 1
+  },
+  {
+   "block": "sync_event_fifo",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1250,
+     1
+    ],
+    [
+     1254,
+     2
+    ],
+    [
+     1381,
+     1
+    ],
+    [
+     1413,
+     0
+    ]
+   ],
+   "id": "qcount",
+   "kind": "bus",
+   "label": "queue count",
+   "meaning": "entries in the event queue",
+   "width": 2
+  },
+  {
+   "block": "sync_unit",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1250,
+     1
+    ],
+    [
+     1413,
+     0
+    ]
+   ],
+   "id": "evt",
+   "kind": "bit",
+   "label": "EVT (uo_out[2])",
+   "meaning": "queue not empty",
+   "width": 1
+  },
+  {
+   "block": "sync_event_fifo",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1258,
+     1
+    ]
+   ],
+   "id": "ovf",
+   "kind": "bit",
+   "label": "OVF (uo_out[3])",
+   "meaning": "an event was lost",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1236,
+     1
+    ]
+   ],
+   "id": "ill",
+   "kind": "bit",
+   "label": "ILLEGAL (uo_out[6])",
+   "meaning": "illegal instruction seen",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     1218,
+     0
+    ],
+    [
+     1508,
+     1
+    ]
+   ],
+   "id": "halt",
+   "kind": "bit",
+   "label": "HALT (uo_out[5])",
+   "meaning": "ECALL/EBREAK reached",
+   "width": 1
+  },
+  {
+   "block": "sync_unit",
+   "changes": [
+    [
+     1218,
+     null
+    ],
+    [
+     1380,
+     134218981
+    ],
+    [
+     1381,
+     null
+    ],
+    [
+     1412,
+     402654441
+    ],
+    [
+     1413,
+     null
+    ],
+    [
+     1444,
+     0
+    ],
+    [
+     1445,
+     null
+    ]
+   ],
+   "id": "t_rdata",
+   "kind": "bus",
+   "label": "Xpulse result",
+   "meaning": "t_rdata when an Xpulse op is valid",
+   "width": 32
+  }
+ ],
+ "summary": "An illegal instruction raises its pin and is skipped; then three edges arrive at a two-deep queue: two are kept in order with exact timestamps, the third is lost and OVF says so.",
+ "title": "Capture, queue, overflow"
+}

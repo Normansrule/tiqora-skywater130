@@ -1,0 +1,616 @@
+{
+ "captions": [
+  {
+   "at": 98,
+   "blocks": [
+    "qspi_ctrl",
+    "tp_bus"
+   ],
+   "text": "A fetch from a new address: chip select falls and the controller sends 8 nibbles, address bits 23..0 and the mode byte 0xA0, which keeps the flash in continuous read."
+  },
+  {
+   "at": 114,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Four dummy clocks: the flash turns the bus around. uio_oe drops, so the SD pins become inputs."
+  },
+  {
+   "at": 122,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Eight data nibbles in. RV32 is little endian and the flash streams ascending addresses, so the first byte on the wire is the least significant; within a byte the high nibble comes first: b 7 0 2 0 0 3 0 is 0x300002b7."
+  },
+  {
+   "at": 138,
+   "blocks": [
+    "tp_bus",
+    "tp_ncore"
+   ],
+   "text": "imem_rvalid: 0x300002b7 (lui x5, 0x30000) reaches the core."
+  },
+  {
+   "at": 140,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "The next fetch is sequential, so chip select stayed low and there is no preamble at all: the flash simply clocks out the next word, 8 nibbles instead of 20. This is the streaming that makes straight-line code fast."
+  },
+  {
+   "at": 156,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "0x00800313 (addi x6, x0, 8) delivered, 17 clocks after its data phase began."
+  }
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "text": "the program reaches ECALL, not the fail handler"
+  }
+ ],
+ "cycles": [
+  96,
+  158
+ ],
+ "id": "fetch",
+ "kind": "recorded",
+ "kind_text": "Recorded from an RTL simulation, not computed in the browser",
+ "marks": [],
+ "protocol": {
+  "byte_order": "least significant byte first; high nibble first within a byte",
+  "flash_read": "addr[23:0] + mode 0xA0 (8 nibbles), 4 dummy clocks, 8 data nibbles",
+  "ram_read": "0xEB + addr[23:0], 6 dummy clocks, 8 data nibbles",
+  "ram_write": "0x38 + addr[23:0], 2 nibbles per byte",
+  "source": "src/bus/qspi_ctrl.sv header",
+  "streamed_read": "8 data nibbles, chip select held low"
+ },
+ "provenance": {
+  "command": "make -C test tour  (then python3 docs/tools/traces.py)",
+  "program": "sw/mktour.py",
+  "sampling": "one sample per clock, on the falling edge, after every flip-flop has updated; cycle 0 is the first rising edge after reset is released; 1 cycle = 20 ns at 50 MHz",
+  "simulator": "Icarus Verilog version 12.0 (stable) ()",
+  "sources": {
+   "src/boot/tp_bootrom.sv": "7c543243b98372361b1ee8b071fae004617e0c08a9e2edd2eb91b9bec6e18790",
+   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
+   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/core/tp_ncore.sv": "78238b1fae525f200681cc44d2059921c63923adb2b6400c52343a5b4822201b",
+   "src/core/tp_nregfile.sv": "dd376d3ba50e2ee57d1ebb5ac33eb63aeb4f47236b690058ef4b26b1dc2df3fa",
+   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
+   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
+   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
+   "src/sync/sync_compare.sv": "532fda2a6751b3b1134744324ca9260de87b18ccb572aa18e21f0da8df998224",
+   "src/sync/sync_event_fifo.sv": "8072350d74f351b9ad8bbfbf90613ebb21058e3ccea1e7ea7e41ffdc945d1304",
+   "src/sync/sync_timebase.sv": "c7a8d227e898022290a6fd1fade22e451c9b5adf532139151d7c8872ceb1f1ef",
+   "src/sync/sync_unit.sv": "9b659ce29646ac5f536a629f6fcf83acc039761c72c61e4e8a1b4b592be4f270",
+   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
+   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
+   "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
+   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
+   "test/tb_tour.sv": "e4d90d112b50a4b2fa35432b94bc1d1be1a6be99f03f7422588dcc771d7d99d6"
+  },
+  "testbench": "test/tb_tour.sv"
+ },
+ "schema": 1,
+ "signals": [
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     96,
+     1
+    ],
+    [
+     98,
+     0
+    ]
+   ],
+   "id": "cs_f",
+   "kind": "bit",
+   "label": "CS0 flash (uio[0])",
+   "meaning": "flash chip select, active low",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     96,
+     0
+    ],
+    [
+     99,
+     1
+    ],
+    [
+     100,
+     0
+    ],
+    [
+     101,
+     1
+    ],
+    [
+     102,
+     0
+    ],
+    [
+     103,
+     1
+    ],
+    [
+     104,
+     0
+    ],
+    [
+     105,
+     1
+    ],
+    [
+     106,
+     0
+    ],
+    [
+     107,
+     1
+    ],
+    [
+     108,
+     0
+    ],
+    [
+     109,
+     1
+    ],
+    [
+     110,
+     0
+    ],
+    [
+     111,
+     1
+    ],
+    [
+     112,
+     0
+    ],
+    [
+     113,
+     1
+    ],
+    [
+     114,
+     0
+    ],
+    [
+     115,
+     1
+    ],
+    [
+     116,
+     0
+    ],
+    [
+     117,
+     1
+    ],
+    [
+     118,
+     0
+    ],
+    [
+     119,
+     1
+    ],
+    [
+     120,
+     0
+    ],
+    [
+     121,
+     1
+    ],
+    [
+     122,
+     0
+    ],
+    [
+     123,
+     1
+    ],
+    [
+     124,
+     0
+    ],
+    [
+     125,
+     1
+    ],
+    [
+     126,
+     0
+    ],
+    [
+     127,
+     1
+    ],
+    [
+     128,
+     0
+    ],
+    [
+     129,
+     1
+    ],
+    [
+     130,
+     0
+    ],
+    [
+     131,
+     1
+    ],
+    [
+     132,
+     0
+    ],
+    [
+     133,
+     1
+    ],
+    [
+     134,
+     0
+    ],
+    [
+     135,
+     1
+    ],
+    [
+     136,
+     0
+    ],
+    [
+     137,
+     1
+    ],
+    [
+     138,
+     0
+    ],
+    [
+     141,
+     1
+    ],
+    [
+     142,
+     0
+    ],
+    [
+     143,
+     1
+    ],
+    [
+     144,
+     0
+    ],
+    [
+     145,
+     1
+    ],
+    [
+     146,
+     0
+    ],
+    [
+     147,
+     1
+    ],
+    [
+     148,
+     0
+    ],
+    [
+     149,
+     1
+    ],
+    [
+     150,
+     0
+    ],
+    [
+     151,
+     1
+    ],
+    [
+     152,
+     0
+    ],
+    [
+     153,
+     1
+    ],
+    [
+     154,
+     0
+    ],
+    [
+     155,
+     1
+    ],
+    [
+     156,
+     0
+    ]
+   ],
+   "id": "sck",
+   "kind": "bit",
+   "label": "SCK (uio[3])",
+   "meaning": "QSPI clock",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     96,
+     0
+    ],
+    [
+     98,
+     1
+    ],
+    [
+     114,
+     0
+    ]
+   ],
+   "id": "sd_oe",
+   "kind": "bit",
+   "label": "chip drives SD",
+   "meaning": "1: the chip drives the data lines; 0: the flash does",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     96,
+     15
+    ],
+    [
+     98,
+     0
+    ],
+    [
+     110,
+     10
+    ],
+    [
+     112,
+     0
+    ],
+    [
+     114,
+     7
+    ],
+    [
+     123,
+     11
+    ],
+    [
+     125,
+     7
+    ],
+    [
+     127,
+     0
+    ],
+    [
+     129,
+     2
+    ],
+    [
+     131,
+     0
+    ],
+    [
+     135,
+     3
+    ],
+    [
+     137,
+     0
+    ],
+    [
+     141,
+     1
+    ],
+    [
+     143,
+     3
+    ],
+    [
+     145,
+     0
+    ],
+    [
+     147,
+     3
+    ],
+    [
+     149,
+     8
+    ],
+    [
+     151,
+     0
+    ]
+   ],
+   "id": "sd",
+   "kind": "bus",
+   "label": "SD3..SD0",
+   "meaning": "the four data lines at the pins",
+   "width": 4
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     96,
+     5
+    ],
+    [
+     98,
+     1
+    ],
+    [
+     114,
+     2
+    ],
+    [
+     122,
+     3
+    ],
+    [
+     138,
+     0
+    ],
+    [
+     140,
+     3
+    ],
+    [
+     156,
+     0
+    ],
+    [
+     158,
+     3
+    ]
+   ],
+   "enum": [
+    "IDLE",
+    "PREFIX",
+    "DUMMY",
+    "DATA",
+    "END",
+    "DESEL",
+    "WLOAD",
+    "WSHIFT",
+    "WGAP"
+   ],
+   "id": "q_state",
+   "kind": "enum",
+   "label": "qspi state",
+   "meaning": "qspi_ctrl's sequencer",
+   "width": 4
+  },
+  {
+   "block": "tp_bus",
+   "changes": [
+    [
+     96,
+     0
+    ],
+    [
+     138,
+     1
+    ],
+    [
+     139,
+     0
+    ],
+    [
+     156,
+     1
+    ],
+    [
+     157,
+     0
+    ]
+   ],
+   "id": "imem_rvalid",
+   "kind": "bit",
+   "label": "imem_rvalid",
+   "meaning": "word delivered to the core",
+   "width": 1
+  },
+  {
+   "block": "tp_bus",
+   "changes": [
+    [
+     96,
+     null
+    ],
+    [
+     138,
+     805307063
+    ],
+    [
+     139,
+     null
+    ],
+    [
+     156,
+     8389395
+    ],
+    [
+     157,
+     null
+    ]
+   ],
+   "id": "imem_rdata",
+   "kind": "bus",
+   "label": "imem_rdata",
+   "meaning": "the word, shown when valid",
+   "width": 32
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     96,
+     0
+    ],
+    [
+     139,
+     1
+    ],
+    [
+     140,
+     2
+    ],
+    [
+     148,
+     0
+    ],
+    [
+     157,
+     1
+    ]
+   ],
+   "enum": [
+    "FETCH",
+    "ALIGN",
+    "PASS",
+    "TWAIT",
+    "HALT",
+    "MEM",
+    "XP",
+    "SHIFT"
+   ],
+   "id": "state",
+   "kind": "enum",
+   "label": "core state",
+   "meaning": "tp_ncore's state register",
+   "width": 3
+  }
+ ],
+ "summary": "Two instruction fetches at the pins: one with a full address preamble, one streamed. Watch the byte order: least significant byte first, high nibble first.",
+ "title": "Instruction fetch over QSPI"
+}

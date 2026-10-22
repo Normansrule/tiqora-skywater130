@@ -1,0 +1,42 @@
+{
+ "chip": "Tiqora",
+ "fixtures": [
+  {
+   "file": "reset.json",
+   "id": "reset",
+   "title": "Reset and memory wake-up"
+  },
+  {
+   "file": "fetch.json",
+   "id": "fetch",
+   "title": "Instruction fetch over QSPI"
+  },
+  {
+   "file": "nibble-add.json",
+   "id": "nibble-add",
+   "title": "A 32-bit add, four bits per clock"
+  },
+  {
+   "file": "deadline.json",
+   "id": "deadline",
+   "title": "A deadline fired on the exact tick"
+  },
+  {
+   "file": "capture.json",
+   "id": "capture",
+   "title": "Capture, queue, overflow"
+  },
+  {
+   "file": "stall.json",
+   "id": "stall",
+   "title": "A stall, and the only recovery"
+  },
+  {
+   "file": "overview.json",
+   "id": "overview",
+   "title": "The whole tour program, reset to HALT"
+  }
+ ],
+ "schema": 1,
+ "tour_checks": 15
+}

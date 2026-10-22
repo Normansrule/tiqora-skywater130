@@ -1,0 +1,1482 @@
+{
+ "captions": [
+  {
+   "at": 138,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "Program starts from flash address 0."
+  },
+  {
+   "at": 540,
+   "blocks": [
+    "sync_compare"
+   ],
+   "text": "TRIG0 on the deadline tick."
+  },
+  {
+   "at": 1236,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "Illegal word: ILLEGAL latched, skipped."
+  },
+  {
+   "at": 1258,
+   "blocks": [
+    "sync_event_fifo"
+   ],
+   "text": "Third event lost: OVF."
+  },
+  {
+   "at": 1508,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "ecall: HALT."
+  }
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "text": "the memory wake-up sequence finishes"
+  },
+  {
+   "ok": true,
+   "text": "flash in continuous read, RAM in QPI mode"
+  },
+  {
+   "ok": true,
+   "text": "TRIG0 pin rises on exactly the deadline tick"
+  },
+  {
+   "ok": true,
+   "text": "the program reaches ECALL, not the fail handler"
+  },
+  {
+   "ok": true,
+   "text": "one UART byte 'K' at uo_out[4]"
+  },
+  {
+   "ok": true,
+   "text": "TRIG0 pulse is 8 ticks wide at the pin"
+  },
+  {
+   "ok": true,
+   "text": "the core is parked in TWAIT at the deadline and leaves it"
+  },
+  {
+   "ok": true,
+   "text": "x9 + x10 = 0x22222221 reached RAM A, least significant byte first"
+  },
+  {
+   "ok": true,
+   "text": "the all-zero word raises ILLEGAL at uo_out[6]"
+  },
+  {
+   "ok": true,
+   "text": "three events into a 2-deep queue: full at 2, OVF at uo_out[3]"
+  },
+  {
+   "ok": true,
+   "text": "first TPOP: hardware event, channel 0, rising"
+  },
+  {
+   "ok": true,
+   "text": "second TPOP: channel 1, timestamp exactly 4 ticks later"
+  },
+  {
+   "ok": true,
+   "text": "third TPOP: queue empty, reads 0"
+  },
+  {
+   "ok": true,
+   "text": "a load from 0x5000_0000 stalls in MEM: no HALT, no ILLEGAL"
+  },
+  {
+   "ok": true,
+   "text": "reset recovers: FETCH, memory wake-up restarts"
+  }
+ ],
+ "cycles": [
+  -4,
+  1512
+ ],
+ "id": "overview",
+ "kind": "recorded",
+ "kind_text": "Recorded from an RTL simulation, not computed in the browser",
+ "marks": [],
+ "program": [
+  {
+   "addr": 0,
+   "asm": "lui  x5, 0x30000",
+   "cycle": 139,
+   "word": "300002b7"
+  },
+  {
+   "addr": 4,
+   "asm": "addi x6, x0, 8",
+   "cycle": 157,
+   "word": "00800313"
+  },
+  {
+   "addr": 8,
+   "asm": "sw   x6, 0x14(x5)",
+   "cycle": 175,
+   "word": "0062aa23"
+  },
+  {
+   "addr": 12,
+   "asm": "addi x7, x0, 7",
+   "cycle": 207,
+   "word": "00700393"
+  },
+  {
+   "addr": 16,
+   "asm": "tcfg x7",
+   "cycle": 225,
+   "word": "0403f00b"
+  },
+  {
+   "addr": 20,
+   "asm": "addi x8, x0, 8",
+   "cycle": 243,
+   "word": "00800413"
+  },
+  {
+   "addr": 24,
+   "asm": "tpw  x8",
+   "cycle": 261,
+   "word": "0604700b"
+  },
+  {
+   "addr": 28,
+   "asm": "addi x14, x0, 'K'",
+   "cycle": 279,
+   "word": "04b00713"
+  },
+  {
+   "addr": 32,
+   "asm": "sw   x14, 0x0c(x5)",
+   "cycle": 297,
+   "word": "00e2a623"
+  },
+  {
+   "addr": 36,
+   "asm": "time x1",
+   "cycle": 327,
+   "word": "0000008b"
+  },
+  {
+   "addr": 40,
+   "asm": "addi x1, x1, 200",
+   "cycle": 357,
+   "word": "0c808093"
+  },
+  {
+   "addr": 44,
+   "asm": "tarm x1, x0",
+   "cycle": 375,
+   "word": "0000c00b"
+  },
+  {
+   "addr": 48,
+   "asm": "twait x1",
+   "cycle": 393,
+   "word": "0000b00b"
+  },
+  {
+   "addr": 52,
+   "asm": "lui  x9, 0x12345",
+   "cycle": 542,
+   "word": "123454b7"
+  },
+  {
+   "addr": 56,
+   "asm": "addi x9, x9, 0x678",
+   "cycle": 560,
+   "word": "67848493"
+  },
+  {
+   "addr": 60,
+   "asm": "lui  x10, 0x0fedd",
+   "cycle": 578,
+   "word": "0fedd537"
+  },
+  {
+   "addr": 64,
+   "asm": "addi x10, x10, -0x457",
+   "cycle": 596,
+   "word": "ba950513"
+  },
+  {
+   "addr": 68,
+   "asm": "add  x11, x9, x10",
+   "cycle": 614,
+   "word": "00a485b3"
+  },
+  {
+   "addr": 72,
+   "asm": "lui  x3, 0x00000",
+   "cycle": 632,
+   "word": "000001b7"
+  },
+  {
+   "addr": 76,
+   "asm": "addi x3, x3, -0x1",
+   "cycle": 650,
+   "word": "fff18193"
+  },
+  {
+   "addr": 80,
+   "asm": "lui  x4, 0x00000",
+   "cycle": 668,
+   "word": "00000237"
+  },
+  {
+   "addr": 84,
+   "asm": "addi x4, x4, 0x1",
+   "cycle": 686,
+   "word": "00120213"
+  },
+  {
+   "addr": 88,
+   "asm": "add  x6, x3, x4",
+   "cycle": 704,
+   "word": "00418333"
+  },
+  {
+   "addr": 92,
+   "asm": "sub  x7, x3, x4",
+   "cycle": 722,
+   "word": "404183b3"
+  },
+  {
+   "addr": 96,
+   "asm": "lui  x3, 0x80000",
+   "cycle": 740,
+   "word": "800001b7"
+  },
+  {
+   "addr": 100,
+   "asm": "addi x3, x3, 0x0",
+   "cycle": 758,
+   "word": "00018193"
+  },
+  {
+   "addr": 104,
+   "asm": "lui  x4, 0x80000",
+   "cycle": 776,
+   "word": "80000237"
+  },
+  {
+   "addr": 108,
+   "asm": "addi x4, x4, 0x0",
+   "cycle": 794,
+   "word": "00020213"
+  },
+  {
+   "addr": 112,
+   "asm": "add  x6, x3, x4",
+   "cycle": 812,
+   "word": "00418333"
+  },
+  {
+   "addr": 116,
+   "asm": "sub  x7, x3, x4",
+   "cycle": 830,
+   "word": "404183b3"
+  },
+  {
+   "addr": 120,
+   "asm": "lui  x3, 0x00000",
+   "cycle": 848,
+   "word": "000001b7"
+  },
+  {
+   "addr": 124,
+   "asm": "addi x3, x3, 0xf",
+   "cycle": 866,
+   "word": "00f18193"
+  },
+  {
+   "addr": 128,
+   "asm": "lui  x4, 0x00000",
+   "cycle": 884,
+   "word": "00000237"
+  },
+  {
+   "addr": 132,
+   "asm": "addi x4, x4, 0x10",
+   "cycle": 902,
+   "word": "01020213"
+  },
+  {
+   "addr": 136,
+   "asm": "add  x6, x3, x4",
+   "cycle": 920,
+   "word": "00418333"
+  },
+  {
+   "addr": 140,
+   "asm": "sub  x7, x3, x4",
+   "cycle": 938,
+   "word": "404183b3"
+  },
+  {
+   "addr": 144,
+   "asm": "lui  x12, 0x10000",
+   "cycle": 956,
+   "word": "10000637"
+  },
+  {
+   "addr": 148,
+   "asm": "sw   x11, 0(x12)",
+   "cycle": 974,
+   "word": "00b62023"
+  },
+  {
+   "addr": 152,
+   "asm": "lw   x13, 0(x12)",
+   "cycle": 1071,
+   "word": "00062683"
+  },
+  {
+   "addr": 156,
+   "asm": "bne  x13, x11, fail",
+   "cycle": 1193,
+   "word": "04b69063"
+  },
+  {
+   "addr": 160,
+   "asm": ".word 0",
+   "cycle": 1222,
+   "word": "00000000"
+  },
+  {
+   "addr": 164,
+   "asm": "time x1",
+   "cycle": 1254,
+   "word": "0000008b"
+  },
+  {
+   "addr": 168,
+   "asm": "addi x1, x1, 96",
+   "cycle": 1285,
+   "word": "06008093"
+  },
+  {
+   "addr": 172,
+   "asm": "twait x1",
+   "cycle": 1303,
+   "word": "0000b00b"
+  },
+  {
+   "addr": 176,
+   "asm": "tpop x2",
+   "cycle": 1366,
+   "word": "0000110b"
+  },
+  {
+   "addr": 180,
+   "asm": "tpop x3",
+   "cycle": 1397,
+   "word": "0000118b"
+  },
+  {
+   "addr": 184,
+   "asm": "tpop x4",
+   "cycle": 1429,
+   "word": "0000120b"
+  },
+  {
+   "addr": 188,
+   "asm": "tstat x15",
+   "cycle": 1461,
+   "word": "0000278b"
+  },
+  {
+   "addr": 192,
+   "asm": "ecall",
+   "cycle": 1493,
+   "word": "00000073"
+  }
+ ],
+ "provenance": {
+  "command": "make -C test tour  (then python3 docs/tools/traces.py)",
+  "program": "sw/mktour.py",
+  "sampling": "one sample per clock, on the falling edge, after every flip-flop has updated; cycle 0 is the first rising edge after reset is released; 1 cycle = 20 ns at 50 MHz",
+  "simulator": "Icarus Verilog version 12.0 (stable) ()",
+  "sources": {
+   "src/boot/tp_bootrom.sv": "7c543243b98372361b1ee8b071fae004617e0c08a9e2edd2eb91b9bec6e18790",
+   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
+   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/core/tp_ncore.sv": "78238b1fae525f200681cc44d2059921c63923adb2b6400c52343a5b4822201b",
+   "src/core/tp_nregfile.sv": "dd376d3ba50e2ee57d1ebb5ac33eb63aeb4f47236b690058ef4b26b1dc2df3fa",
+   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
+   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
+   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
+   "src/sync/sync_compare.sv": "532fda2a6751b3b1134744324ca9260de87b18ccb572aa18e21f0da8df998224",
+   "src/sync/sync_event_fifo.sv": "8072350d74f351b9ad8bbfbf90613ebb21058e3ccea1e7ea7e41ffdc945d1304",
+   "src/sync/sync_timebase.sv": "c7a8d227e898022290a6fd1fade22e451c9b5adf532139151d7c8872ceb1f1ef",
+   "src/sync/sync_unit.sv": "9b659ce29646ac5f536a629f6fcf83acc039761c72c61e4e8a1b4b592be4f270",
+   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
+   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
+   "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
+   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
+   "test/tb_tour.sv": "e4d90d112b50a4b2fa35432b94bc1d1be1a6be99f03f7422588dcc771d7d99d6"
+  },
+  "testbench": "test/tb_tour.sv"
+ },
+ "schema": 1,
+ "signals": [
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     -4,
+     "(reset)"
+    ],
+    [
+     139,
+     "0000 lui  x5, 0x30000"
+    ],
+    [
+     157,
+     "0004 addi x6, x0, 8"
+    ],
+    [
+     175,
+     "0008 sw   x6, 0x14(x5)"
+    ],
+    [
+     207,
+     "000c addi x7, x0, 7"
+    ],
+    [
+     225,
+     "0010 tcfg x7"
+    ],
+    [
+     243,
+     "0014 addi x8, x0, 8"
+    ],
+    [
+     261,
+     "0018 tpw  x8"
+    ],
+    [
+     279,
+     "001c addi x14, x0, 'K'"
+    ],
+    [
+     297,
+     "0020 sw   x14, 0x0c(x5)"
+    ],
+    [
+     327,
+     "0024 time x1"
+    ],
+    [
+     357,
+     "0028 addi x1, x1, 200"
+    ],
+    [
+     375,
+     "002c tarm x1, x0"
+    ],
+    [
+     393,
+     "0030 twait x1"
+    ],
+    [
+     542,
+     "0034 lui  x9, 0x12345"
+    ],
+    [
+     560,
+     "0038 addi x9, x9, 0x678"
+    ],
+    [
+     578,
+     "003c lui  x10, 0x0fedd"
+    ],
+    [
+     596,
+     "0040 addi x10, x10, -0x457"
+    ],
+    [
+     614,
+     "0044 add  x11, x9, x10"
+    ],
+    [
+     632,
+     "0048 lui  x3, 0x00000"
+    ],
+    [
+     650,
+     "004c addi x3, x3, -0x1"
+    ],
+    [
+     668,
+     "0050 lui  x4, 0x00000"
+    ],
+    [
+     686,
+     "0054 addi x4, x4, 0x1"
+    ],
+    [
+     704,
+     "0058 add  x6, x3, x4"
+    ],
+    [
+     722,
+     "005c sub  x7, x3, x4"
+    ],
+    [
+     740,
+     "0060 lui  x3, 0x80000"
+    ],
+    [
+     758,
+     "0064 addi x3, x3, 0x0"
+    ],
+    [
+     776,
+     "0068 lui  x4, 0x80000"
+    ],
+    [
+     794,
+     "006c addi x4, x4, 0x0"
+    ],
+    [
+     812,
+     "0070 add  x6, x3, x4"
+    ],
+    [
+     830,
+     "0074 sub  x7, x3, x4"
+    ],
+    [
+     848,
+     "0078 lui  x3, 0x00000"
+    ],
+    [
+     866,
+     "007c addi x3, x3, 0xf"
+    ],
+    [
+     884,
+     "0080 lui  x4, 0x00000"
+    ],
+    [
+     902,
+     "0084 addi x4, x4, 0x10"
+    ],
+    [
+     920,
+     "0088 add  x6, x3, x4"
+    ],
+    [
+     938,
+     "008c sub  x7, x3, x4"
+    ],
+    [
+     956,
+     "0090 lui  x12, 0x10000"
+    ],
+    [
+     974,
+     "0094 sw   x11, 0(x12)"
+    ],
+    [
+     1071,
+     "0098 lw   x13, 0(x12)"
+    ],
+    [
+     1193,
+     "009c bne  x13, x11, fail"
+    ],
+    [
+     1222,
+     "00a0 .word 0"
+    ],
+    [
+     1254,
+     "00a4 time x1"
+    ],
+    [
+     1285,
+     "00a8 addi x1, x1, 96"
+    ],
+    [
+     1303,
+     "00ac twait x1"
+    ],
+    [
+     1366,
+     "00b0 tpop x2"
+    ],
+    [
+     1397,
+     "00b4 tpop x3"
+    ],
+    [
+     1429,
+     "00b8 tpop x4"
+    ],
+    [
+     1461,
+     "00bc tstat x15"
+    ],
+    [
+     1493,
+     "00c0 ecall"
+    ]
+   ],
+   "id": "instr",
+   "kind": "text",
+   "label": "instruction",
+   "meaning": "the instruction in ir, labelled from sw/mktour.py's listing",
+   "width": 0
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     139,
+     1
+    ],
+    [
+     140,
+     2
+    ],
+    [
+     148,
+     0
+    ],
+    [
+     157,
+     1
+    ],
+    [
+     164,
+     2
+    ],
+    [
+     172,
+     0
+    ],
+    [
+     175,
+     1
+    ],
+    [
+     180,
+     2
+    ],
+    [
+     188,
+     5
+    ],
+    [
+     189,
+     0
+    ],
+    [
+     207,
+     1
+    ],
+    [
+     212,
+     2
+    ],
+    [
+     220,
+     0
+    ],
+    [
+     225,
+     1
+    ],
+    [
+     228,
+     2
+    ],
+    [
+     236,
+     6
+    ],
+    [
+     237,
+     0
+    ],
+    [
+     243,
+     1
+    ],
+    [
+     244,
+     2
+    ],
+    [
+     252,
+     0
+    ],
+    [
+     261,
+     1
+    ],
+    [
+     268,
+     2
+    ],
+    [
+     276,
+     6
+    ],
+    [
+     277,
+     0
+    ],
+    [
+     279,
+     1
+    ],
+    [
+     284,
+     2
+    ],
+    [
+     292,
+     0
+    ],
+    [
+     297,
+     1
+    ],
+    [
+     300,
+     2
+    ],
+    [
+     308,
+     5
+    ],
+    [
+     309,
+     0
+    ],
+    [
+     327,
+     1
+    ],
+    [
+     332,
+     2
+    ],
+    [
+     340,
+     6
+    ],
+    [
+     341,
+     1
+    ],
+    [
+     348,
+     2
+    ],
+    [
+     356,
+     0
+    ],
+    [
+     357,
+     1
+    ],
+    [
+     364,
+     2
+    ],
+    [
+     372,
+     0
+    ],
+    [
+     375,
+     1
+    ],
+    [
+     380,
+     2
+    ],
+    [
+     388,
+     6
+    ],
+    [
+     389,
+     0
+    ],
+    [
+     393,
+     1
+    ],
+    [
+     396,
+     2
+    ],
+    [
+     404,
+     6
+    ],
+    [
+     405,
+     3
+    ],
+    [
+     541,
+     0
+    ],
+    [
+     542,
+     1
+    ],
+    [
+     548,
+     2
+    ],
+    [
+     556,
+     0
+    ],
+    [
+     560,
+     1
+    ],
+    [
+     564,
+     2
+    ],
+    [
+     572,
+     0
+    ],
+    [
+     578,
+     1
+    ],
+    [
+     580,
+     2
+    ],
+    [
+     588,
+     0
+    ],
+    [
+     596,
+     2
+    ],
+    [
+     604,
+     0
+    ],
+    [
+     614,
+     1
+    ],
+    [
+     620,
+     2
+    ],
+    [
+     628,
+     0
+    ],
+    [
+     632,
+     1
+    ],
+    [
+     636,
+     2
+    ],
+    [
+     644,
+     0
+    ],
+    [
+     650,
+     1
+    ],
+    [
+     652,
+     2
+    ],
+    [
+     660,
+     0
+    ],
+    [
+     668,
+     2
+    ],
+    [
+     676,
+     0
+    ],
+    [
+     686,
+     1
+    ],
+    [
+     692,
+     2
+    ],
+    [
+     700,
+     0
+    ],
+    [
+     704,
+     1
+    ],
+    [
+     708,
+     2
+    ],
+    [
+     716,
+     0
+    ],
+    [
+     722,
+     1
+    ],
+    [
+     724,
+     2
+    ],
+    [
+     732,
+     0
+    ],
+    [
+     740,
+     2
+    ],
+    [
+     748,
+     0
+    ],
+    [
+     758,
+     1
+    ],
+    [
+     764,
+     2
+    ],
+    [
+     772,
+     0
+    ],
+    [
+     776,
+     1
+    ],
+    [
+     780,
+     2
+    ],
+    [
+     788,
+     0
+    ],
+    [
+     794,
+     1
+    ],
+    [
+     796,
+     2
+    ],
+    [
+     804,
+     0
+    ],
+    [
+     812,
+     2
+    ],
+    [
+     820,
+     0
+    ],
+    [
+     830,
+     1
+    ],
+    [
+     836,
+     2
+    ],
+    [
+     844,
+     0
+    ],
+    [
+     848,
+     1
+    ],
+    [
+     852,
+     2
+    ],
+    [
+     860,
+     0
+    ],
+    [
+     866,
+     1
+    ],
+    [
+     868,
+     2
+    ],
+    [
+     876,
+     0
+    ],
+    [
+     884,
+     2
+    ],
+    [
+     892,
+     0
+    ],
+    [
+     902,
+     1
+    ],
+    [
+     908,
+     2
+    ],
+    [
+     916,
+     0
+    ],
+    [
+     920,
+     1
+    ],
+    [
+     924,
+     2
+    ],
+    [
+     932,
+     0
+    ],
+    [
+     938,
+     1
+    ],
+    [
+     940,
+     2
+    ],
+    [
+     948,
+     0
+    ],
+    [
+     956,
+     2
+    ],
+    [
+     964,
+     0
+    ],
+    [
+     974,
+     1
+    ],
+    [
+     980,
+     2
+    ],
+    [
+     988,
+     5
+    ],
+    [
+     1026,
+     0
+    ],
+    [
+     1071,
+     1
+    ],
+    [
+     1076,
+     2
+    ],
+    [
+     1084,
+     5
+    ],
+    [
+     1134,
+     1
+    ],
+    [
+     1140,
+     2
+    ],
+    [
+     1148,
+     0
+    ],
+    [
+     1193,
+     1
+    ],
+    [
+     1196,
+     2
+    ],
+    [
+     1204,
+     0
+    ],
+    [
+     1222,
+     1
+    ],
+    [
+     1228,
+     2
+    ],
+    [
+     1236,
+     0
+    ],
+    [
+     1254,
+     1
+    ],
+    [
+     1260,
+     2
+    ],
+    [
+     1268,
+     6
+    ],
+    [
+     1269,
+     1
+    ],
+    [
+     1276,
+     2
+    ],
+    [
+     1284,
+     0
+    ],
+    [
+     1285,
+     1
+    ],
+    [
+     1292,
+     2
+    ],
+    [
+     1300,
+     0
+    ],
+    [
+     1303,
+     1
+    ],
+    [
+     1308,
+     2
+    ],
+    [
+     1316,
+     6
+    ],
+    [
+     1317,
+     3
+    ],
+    [
+     1365,
+     0
+    ],
+    [
+     1366,
+     1
+    ],
+    [
+     1372,
+     2
+    ],
+    [
+     1380,
+     6
+    ],
+    [
+     1381,
+     1
+    ],
+    [
+     1388,
+     2
+    ],
+    [
+     1396,
+     0
+    ],
+    [
+     1397,
+     1
+    ],
+    [
+     1404,
+     2
+    ],
+    [
+     1412,
+     6
+    ],
+    [
+     1413,
+     1
+    ],
+    [
+     1420,
+     2
+    ],
+    [
+     1428,
+     0
+    ],
+    [
+     1429,
+     1
+    ],
+    [
+     1436,
+     2
+    ],
+    [
+     1444,
+     6
+    ],
+    [
+     1445,
+     1
+    ],
+    [
+     1452,
+     2
+    ],
+    [
+     1460,
+     0
+    ],
+    [
+     1461,
+     1
+    ],
+    [
+     1468,
+     2
+    ],
+    [
+     1476,
+     6
+    ],
+    [
+     1477,
+     1
+    ],
+    [
+     1484,
+     2
+    ],
+    [
+     1492,
+     0
+    ],
+    [
+     1493,
+     1
+    ],
+    [
+     1500,
+     2
+    ],
+    [
+     1508,
+     4
+    ]
+   ],
+   "enum": [
+    "FETCH",
+    "ALIGN",
+    "PASS",
+    "TWAIT",
+    "HALT",
+    "MEM",
+    "XP",
+    "SHIFT"
+   ],
+   "id": "state",
+   "kind": "enum",
+   "label": "core state",
+   "meaning": "tp_ncore's state register",
+   "width": 3
+  },
+  {
+   "block": "sync_compare",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     540,
+     1
+    ],
+    [
+     548,
+     0
+    ]
+   ],
+   "id": "trig0",
+   "kind": "bit",
+   "label": "TRIG0",
+   "meaning": "uo_out[0]",
+   "width": 1
+  },
+  {
+   "block": "tp_uart",
+   "changes": [
+    [
+     -4,
+     1
+    ],
+    [
+     309,
+     0
+    ],
+    [
+     317,
+     1
+    ],
+    [
+     333,
+     0
+    ],
+    [
+     341,
+     1
+    ],
+    [
+     349,
+     0
+    ],
+    [
+     365,
+     1
+    ],
+    [
+     373,
+     0
+    ],
+    [
+     381,
+     1
+    ]
+   ],
+   "id": "uart_tx",
+   "kind": "bit",
+   "label": "UART TX",
+   "meaning": "uo_out[4]",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     1236,
+     1
+    ]
+   ],
+   "id": "ill",
+   "kind": "bit",
+   "label": "ILLEGAL",
+   "meaning": "uo_out[6]",
+   "width": 1
+  },
+  {
+   "block": "sync_event_fifo",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     1258,
+     1
+    ]
+   ],
+   "id": "ovf",
+   "kind": "bit",
+   "label": "OVF",
+   "meaning": "uo_out[3]",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     1508,
+     1
+    ]
+   ],
+   "id": "halt",
+   "kind": "bit",
+   "label": "HALT",
+   "meaning": "uo_out[5]",
+   "width": 1
+  }
+ ],
+ "summary": "Every instruction of sw/mktour.py, the state it spent each clock in, and the pins.",
+ "title": "The whole tour program, reset to HALT"
+}

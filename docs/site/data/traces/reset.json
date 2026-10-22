@@ -1,0 +1,1152 @@
+{
+ "captions": [
+  {
+   "at": -4,
+   "blocks": [
+    "tt_um_normansrule_tiqora",
+    "tp_soc"
+   ],
+   "text": "Reset held: rst_n is low, every uio pin is an input (uio_oe = 0x00), so the demo board could program the flash now. ui_in[2:0] are being latched as the QSPI read latency (0 here)."
+  },
+  {
+   "at": -4,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Reset released. qspi_ctrl starts its wake-up sequence before the core may fetch anything: neither memory understands four-bit transactions yet. Step 1 of 6 starts at once: flash: all four lines high, 8 clocks (leave continuous read)."
+  },
+  {
+   "at": 16,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Wake-up step 2 of 6, flash: command 0xEB, one bit per clock (Fast Read Quad I/O)."
+  },
+  {
+   "at": 33,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Wake-up step 3 of 6, flash: address 0 and mode 0xA0, four bits per clock (stay in continuous read)."
+  },
+  {
+   "at": 50,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Wake-up step 4 of 6, flash: 4 dummy clocks and one byte, then chip select high."
+  },
+  {
+   "at": 66,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Wake-up step 5 of 6, both RAMs: 0xF5, four bits per clock (leave QPI if a previous run left it on)."
+  },
+  {
+   "at": 74,
+   "blocks": [
+    "qspi_ctrl"
+   ],
+   "text": "Wake-up step 6 of 6, both RAMs: 0x35, one bit per clock (enter QPI)."
+  },
+  {
+   "at": 94,
+   "blocks": [
+    "qspi_ctrl",
+    "tp_bus"
+   ],
+   "text": "Both memories awake: the testbench counts 99 clocks from reset release (1.98 us at 50 MHz). The flash is in continuous read and the RAMs in QPI mode; the core's first fetch goes out."
+  },
+  {
+   "at": 138,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "Cycle 138: the first instruction word arrives (imem_rvalid). The program starts at flash address 0."
+  }
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "text": "the memory wake-up sequence finishes"
+  },
+  {
+   "ok": true,
+   "text": "flash in continuous read, RAM in QPI mode"
+  },
+  {
+   "ok": true,
+   "text": "reset recovers: FETCH, memory wake-up restarts"
+  }
+ ],
+ "cycles": [
+  -4,
+  144
+ ],
+ "id": "reset",
+ "kind": "recorded",
+ "kind_text": "Recorded from an RTL simulation, not computed in the browser",
+ "marks": [
+  {
+   "at": 94,
+   "label": "awake"
+  }
+ ],
+ "provenance": {
+  "command": "make -C test tour  (then python3 docs/tools/traces.py)",
+  "program": "sw/mktour.py",
+  "sampling": "one sample per clock, on the falling edge, after every flip-flop has updated; cycle 0 is the first rising edge after reset is released; 1 cycle = 20 ns at 50 MHz",
+  "simulator": "Icarus Verilog version 12.0 (stable) ()",
+  "sources": {
+   "src/boot/tp_bootrom.sv": "7c543243b98372361b1ee8b071fae004617e0c08a9e2edd2eb91b9bec6e18790",
+   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
+   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/core/tp_ncore.sv": "78238b1fae525f200681cc44d2059921c63923adb2b6400c52343a5b4822201b",
+   "src/core/tp_nregfile.sv": "dd376d3ba50e2ee57d1ebb5ac33eb63aeb4f47236b690058ef4b26b1dc2df3fa",
+   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
+   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
+   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
+   "src/sync/sync_compare.sv": "532fda2a6751b3b1134744324ca9260de87b18ccb572aa18e21f0da8df998224",
+   "src/sync/sync_event_fifo.sv": "8072350d74f351b9ad8bbfbf90613ebb21058e3ccea1e7ea7e41ffdc945d1304",
+   "src/sync/sync_timebase.sv": "c7a8d227e898022290a6fd1fade22e451c9b5adf532139151d7c8872ceb1f1ef",
+   "src/sync/sync_unit.sv": "9b659ce29646ac5f536a629f6fcf83acc039761c72c61e4e8a1b4b592be4f270",
+   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
+   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
+   "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
+   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
+   "test/tb_tour.sv": "e4d90d112b50a4b2fa35432b94bc1d1be1a6be99f03f7422588dcc771d7d99d6"
+  },
+  "testbench": "test/tb_tour.sv"
+ },
+ "schema": 1,
+ "signals": [
+  {
+   "block": "tt_um_normansrule_tiqora",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     -4,
+     1
+    ]
+   ],
+   "id": "rst_n",
+   "kind": "bit",
+   "label": "rst_n",
+   "meaning": "reset pin, active low",
+   "width": 1
+  },
+  {
+   "block": "tt_um_normansrule_tiqora",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     -4,
+     201
+    ],
+    [
+     -3,
+     255
+    ],
+    [
+     13,
+     201
+    ],
+    [
+     17,
+     251
+    ],
+    [
+     33,
+     201
+    ],
+    [
+     34,
+     255
+    ],
+    [
+     50,
+     201
+    ],
+    [
+     67,
+     255
+    ],
+    [
+     71,
+     201
+    ],
+    [
+     75,
+     251
+    ],
+    [
+     91,
+     201
+    ],
+    [
+     98,
+     255
+    ],
+    [
+     114,
+     201
+    ]
+   ],
+   "id": "uio_oe",
+   "kind": "bus",
+   "label": "uio_oe",
+   "meaning": "which uio pins the chip drives",
+   "width": 8
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     1
+    ],
+    [
+     -3,
+     0
+    ],
+    [
+     13,
+     1
+    ],
+    [
+     17,
+     0
+    ],
+    [
+     63,
+     1
+    ],
+    [
+     98,
+     0
+    ]
+   ],
+   "id": "cs_f",
+   "kind": "bit",
+   "label": "CS0 flash (uio[0])",
+   "meaning": "flash chip select, active low",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     1
+    ],
+    [
+     67,
+     0
+    ],
+    [
+     71,
+     1
+    ],
+    [
+     75,
+     0
+    ],
+    [
+     91,
+     1
+    ]
+   ],
+   "id": "cs_r",
+   "kind": "bit",
+   "label": "CS1 RAM A (uio[6])",
+   "meaning": "RAM chip select, active low (both RAMs selected during wake-up)",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     -2,
+     1
+    ],
+    [
+     -1,
+     0
+    ],
+    [
+     0,
+     1
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     0
+    ],
+    [
+     6,
+     1
+    ],
+    [
+     7,
+     0
+    ],
+    [
+     8,
+     1
+    ],
+    [
+     9,
+     0
+    ],
+    [
+     10,
+     1
+    ],
+    [
+     11,
+     0
+    ],
+    [
+     12,
+     1
+    ],
+    [
+     13,
+     0
+    ],
+    [
+     18,
+     1
+    ],
+    [
+     19,
+     0
+    ],
+    [
+     20,
+     1
+    ],
+    [
+     21,
+     0
+    ],
+    [
+     22,
+     1
+    ],
+    [
+     23,
+     0
+    ],
+    [
+     24,
+     1
+    ],
+    [
+     25,
+     0
+    ],
+    [
+     26,
+     1
+    ],
+    [
+     27,
+     0
+    ],
+    [
+     28,
+     1
+    ],
+    [
+     29,
+     0
+    ],
+    [
+     30,
+     1
+    ],
+    [
+     31,
+     0
+    ],
+    [
+     32,
+     1
+    ],
+    [
+     33,
+     0
+    ],
+    [
+     35,
+     1
+    ],
+    [
+     36,
+     0
+    ],
+    [
+     37,
+     1
+    ],
+    [
+     38,
+     0
+    ],
+    [
+     39,
+     1
+    ],
+    [
+     40,
+     0
+    ],
+    [
+     41,
+     1
+    ],
+    [
+     42,
+     0
+    ],
+    [
+     43,
+     1
+    ],
+    [
+     44,
+     0
+    ],
+    [
+     45,
+     1
+    ],
+    [
+     46,
+     0
+    ],
+    [
+     47,
+     1
+    ],
+    [
+     48,
+     0
+    ],
+    [
+     49,
+     1
+    ],
+    [
+     50,
+     0
+    ],
+    [
+     52,
+     1
+    ],
+    [
+     53,
+     0
+    ],
+    [
+     54,
+     1
+    ],
+    [
+     55,
+     0
+    ],
+    [
+     56,
+     1
+    ],
+    [
+     57,
+     0
+    ],
+    [
+     58,
+     1
+    ],
+    [
+     59,
+     0
+    ],
+    [
+     60,
+     1
+    ],
+    [
+     61,
+     0
+    ],
+    [
+     62,
+     1
+    ],
+    [
+     63,
+     0
+    ],
+    [
+     68,
+     1
+    ],
+    [
+     69,
+     0
+    ],
+    [
+     70,
+     1
+    ],
+    [
+     71,
+     0
+    ],
+    [
+     76,
+     1
+    ],
+    [
+     77,
+     0
+    ],
+    [
+     78,
+     1
+    ],
+    [
+     79,
+     0
+    ],
+    [
+     80,
+     1
+    ],
+    [
+     81,
+     0
+    ],
+    [
+     82,
+     1
+    ],
+    [
+     83,
+     0
+    ],
+    [
+     84,
+     1
+    ],
+    [
+     85,
+     0
+    ],
+    [
+     86,
+     1
+    ],
+    [
+     87,
+     0
+    ],
+    [
+     88,
+     1
+    ],
+    [
+     89,
+     0
+    ],
+    [
+     90,
+     1
+    ],
+    [
+     91,
+     0
+    ],
+    [
+     99,
+     1
+    ],
+    [
+     100,
+     0
+    ],
+    [
+     101,
+     1
+    ],
+    [
+     102,
+     0
+    ],
+    [
+     103,
+     1
+    ],
+    [
+     104,
+     0
+    ],
+    [
+     105,
+     1
+    ],
+    [
+     106,
+     0
+    ],
+    [
+     107,
+     1
+    ],
+    [
+     108,
+     0
+    ],
+    [
+     109,
+     1
+    ],
+    [
+     110,
+     0
+    ],
+    [
+     111,
+     1
+    ],
+    [
+     112,
+     0
+    ],
+    [
+     113,
+     1
+    ],
+    [
+     114,
+     0
+    ],
+    [
+     115,
+     1
+    ],
+    [
+     116,
+     0
+    ],
+    [
+     117,
+     1
+    ],
+    [
+     118,
+     0
+    ],
+    [
+     119,
+     1
+    ],
+    [
+     120,
+     0
+    ],
+    [
+     121,
+     1
+    ],
+    [
+     122,
+     0
+    ],
+    [
+     123,
+     1
+    ],
+    [
+     124,
+     0
+    ],
+    [
+     125,
+     1
+    ],
+    [
+     126,
+     0
+    ],
+    [
+     127,
+     1
+    ],
+    [
+     128,
+     0
+    ],
+    [
+     129,
+     1
+    ],
+    [
+     130,
+     0
+    ],
+    [
+     131,
+     1
+    ],
+    [
+     132,
+     0
+    ],
+    [
+     133,
+     1
+    ],
+    [
+     134,
+     0
+    ],
+    [
+     135,
+     1
+    ],
+    [
+     136,
+     0
+    ],
+    [
+     137,
+     1
+    ],
+    [
+     138,
+     0
+    ],
+    [
+     141,
+     1
+    ],
+    [
+     142,
+     0
+    ],
+    [
+     143,
+     1
+    ],
+    [
+     144,
+     0
+    ]
+   ],
+   "id": "sck",
+   "kind": "bit",
+   "label": "SCK (uio[3])",
+   "meaning": "QSPI clock, clk/2",
+   "width": 1
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     15
+    ],
+    [
+     17,
+     13
+    ],
+    [
+     23,
+     12
+    ],
+    [
+     25,
+     13
+    ],
+    [
+     27,
+     12
+    ],
+    [
+     29,
+     13
+    ],
+    [
+     33,
+     0
+    ],
+    [
+     46,
+     10
+    ],
+    [
+     48,
+     0
+    ],
+    [
+     60,
+     11
+    ],
+    [
+     62,
+     7
+    ],
+    [
+     63,
+     15
+    ],
+    [
+     69,
+     5
+    ],
+    [
+     71,
+     15
+    ],
+    [
+     75,
+     12
+    ],
+    [
+     79,
+     13
+    ],
+    [
+     83,
+     12
+    ],
+    [
+     85,
+     13
+    ],
+    [
+     87,
+     12
+    ],
+    [
+     89,
+     13
+    ],
+    [
+     91,
+     15
+    ],
+    [
+     98,
+     0
+    ],
+    [
+     110,
+     10
+    ],
+    [
+     112,
+     0
+    ],
+    [
+     114,
+     7
+    ],
+    [
+     123,
+     11
+    ],
+    [
+     125,
+     7
+    ],
+    [
+     127,
+     0
+    ],
+    [
+     129,
+     2
+    ],
+    [
+     131,
+     0
+    ],
+    [
+     135,
+     3
+    ],
+    [
+     137,
+     0
+    ],
+    [
+     141,
+     1
+    ],
+    [
+     143,
+     3
+    ]
+   ],
+   "id": "sd",
+   "kind": "bus",
+   "label": "SD3..SD0",
+   "meaning": "the four data lines at the pins",
+   "width": 4
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     6
+    ],
+    [
+     -3,
+     7
+    ],
+    [
+     13,
+     8
+    ],
+    [
+     16,
+     6
+    ],
+    [
+     17,
+     7
+    ],
+    [
+     33,
+     6
+    ],
+    [
+     34,
+     7
+    ],
+    [
+     50,
+     6
+    ],
+    [
+     51,
+     7
+    ],
+    [
+     63,
+     8
+    ],
+    [
+     66,
+     6
+    ],
+    [
+     67,
+     7
+    ],
+    [
+     71,
+     8
+    ],
+    [
+     74,
+     6
+    ],
+    [
+     75,
+     7
+    ],
+    [
+     91,
+     8
+    ],
+    [
+     94,
+     0
+    ],
+    [
+     95,
+     5
+    ],
+    [
+     98,
+     1
+    ],
+    [
+     114,
+     2
+    ],
+    [
+     122,
+     3
+    ],
+    [
+     138,
+     0
+    ],
+    [
+     140,
+     3
+    ]
+   ],
+   "enum": [
+    "IDLE",
+    "PREFIX",
+    "DUMMY",
+    "DATA",
+    "END",
+    "DESEL",
+    "WLOAD",
+    "WSHIFT",
+    "WGAP"
+   ],
+   "id": "q_state",
+   "kind": "enum",
+   "label": "qspi state",
+   "meaning": "qspi_ctrl's sequencer",
+   "width": 4
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     16,
+     1
+    ],
+    [
+     33,
+     2
+    ],
+    [
+     50,
+     3
+    ],
+    [
+     66,
+     4
+    ],
+    [
+     74,
+     5
+    ]
+   ],
+   "id": "wstep",
+   "kind": "bus",
+   "label": "wake step",
+   "meaning": "wake-up step 0..5",
+   "width": 3
+  },
+  {
+   "block": "qspi_ctrl",
+   "changes": [
+    [
+     -4,
+     1
+    ],
+    [
+     94,
+     0
+    ]
+   ],
+   "id": "waking",
+   "kind": "bit",
+   "label": "waking",
+   "meaning": "wake-up running",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     139,
+     1
+    ],
+    [
+     140,
+     2
+    ]
+   ],
+   "enum": [
+    "FETCH",
+    "ALIGN",
+    "PASS",
+    "TWAIT",
+    "HALT",
+    "MEM",
+    "XP",
+    "SHIFT"
+   ],
+   "id": "state",
+   "kind": "enum",
+   "label": "core state",
+   "meaning": "tp_ncore's state register",
+   "width": 3
+  },
+  {
+   "block": "tp_bus",
+   "changes": [
+    [
+     -4,
+     0
+    ],
+    [
+     138,
+     1
+    ],
+    [
+     139,
+     0
+    ]
+   ],
+   "id": "imem_rvalid",
+   "kind": "bit",
+   "label": "imem_rvalid",
+   "meaning": "an instruction word is delivered",
+   "width": 1
+  }
+ ],
+ "summary": "From reset to the first instruction: the chip wakes its own flash and RAMs, in six steps that work whatever state the chips were left in.",
+ "title": "Reset and memory wake-up"
+}

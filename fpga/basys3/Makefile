@@ -7,6 +7,7 @@
 #   make resources      Yosys synthesis for Xilinx 7-series: LUT / FF / BRAM count
 #   make bit-open       bitstream without Vivado: Yosys + nextpnr-xilinx + prjxray (build/open)
 #   make netlist        C self-test on the synthesized netlist, board pins only (~10 min)
+#   make record         the demo run again, recorded by rec_basys3.sv for docs/tools/fpga_media.py
 #
 #   PROG=../../sw/examples/basys3_demo.c   the program for `make image`
 #   PMOD=1                                 use the real QSPI Pmod on JA instead of the emulator
@@ -35,7 +36,7 @@ LIBS = $(ROOT)/sw/crt0.S $(ROOT)/sw/lib/rt.c $(ROOT)/sw/lib/tp_printf.c
 TOBYTES = python3 -c "import sys; d=open(sys.argv[1],'rb').read(); assert len(d)<=32768, 'image larger than the 32 KiB flash'; d+=b'\\xff'*(32768-len(d)); open(sys.argv[2],'w').write('\n'.join('%02x'%b for b in d)+'\n')"
 TOWORDS = python3 -c "import sys; d=open(sys.argv[1],'rb').read(); d+=b'\0'*((-len(d))%4); open(sys.argv[2],'w').write('\n'.join('%08x'%int.from_bytes(d[i:i+4],'little') for i in range(0,len(d),4))+'\n')"
 
-.PHONY: sim-modes netlist-modes sim image bit prog resources clean bit-open netlist
+.PHONY: sim-modes netlist-modes sim image bit prog resources clean bit-open netlist record
 image:
 	$(ZCC) $(CF) -T $(ROOT)/sw/link.ld -Wl,--gc-sections -o flash.elf $(LIBS) $(PROG)
 	python3 $(ROOT)/sw/rv32e_check.py --modes flash.elf
@@ -55,6 +56,14 @@ sim:
 	$(ZOBJ) -O binary sim.elf sim.bin && $(TOBYTES) sim.bin sim_flash.mem
 	vvp -n tb_basys3.vvp +MODE=demo | grep -v "^VCD\|readmemh"
 	$(MAKE) --no-print-directory sim-modes
+
+# the demo run of `make sim`, with rec_basys3.sv writing down what the board shows
+record:
+	@sh $(ROOT)/test/iv.sh -g2012 $(DEFS) -o rec_basys3.vvp -s tb_basys3 -s rec_basys3 $(RTL) $(FPGA) tb_basys3.sv rec_basys3.sv
+	$(ZCC) $(CF) -DBAUD_DIV=8 -DHALF_SECOND=40000u -DDEBOUNCE=200u -T $(ROOT)/sw/link.ld -Wl,--gc-sections \
+	    -o sim.elf $(LIBS) $(ROOT)/sw/examples/basys3_demo.c
+	$(ZOBJ) -O binary sim.elf sim.bin && $(TOBYTES) sim.bin sim_flash.mem
+	vvp -n rec_basys3.vvp +MODE=demo +REC=$(ROOT)/docs/fpga/basys3_demo.rec | grep -v "^VCD\|readmemh"
 
 # CPU -> GPU -> TPU -> CPU demo alone (sw/examples/modes_demo.c), checked at
 # the pins and again against sw/modes_model.py

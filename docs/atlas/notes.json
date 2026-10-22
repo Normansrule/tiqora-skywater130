@@ -1,0 +1,284 @@
+{
+ "chip": "Tiqora",
+ "repo": "https://github.com/Normansrule/tiqora-skywater130",
+ "categories": {
+  "pins": "The Tiny Tapeout pin wrapper: the only module the shuttle sees",
+  "interface": "Blocks that talk to the outside world: QSPI memory, UART, GPIO",
+  "control": "Address decode, arbitration and the glue that wires blocks together",
+  "compute": "The processor datapath and, in the FPGA and full-chip builds only, the GPU and TPU accelerators",
+  "memory": "Storage on the chip: the register file, the boot ROM table, the event queue",
+  "timing": "The timing unit shared byte for byte with Tiqora-Serial: timebase, capture, queue arbitration, deadlines"
+ },
+ "builds": {
+  "tile": "Tiny Tapeout tile: exactly the files info.yaml submits, TIQORA_MODES not defined",
+  "modes": "Basys 3 FPGA and full sky130 builds: the same files plus src/accel, compiled with -DTIQORA_MODES"
+ },
+ "cross_cutting": [
+  {"title": "Clock", "text": "One clock domain. Every flip-flop in the design runs on the tile clock `clk`, 50 MHz target (info.yaml clock_hz). The QSPI clock SCK is made from it, at clk/2, by qspi_ctrl. There is no second clock, so there are no clock-domain crossings inside the chip."},
+  {"title": "Reset", "text": "`rst_n` at the pins is active low; the wrapper inverts it to `rst`, which every block samples synchronously (on the clock edge). While reset is held every uio pin is an input, so the demo board can program the flash, and ui_in[2:0] are captured as the QSPI read latency. The register file has no reset: RISC-V leaves registers undefined and the start-up code initializes what it uses. After reset, qspi_ctrl runs its six-step memory wake-up before the first fetch (99 clocks in test/tb_tour.sv)."},
+  {"title": "Asynchronous inputs", "text": "The eight ui_in pins are asynchronous to `clk`. Each goes through a two-flop synchronizer in sync_capture, and GPIO_IN and the UART receiver reuse those same flip-flops. QSPI read data (sd_in) is sampled in the `clk` domain on a fixed schedule; the read latency set at reset (ui_in[2:0]) is what absorbs board and pad delay. Not analyzed here: metastability rates (MTBF), pad delay and oscillator error."},
+  {"title": "Not present", "text": "This design has no security block, no debug port, no interrupts, no CSRs and no on-chip SRAM. dbg_pc exists as a core output but nothing is connected to it."}
+ ],
+ "blocks": {
+  "tt_um_normansrule_tiqora": {
+   "title": "Tiny Tapeout pin wrapper",
+   "category": "pins",
+   "summary": "Maps the microcontroller onto the 24 Tiny Tapeout pins and releases the QSPI Pmod pins while reset is held.",
+   "example": "While rst_n is low, uio_oe is 0x00, so the demo board's RP2040 can write a program into the Pmod flash without unplugging anything.",
+   "stages": ["rst_n inverted to the synchronous active-high rst", "uio_out packs the QSPI signals in the Pmod's standard order: CS0, SD0, SD1, SCK, SD2, SD3, CS1, CS2", "uio_oe is 0 in reset, else drives everything except SD lines being read"],
+   "handshake": "None: pure wiring and one inverter.",
+   "latency": "Zero clocks: combinational.",
+   "reset": "Holds every uio pin as an input while rst_n is low.",
+   "errors": "None of its own.",
+   "stall": "None.",
+   "port_notes": {
+    "ui_in": "[8] IN0..IN7, all capture channels; ui_in[3] is UART RX; ui_in[2:0] are the QSPI read latency while reset is held; ui_in[7] high at reset runs the bootloader",
+    "uo_out": "[8] TRIG0, TRIG1, EVT, OVF, UART TX, HALT, ILLEGAL, HEARTBEAT, or GPIO per pin (GPIO_SEL)",
+    "uio_out": "[8] QSPI Pmod: 0 CS0 flash, 1 SD0, 2 SD1, 3 SCK, 4 SD2, 5 SD3, 6 CS1 RAM A, 7 CS2 RAM B",
+    "uio_oe": "[8] 0x00 in reset; SD bits follow the transaction direction",
+    "ena": "[1] unused (Tiny Tapeout's enable; the design is clocked only while selected)",
+    "rst_n": "[1] active-low reset from the demo board"
+   },
+   "tests": ["soc", "readme", "tour", "gl"]
+  },
+  "tp_soc": {
+   "title": "Microcontroller top level",
+   "category": "control",
+   "summary": "Instantiates the core, bus, QSPI controller, boot ROM, timing unit and GPIO/UART, and builds the output-pin mux.",
+   "example": "uo = (GPIO_SEL & function) | (~GPIO_SEL & GPIO_OUT): with GPIO_SEL = 0x11 only TRIG0 and UART TX keep their functions.",
+   "stages": ["latches ui_in[2:0] as QSPI read latency during reset", "picks RAM A or RAM B from address bit 23 while the RAM chip select is high", "selects both RAMs together during wake-up", "per-pin output mux from GPIO_SEL"],
+   "handshake": "Wiring between blocks; its only state is the read latency, the RAM select and its own glue.",
+   "latency": "Output mux is combinational.",
+   "reset": "rd_latency loads ui_in[2:0] every clock reset is held; RAM select resets to RAM A.",
+   "errors": "None of its own.",
+   "stall": "None.",
+   "port_notes": {
+    "uo": "[8] output pins after the GPIO_SEL mux",
+    "sd_in": "[4] QSPI data from the Pmod: {uio_in[5], uio_in[4], uio_in[2], uio_in[1]}"
+   },
+   "tests": ["soc", "readme", "tour"]
+  },
+  "tp_ncore": {
+   "title": "Nibble-serial RV32E core",
+   "category": "compute",
+   "summary": "Executes RV32E plus the eleven Xpulse timing instructions, four bits per clock, least significant nibble first.",
+   "example": "add x11, x9, x10 with 0x12345678 + 0x0FEDCBA9: eight clocks through one 4-bit adder, each nibble sums to 0x11 or 0x12 and carries into the next, giving 0x22222221 (the datapath tour).",
+   "stages": ["FETCH: request the instruction, wait for imem_rvalid", "ALIGN: wait for the register-file phase counter to reach 0", "PASS: eight clocks, phase 0..7, one nibble each", "SHIFT / MEM / XP: shifts, loads and stores, Xpulse operations", "PASS (second): copy mdr into rd for results known only at the end", "TWAIT: parked until a deadline", "HALT: after ECALL or EBREAK"],
+   "handshake": "imem: hold imem_req and the address until imem_rvalid. dmem: hold dmem_req, address, data and byte enables until dmem_rvalid. Xpulse: one-clock t_valid with t_op, t_sub, t_rs1, t_rs2; t_rdata returns in the same clock.",
+   "latency": "18.3 clocks per instruction on straight-line code and 40.3 on bench_kernel (measured, v20 RTL simulation, make run PROG=... RUNARGS=+PROFILE). After a TWAIT deadline, software resumes 10 to 17 clocks later depending on the rotation phase (make latency).",
+   "reset": "Starts at RESET_PC 0x0000_0000 (flash), or at BOOT_PC 0x4000_0000 when ui_in[7] is high as reset is released.",
+   "errors": "An instruction it does not implement is skipped and latches ILLEGAL (uo_out[6]); rd is not written. ECALL and EBREAK halt the core and raise HALT (uo_out[5]); only reset restarts it.",
+   "stall": "Waits as long as the bus does. A load or store to an address no device decodes (for example 0x5000_0000) never gets dmem_rvalid, so the core waits in MEM until reset (checked by make tour).",
+   "port_notes": {
+    "imem_addr": "[32] byte address of the instruction; bits 1:0 are 0",
+    "dmem_be": "[4] byte enables of a store: 0001, 0010, 0100, 1000, 0011, 1100 or 1111",
+    "t_op": "[3] Xpulse funct3: 0 TIME, 1 TPOP, 2 TSTAT, 3 TWAIT, 4 TARM, 5 TPULSE, 6 TMARK, 7 control",
+    "t_sub": "[7] Xpulse funct7 when t_op is 7: 0 TADJ, 1 TRATE, 2 TCFG, 3 TPW",
+    "illegal": "[1] sticky until reset",
+    "dbg_pc": "[32] not connected in the tile"
+   },
+   "tests": ["isa", "act", "unit", "c", "latency", "tour", "modes"]
+  },
+  "tp_nregfile": {
+   "title": "Rotating register file",
+   "category": "memory",
+   "summary": "Holds x1..x15 (480 flip-flops) and rotates every register right by one nibble on every clock, so two 4-bit read ports replace two 32-bit ones.",
+   "example": "At phase 3, qa shows bits 15:12 of register ra, for every register at once; an operation that starts at phase 0 sees nibbles 0 to 7 in order.",
+   "stages": ["phase k: bits [3:0] of every register hold its logical nibble k", "a write at phase k replaces the nibble leaving the bottom, so it lands in position k"],
+   "handshake": "None: reads are combinational, a write is one nibble per clock with we.",
+   "latency": "Zero clocks to read the current nibble; a whole register takes 8 clocks.",
+   "reset": "No reset, by design: 480 resettable flops would cost area for nothing.",
+   "errors": "x0 is not stored; a write to x0 is dropped by the core.",
+   "stall": "Never stops rotating.",
+   "port_notes": {
+    "ra": "[4] register number 0..15 for port A",
+    "rb": "[4] register number 0..15 for port B",
+    "qa": "[4] nibble k of register ra at phase k",
+    "wd": "[4] nibble written at the current phase"
+   },
+   "tests": ["unit", "isa", "act"]
+  },
+  "tp_bus": {
+   "title": "Bus: address decode and arbitration",
+   "category": "control",
+   "summary": "Routes the core's instruction and data requests to the QSPI controller, the timing-unit registers, GPIO/UART or the boot ROM, decoding address bits 31:28.",
+   "example": "A load from 0x3000_0004 (GPIO_IN) answers in the same clock; a load from 0x1000_0000 starts a QSPI RAM read and answers when it completes.",
+   "stages": ["decode addr[31:28]: 0 flash, 1 RAM, 2 timing unit, 3 GPIO/UART, 4 boot ROM", "grant: the data port wins over instruction fetch", "own: whoever started a QSPI transaction keeps the mux until it answers", "hold: a prefetched word that arrives early is kept in the QSPI receive register (i_hold)"],
+   "handshake": "Request/valid on each side; the QSPI side's request is dropped in the clock the controller answers so it does not start twice.",
+   "latency": "Timing unit, GPIO/UART and boot ROM: same clock. Flash and RAM: the QSPI transaction time.",
+   "reset": "Not busy, owner = fetch, no held word.",
+   "errors": "Device numbers 5 to 15 are unmapped. Nothing answers them, so the requester waits until reset (see the core's stall note). Address bits 27:24 are ignored.",
+   "stall": "Instruction fetch waits while a data access owns the QSPI controller.",
+   "port_notes": {
+    "q_addr": "[24] byte offset inside flash or RAM",
+    "q_dev": "[1] 0 flash, 1 RAM",
+    "reg_addr": "[4] timing-unit register word index",
+    "p_addr": "[4] GPIO/UART register word index",
+    "rom_addr": "[6] boot ROM word index"
+   },
+   "tests": ["soc", "boot", "c", "tour"]
+  },
+  "qspi_ctrl": {
+   "title": "QSPI memory controller",
+   "category": "interface",
+   "summary": "Runs every flash and RAM transaction four bits at a time on the Tiny Tapeout QSPI Pmod, and wakes both memory chips after every reset.",
+   "example": "A sequential instruction fetch from flash keeps chip select low and clocks out the next word directly: 8 nibbles instead of a 20-nibble address, mode and dummy preamble.",
+   "stages": ["WLOAD / WSHIFT / WGAP: the six wake-up steps after reset", "IDLE: wait for a request", "PREFIX: 8 nibbles of command and address", "DUMMY: 4 (flash) or 6 (RAM) clocks", "DATA: 8 nibbles in, or 2 per byte out", "END / DESEL: chip select high for CS_HIGH clocks"],
+   "handshake": "The requester holds req, addr, we, wdata, be and dev constant from req until the clock after rvalid; the controller keeps no copy of them.",
+   "latency": "SCK is clk/2. A flash read with a new address is prefix + 4 dummy + 8 data nibbles; a streamed sequential read is 8 data nibbles.",
+   "reset": "Starts the wake-up sequence: flash out of continuous read, then Fast Read Quad I/O into continuous read; both RAMs out of QPI, then into QPI. `waking` is high until it ends.",
+   "errors": "Reads are not checked: if ui_in[2:0] held a wrong latency at reset, every word comes back shifted (found while recording the error tour, which must clear ui_in[2:0] before reset).",
+   "stall": "Busy for the whole transaction; the bus holds the other master off.",
+   "port_notes": {
+    "rd_latency": "[3] extra read-sample delay, 0..7, from ui_in[2:0] at reset",
+    "dev": "[1] 0 flash, 1 RAM",
+    "sd_oe": "[4] 1111 while sending a prefix or write data, else 0000",
+    "waking": "[1] wake-up sequence running"
+   },
+   "tests": ["wake", "soc", "c", "boot", "tour"]
+  },
+  "tp_bootrom": {
+   "title": "Boot ROM (UART bootloader)",
+   "category": "memory",
+   "summary": "A 43-instruction bootloader at 0x4000_0000, generated by sw/mkboot.py and synthesized into plain logic.",
+   "example": "Hold ui_in[7] high while releasing reset: the chip prints TP>, takes a length-prefixed program over the UART into RAM A, answers with a checksum and K, and jumps to 0x1000_0000.",
+   "stages": ["print TP>", "receive 4 length bytes, little endian", "receive the program into RAM A", "send the checksum byte and K", "jump to 0x1000_0000"],
+   "handshake": "Combinational table: data follows addr in the same clock.",
+   "latency": "Zero clocks.",
+   "reset": "None: no state.",
+   "errors": "The PC side (sw/tpload.py) compares the checksum byte and reports a mismatch.",
+   "stall": "The program waits on the UART.",
+   "port_notes": {"addr": "[6] word index 0..63", "data": "[32] instruction word"},
+   "tests": ["boot", "bridge"]
+  },
+  "tp_periph": {
+   "title": "GPIO and UART registers",
+   "category": "interface",
+   "summary": "The registers at 0x3000_0000: GPIO_OUT, GPIO_IN, GPIO_SEL, UART_DATA, UART_STAT, UART_DIV and the RP2040-style GPIO_SET, GPIO_CLR and GPIO_XOR.",
+   "example": "sw x6, 0x14(x5) with x6 = 8 sets UART_DIV to 8 clocks per bit, which the tour uses so a whole frame fits on screen.",
+   "stages": ["write: decode addr and update one register", "read: return one register in the same clock"],
+   "handshake": "Single-clock request: every access completes in the clock it is issued.",
+   "latency": "Same clock.",
+   "reset": "GPIO_SEL 0xFF (every pin shows its built-in function), GPIO_OUT 0, UART_DIV 434 (115,200 baud at 50 MHz).",
+   "errors": "Writing UART_DATA while TX_BUSY is ignored. Unused offsets read as 0.",
+   "stall": "None; software polls TX_BUSY.",
+   "port_notes": {"addr": "[4] word offset 0..8 (byte offsets 0x00 to 0x20)", "gpio_sel": "[8] 1 = built-in function, 0 = GPIO"},
+   "tests": ["unit", "readme", "c", "tour"]
+  },
+  "tp_uart": {
+   "title": "UART (8N1)",
+   "category": "interface",
+   "summary": "Transmitter and receiver sharing one programmable divider; no FIFO.",
+   "example": "With div = 434 at 50 MHz a byte takes 10 bits of 434 clocks, 86.8 us.",
+   "stages": ["TX: start bit, 8 data bits LSB first, stop bit", "RX: wait for a start bit, sample each bit at its centre, raise rx_valid"],
+   "handshake": "TX: pulse tx_start with tx_data while tx_busy is low. RX: rx_valid until rx_ack.",
+   "latency": "One byte is 10 bit times of `div` clocks.",
+   "reset": "TX line idle high, nothing received.",
+   "errors": "A second byte before rx_ack sets rx_overrun and replaces the first. A frame whose stop bit is low is dropped without any flag; a start bit that is gone at its centre sample is ignored as a glitch.",
+   "stall": "None; it never blocks the bus.",
+   "port_notes": {"div": "[12] clocks per bit", "rx": "[1] already synchronized by sync_capture"},
+   "tests": ["unit", "c", "boot", "tour"]
+  },
+  "sync_unit": {
+   "title": "Timing unit",
+   "category": "timing",
+   "summary": "Joins the timebase, capture lanes, event queue and deadline comparators, and answers Xpulse instructions in the clock they issue.",
+   "example": "TIME rd returns the live 32-bit timebase in the same clock the instruction retires; the same value from a load at 0x2000_0000 would be a bus round trip.",
+   "stages": ["decode t_op / t_sub, or the register port", "arbitrate simultaneous capture events: lowest channel first, one per clock, same timestamp", "push hardware and TMARK events into one queue"],
+   "handshake": "Xpulse: one-clock t_valid. Register port: single-clock reg_req (not connected in Tiqora, where SYNC_MMIO = 0).",
+   "latency": "Same clock for every Xpulse operation.",
+   "reset": "Timebase 0, queue empty, triggers disarmed, capture disabled, pulse width 8.",
+   "errors": "Queue overflow is sticky (OVF pin, status bit 6). TPOP on an empty queue returns 0.",
+   "stall": "None: the core waits in TWAIT, not the timing unit.",
+   "port_notes": {
+    "trig_pin": "[2] TRIG0, TRIG1",
+    "status_out": "[32] bits 1:0 count, 4 empty, 5 full, 6 overflow, 9:8 armed, 13:12 trigger levels, 23:16 synchronized pin levels"
+   },
+   "tests": ["xpulse", "stress", "soc", "wrap", "adjust", "tour", "shared"]
+  },
+  "sync_timebase": {
+   "title": "Timebase with rate trim",
+   "category": "timing",
+   "summary": "A 32-bit tick counter that advances one tick per clock, can be stepped by TADJ and slewed by TRATE in steps of 2^-24 tick per clock.",
+   "example": "TRATE with 2^23 (half of 2^24) makes the timebase run at 1.5 ticks per clock: every other clock it takes an extra tick.",
+   "stages": ["free run: +1 per clock", "rate: a 24-bit fractional accumulator adds |rate|; on overflow +2 (positive) or 0 (negative)", "step: TADJ adds a signed value, plus the clock's own tick"],
+   "handshake": "rate_we and adj_we are one-clock strobes.",
+   "latency": "Same clock.",
+   "reset": "now = 0, rate 0.",
+   "errors": "Wraps after 2^32 ticks (85.9 s at 50 MHz); the comparators and TWAIT are wrap-safe within 2^31 ticks.",
+   "stall": "Never stops.",
+   "port_notes": {"rate_in": "[32] bit 31 sign, bits 23:0 magnitude", "adj_in": "[32] signed step in ticks"},
+   "tests": ["unit", "wrap", "adjust", "xpulse"]
+  },
+  "sync_capture": {
+   "title": "Capture lanes",
+   "category": "timing",
+   "summary": "Turns each asynchronous input pin into a clean edge event through a two-flop synchronizer and an edge detector.",
+   "example": "Rising edges on ui_in[0] and ui_in[1] four clocks apart produce queue entries whose timestamps differ by exactly 4 (checked by make tour).",
+   "stages": ["two-flop synchronizer", "optional glitch filter (FILTW, 0 in this build)", "edge detect: rising, falling or both, per channel"],
+   "handshake": "One-clock evt per edge.",
+   "latency": "Constant two clocks from pin to event with FILTW = 0, so it can be calibrated out.",
+   "reset": "No events; channels disabled until TCFG.",
+   "errors": "A pulse shorter than one clock can be missed.",
+   "stall": "None.",
+   "port_notes": {"en": "[8] TCFG bits 7:0", "fall": "[8] TCFG bits 15:8", "level": "[8] synchronized pin levels, reused by GPIO_IN and the UART"},
+   "tests": ["unit", "stress", "tour"]
+  },
+  "sync_event_fifo": {
+   "title": "Event queue",
+   "category": "memory",
+   "summary": "One shared queue of 32-bit timestamped events, two deep in this build, that keeps the order of events across channels.",
+   "example": "Three capture edges into the two-deep queue: the first two are kept, the third is lost and OVF goes high (the capture tour).",
+   "stages": ["push when not full", "pop when not empty", "overflow when a push finds it full"],
+   "handshake": "push and pop strobes; rdata is the head while not empty.",
+   "latency": "An event is readable the clock after it is pushed.",
+   "reset": "Empty, overflow clear.",
+   "errors": "A push into a full queue drops the event and sets overflow, which stays set until reset.",
+   "stall": "None.",
+   "port_notes": {"wdata": "[32] bit 31 source (0 pin, 1 TMARK), 30:28 channel or tag, 27 rising edge, 26:0 timestamp", "count": "[2] 0..2 entries"},
+   "tests": ["unit", "stress", "tour"]
+  },
+  "sync_compare": {
+   "title": "Deadline comparators",
+   "category": "timing",
+   "summary": "Two trigger channels: arm one with an absolute tick and its pin goes high on exactly that tick for the programmed pulse width.",
+   "example": "TARM with now + 200: TRIG0 rises at the pin on the tick the timebase equals the deadline, and stays high 8 ticks (checked by make tour and make soc).",
+   "stages": ["arm: store the deadline, set armed", "compare: reached = signed((now + 1) - deadline) >= 0, one tick early because the output is registered", "fire: load the pulse counter, disarm", "count down the pulse width"],
+   "handshake": "arm_we with arm_time and arm_sel; pulse_we fires channels at once.",
+   "latency": "The pin edge lands on the programmed tick: zero ticks of jitter relative to the supplied clock.",
+   "reset": "Disarmed, deadlines 0, pulse width 8 ticks.",
+   "errors": "Wrap-safe within 2^31 ticks; a deadline more than 2^31 ticks away reads as already passed and fires at once.",
+   "stall": "None.",
+   "port_notes": {"arm_sel": "[2] channel 0 or 1", "trig": "[2] TRIG0, TRIG1", "pw_in": "[32] pulse width in ticks; bits above 15 ignored"},
+   "tests": ["soc", "xpulse", "wrap", "adjust", "tour"]
+  },
+  "tp_simd": {
+   "title": "GPU mode: byte SIMD",
+   "category": "compute",
+   "summary": "Eight four-lane byte operations on custom-2, legal only in GPU mode, in the FPGA and full-chip builds.",
+   "example": "PADDUS.B adds four pixel channels at once and saturates each at 255.",
+   "stages": ["combinational: y from op, a, b"],
+   "handshake": "Driven by the core's XP clock.",
+   "latency": "Combinational; the core adds a gather pass and a write-back pass.",
+   "reset": "No state.",
+   "errors": "Outside GPU mode the opcode is illegal: skipped, ILLEGAL latched.",
+   "stall": "None.",
+   "port_notes": {"op": "[3] funct3: ADD, SUB, ADDS, MAX, MIN, AVG, MUL, ABSD"},
+   "tests": ["modes"]
+  },
+  "tp_mac": {
+   "title": "TPU mode: int8 dot-product accumulator",
+   "category": "compute",
+   "summary": "One 32-bit accumulator that adds the dot product of four signed bytes per instruction on custom-3, legal only in TPU mode, in the FPGA and full-chip builds.",
+   "example": "TMAC rs1, rs2 adds a0*b0 + a1*b1 + a2*b2 + a3*b3 to the accumulator; TRELU reads max(acc, 0).",
+   "stages": ["TMAC accumulate", "TRD / TRELU read", "TCLR clear", "TSET load"],
+   "handshake": "en for one XP clock.",
+   "latency": "One clock to accumulate.",
+   "reset": "Accumulator 0.",
+   "errors": "Outside TPU mode the opcode is illegal and the accumulator is untouched.",
+   "stall": "None.",
+   "port_notes": {"op": "[3] funct3: MAC, RD, RELU, CLR, SET"},
+   "tests": ["modes"]
+  }
+ }
+}

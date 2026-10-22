@@ -90,6 +90,10 @@ python3 docs/tools/zoom_animation.py               # the tile-to-transistor zoom
 python3 docs/tools/datasheet_stills.py              # three stills of the zoom for the PDF datasheet
 python3 docs/tools/exploded_cell.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd     # the exploded flip-flop
 python3 docs/tools/build_explorer.py               # the interactive explorer page
+python3 docs/tools/atlas.py                        # the explorer site's chip atlas (needs Yosys)
+python3 docs/tools/traces.py                       # its tours, from make -C test tour
+python3 docs/tools/build_site.py                   # its pages, docs/site/*.html
+python3 docs/tools/readme_media.py                 # the README animation
 python3 docs/tools/silicon_views.py                # pin map at real positions, packaging, connections
 ```
 

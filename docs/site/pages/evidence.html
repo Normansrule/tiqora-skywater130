@@ -1,0 +1,36 @@
+<!-- {"title": "Evidence", "description": "The evidence ladder for Tiqora, from RTL tests to silicon, with the command behind every rung, and what changed from v19 to v20.1.", "data": [], "scripts": []} -->
+<h1>Evidence</h1>
+<p class=lede>A chip project climbs one ladder: tested RTL, then synthesis, layout, timing, a shuttle, a fabricated chip, a measured chip. Each rung below says whether it has been reached and names the command or tool run that showed it. A rung without evidence is marked so, even when it is expected to pass.</p>
+<p class=small>Labels: <span class="ev measured">measured</span> a tool run produced it · <span class="ev estimate">estimate</span> a number from before the step that settles it · <span class="ev fail">failed</span> run and did not pass · <span class="ev todo">not yet</span> not run or not reachable yet.</p>
+<h2 id=ladder>The ladder</h2>
+{{static:ladder}}
+
+<h2 id=progress>The README's progress tracker</h2>
+<p>The same steps as the README's Progress section, read from <code>docs/progress.json</code>; <code>make docs</code> checks that only measured evidence marks a step done.</p>
+{{static:progress}}
+
+<h2 id=revisions>What changed between revisions</h2>
+<div class=tablewrap><table>
+ <caption class=sr>Revision comparison</caption>
+ <thead><tr><th></th><th>v19 (TinyPulse)</th><th>v20</th><th>v20.1</th><th>this explorer</th></tr></thead>
+ <tbody>
+  <tr><th>Name</th><td>TinyPulse</td><td>renamed Tiqora; the C API, opcodes, register map and bootloader protocol unchanged, <code>tinypulse.h</code> still works</td><td>same</td><td>same</td></tr>
+  <tr><th>RTL</th><td>nibble-serial RV32E + Xpulse</td><td>instruction prefetch and a shorter flash read; CPU/GPU/TPU modes behind <code>TIQORA_MODES</code> (not in the tile)</td><td>unchanged</td><td>unchanged</td></tr>
+  <tr><th>Clocks per instruction</th><td>50.16 mixed, 32.21 straight-line</td><td>40.30 mixed, 18.32 straight-line <span class="ev measured">measured</span> RTL simulation</td><td>unchanged</td><td>unchanged</td></tr>
+  <tr><th>Wake on a deadline</th><td>32 clocks</td><td>16 clocks</td><td>unchanged</td><td>unchanged</td></tr>
+  <tr><th>RTL checks</th><td>not recorded here</td><td>240 checks in 15 suites before the modes were added; 470 in 16 with them</td><td>same</td><td>+ the recorded tour, 15 checks</td></tr>
+  <tr><th>Official RISC-V tests</th><td>37/37</td><td>37/37 <span class="ev measured">measured</span></td><td>unchanged RTL</td><td>unchanged RTL</td></tr>
+  <tr><th>Cell area</th><td>49,200 to 50,800 µm², as the v19 README stated</td><td>50,880 µm² <span class="ev measured">measured</span> <code>make area</code></td><td>unchanged RTL</td><td>per block, 52,777 µm² hierarchical</td></tr>
+  <tr><th>Layout</th><td>the README said pre-flight passed; no report backs it</td><td>2x2 fails placement, <code>DPL-0036</code> <span class="ev fail">failed</span></td><td>unchanged</td><td>unchanged</td></tr>
+  <tr><th>Documentation</th><td></td><td>datasheet PDF fails on GitHub: web images and WebP</td><td>datasheet builds; <code>check_docs.py</code> guards it</td><td>this site, the atlas and the tours</td></tr>
+ </tbody>
+</table></div>
+<p class=small>v19 figures are as the v19 and v20 documents state them; they were not re-measured for this page.</p>
+
+<h2>Check it yourself</h2>
+<pre class=cmd>make -C test sim                          <span class=c># every RTL suite, including the tour</span>
+make -C test act                          <span class=c># the official RISC-V tests</span>
+make -C test area                         <span class=c># cell area with the real sky130 library</span>
+python3 docs/tools/atlas.py --check       <span class=c># the atlas still matches the RTL</span>
+python3 docs/tools/traces.py --check      <span class=c># the tours still match a fresh simulation</span>
+python3 docs/tools/check_site.py          <span class=c># the site, its models and its pinout</span></pre>

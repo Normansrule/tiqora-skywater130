@@ -1,0 +1,45 @@
+<!-- {"title": "Physical design", "description": "Where Tiqora stands on the way to a layout: measured cell area per block against the 2x2 die, and why place and route has not passed.", "data": ["atlas"], "scripts": []} -->
+<h1>Physical design</h1>
+<div class="note bad"><b>There is no Tiqora layout yet.</b> At the 2x2 tile size <code>info.yaml</code> submits, LibreLane 3.0.14 stops in detailed placement with <code>DPL-0036</code>, both on GitHub and locally. So this page has no layout image, no utilisation map, no routed timing and no power map: none of them exists to show.</div>
+
+<h2>Three different areas</h2>
+<p>They are easy to mix up, and the numbers below use each in exactly one sense.</p>
+<div class=grid>
+ <div class=card><h3>Die area</h3><p><b>75,602 µm²</b>: the 2x2 tile, 334.88 × 225.76 µm, from Tiny Tapeout's template <code>tt_block_2x2_pg.def</code>. Fixed by the tile count.</p></div>
+ <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. Only a layout run reports it; for Tiqora none has reached that point at 2x2.</p></div>
+ <div class=card><h3>Summed cell area</h3><p><b>50,880 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80). Before placement, so with no timing-repair buffers, taps or fill. 67% of the die.</p></div>
+</div>
+
+<h2>Where the cells go</h2>
+<p>Each block's cells, synthesized one module at a time and drawn <b>to scale</b> inside the 2x2 die outline. Positions mean nothing: the placer would spread these cells over the whole core, mixed together.</p>
+<figure class=figure>
+ <div class=treemap>{{static:treemap}}</div>
+ <figcaption><span class="ev measured">measured</span> <code>python3 docs/tools/atlas.py --area sky130_fd_sc_hd__tt_025C_1v80.lib</code> (Yosys 0.33, hierarchical: each module synthesized without flattening). The hierarchical sum, 52,777 µm², is larger than the flat 50,880 µm² because synthesis cannot optimise across module boundaries. Colours follow the atlas categories, and every block is named in the table below.</figcaption>
+</figure>
+<div id=areatable></div>
+
+<h2>Why it does not fit yet</h2>
+<p>Placement needs room to spread cells, add timing-repair buffers and route wires. Cell area at 67% of the die leaves too little: <code>DPL-0036</code> means the detailed placer could not legalise every cell. An experimental copy at 3x2 got through placement but did not converge in routing (10,796 violations at pass 8). For comparison, Tiqora-Serial's experimental 2x2 copy, at 28% of its die in synthesized cells, hardened clean.</p>
+<p>The way forward is the owner's decision: a larger tile set, or less logic. Either way, the next measurement is a clean LibreLane run, then the Tiny Tapeout pre-flight, then signoff timing.</p>
+<p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
+<script>
+(function () {
+  const A = DATA("atlas"), area = A.area.modules_um2, modes = A.area.modes.modules_um2;
+  const rows = A.blocks.slice().sort((a, b) => (area[b.module] || modes[b.module] || 0) - (area[a.module] || modes[a.module] || 0));
+  const total = Object.values(area).reduce((s, v) => s + v, 0);
+  const t = document.createElement("div"); t.className = "tablewrap";
+  t.innerHTML = "<table><caption class=sr>Measured cell area per module</caption><thead><tr><th>Module</th><th>Block</th><th>Category</th><th class=num>Tile build µm²</th><th class=num>Share</th><th class=num>Modes build µm²</th><th class=num>Flip-flop bits</th></tr></thead><tbody></tbody></table>";
+  const tb = t.querySelector("tbody");
+  rows.forEach(b => {
+    const tr = document.createElement("tr");
+    const v = area[b.module], m = modes[b.module];
+    [b.module, b.title, b.category, v !== undefined ? v.toLocaleString("en-US") : "not in the tile", v !== undefined ? (100 * v / total).toFixed(1) + "%" : "–", m !== undefined ? m.toLocaleString("en-US") : "–", b.ff_bits]
+      .forEach((x, i) => { const td = document.createElement("td"); td.textContent = x; if (i >= 3) td.className = "num"; tr.append(td); });
+    tb.append(tr);
+  });
+  const tr = document.createElement("tr");
+  tr.innerHTML = "<td><b>total</b></td><td></td><td></td><td class=num><b>" + total.toLocaleString("en-US", { maximumFractionDigits: 1 }) + "</b></td><td class=num>100%</td><td class=num><b>" + A.area.modes.total_hierarchical_um2.toLocaleString("en-US", { maximumFractionDigits: 1 }) + "</b></td><td></td>";
+  tb.append(tr);
+  document.getElementById("areatable").append(t);
+})();
+</script>

@@ -1,27 +1,70 @@
 # Tiqora — a RISC-V microcontroller the size of a grain of salt
 
-![RISC-V RV32E](https://img.shields.io/badge/RISC--V-RV32E-8a5cff)
-![Tiny Tapeout 2x2](https://img.shields.io/badge/Tiny_Tapeout-2%C3%972_tiles-3ddc97)
-![official RISC-V tests 37/37 at v19](https://img.shields.io/badge/official_RISC--V_tests-37%2F37_(v19)-4f8cff)
-![checks 240](https://img.shields.io/badge/self--checks-240_passing-4f8cff)
-![sky130](https://img.shields.io/badge/SkyWater-130_nm-ff9f1c)
-![FPGA Basys 3](https://img.shields.io/badge/FPGA-Basys_3_(Artix--7)-e34c26)
+**RV32E + 11 Xpulse timing instructions · Tiny Tapeout 2 × 2 tiles · SkyWater sky130 · Apache 2.0 · maintained by [@Normansrule](https://github.com/Normansrule)**
 
-![Zooming from the whole Tiqora chip down to single transistors](docs/images/zoom.webp)
+![A deadline recorded from the RTL: TIME, TARM and TWAIT, then TRIG0 rises on exactly the programmed tick](docs/images/explorer/tour.gif)
 
-<sub>From the whole chip to single transistors: the design's ~5,500 real sky130 logic cells,
-drawn from SkyWater's own cell geometry with KLayout (`docs/tools/zoom_animation.py`).</sub>
+<sub>Recorded, not drawn: one window of `make -C test tour`, a simulation of the submitted top module
+with flash and RAM models on its pins, rendered by `docs/tools/readme_media.py`.
+[Still image](docs/images/explorer/tour.png) for readers with motion turned off.</sub>
 
 > **Tiqora was called TinyPulse until October 2026.** Old links redirect; the C API, opcodes,
 > register map and bootloader protocol are unchanged, and `#include "tinypulse.h"` still works.
 
-**A complete 32-bit microcontroller in 0.076 mm² of silicon — four Tiny Tapeout tiles (a 2 × 2 block), 280 €.**
-It runs RISC-V code from a 16 MB flash chip — or straight from a USB serial link, no
-programmer needed — has 16 MB of RAM, 8 inputs, 8 outputs, a
-UART for `printf`, and something no ordinary microcontroller has: **instructions that treat
-time as an operand.** It timestamps pin edges in hardware, fires output pulses on the exact
-clock tick it was told to (cycle-exact relative to the supplied clock; oscillator error and pad
-delay are separate matters), and can be disciplined to an external reference.
+**A complete 32-bit microcontroller for four Tiny Tapeout tiles (a 2 × 2 block, 0.076 mm² of die, 280 €).**
+It runs RISC-V code from a 16 MB flash chip, or straight from a USB (Universal Serial Bus)
+serial link with no programmer, has 16 MB of RAM (random-access memory), 8 inputs, 8 outputs,
+a UART (universal asynchronous receiver-transmitter, a serial port) for `printf`, and something no
+ordinary microcontroller has: **instructions that treat time as an operand.** It timestamps pin
+edges in hardware and fires output pulses on the exact clock tick it was told to (cycle-exact
+relative to the supplied clock; oscillator error and pad delay are separate matters).
+
+**It exists as tested RTL (register-transfer level: the hardware description a chip is built
+from), not yet as a chip.** Its cells fit the 2 × 2 tile; its layout does not yet: place and
+route stops with `DPL-0036`. Nothing has run on silicon or on a real FPGA (field-programmable
+gate array) board.
+
+It's for people who need a pin to move on an exact clock tick (lab triggers, test benches,
+pulse trains, timestamping) and would rather write that in C than in Verilog, and for anyone
+curious how small a whole computer can get.
+
+**Key features**
+
+- **Time as an operand.** Eleven Xpulse instructions read the timebase, arm a deadline, wait
+  for it and pop timestamped pin edges. The trigger pin fires on the programmed tick with no
+  software in the path.
+- **Nibble-serial RV32E.** One 4-bit adder does every 32-bit add in eight clocks while the
+  register file rotates past it. That is what makes it small.
+- **Runs real C**, compiled with Clang, from QSPI (quad serial peripheral interface) flash or
+  loaded over USB serial with no flasher.
+- **Evidence on every number.** Each result in this README says whether it was measured (and
+  with which command and version), estimated, failed or not done yet.
+- **An explorer you can open offline**: recorded tours of the running chip, a lab where you fire
+  your own deadline, and a zoom from a grain of salt down to one flip-flop.
+
+### Explore it
+
+| | |
+|---|---|
+| [**Overview**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html) | fire a deadline of your own; scroll from a grain of salt down to one flip-flop; what goes in, what happens inside, what comes out, what is proven |
+| [**Tours**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
+| [**Chip atlas**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
+| [**Physical design**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/physical.html) | measured cell area per block against the die, and why the layout does not fit yet |
+| [**Evidence**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
+
+Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.
+
+![The overview's opening shot: Tiqora's name above its tile of real sky130 cells, tilted in perspective and settling flat as you scroll](docs/images/explorer/site-hero.jpg)
+
+| Fire a deadline | The zoom's last view |
+|---|---|
+| ![The overview's deadline lab: TRIG0 armed on tick 393 rises on the chosen tick, computed from the recorded tour](docs/images/explorer/site-deadline.png) | ![The die zoom on one sky130 D flip-flop: diffusion, polysilicon, local interconnect, contacts and metal 1 as translucent colour on black](docs/images/explorer/site-zoom.png) |
+
+![The tour player on the recorded deadline: controls, caption and the waveform of TIME, TARM, TWAIT and TRIG0](docs/images/explorer/site-tours.png)
+
+<sub>Photographed from the built pages by `docs/tools/site_shots.py`: the opening shot a little way into its scroll, the rest with reduced motion on.</sub>
+
+![Tiqora: what enters (QSPI Pmod, pin edges, clock and reset), what happens inside (QSPI controller, bus, boot ROM, nibble-serial core, timing unit, UART and GPIO), what comes out (uo_out triggers, flags and UART TX)](docs/images/explorer/flow.svg)
 
 | | |
 |---|---|
@@ -32,33 +75,27 @@ delay are separate matters), and can be disciplined to an external reference.
 | **I/O** | 8 inputs · 8 outputs · UART on the demo board's USB bridge |
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
-| **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 6.9 ns worst path against 20 ns (v19 estimate from cell delays; routed timing comes from CI) |
-| **Area** | 49,200–50,800 µm² of standard cells measured at v19; v20's prefetch adds an estimated 1.7% (generic-gate count) — re-measure with `make area` |
+| **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
+| **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
+| **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 240 self-checking checks and 6 cocotb tests on RTL; cocotb on a sky130 gate netlist; the official RISC-V tests (37/37 at v19) |
+| **Verification** | 470 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (all v20) |
 
-**Contents:** [Status](#status) · [What it looks like](#what-it-looks-like) · [Explore it interactively](#explore-it-interactively) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Repository](#repository)
+**Contents:** [Status](#status) · [Quick start](#quick-start) · [What it looks like](#what-it-looks-like) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Design](#design) · [Repository](#repository) · [Maintainer](#maintainer)
 
 ## Status
 
-Each row names the revision it applies to. Results from v19 that the v20 core change could
-affect are marked for re-run rather than carried forward.
+Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the one before it.
 
-| | |
-|---|---|
-| ✅ **RTL simulation (v20)** | 470 checks across sixteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
-| ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
-| ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
-| ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |
-| ✅ **Docs (v20)** | every link, image, `make` target and script mentioned exists (`make docs`, part of `make sim`) |
-| ⏳ **Official RISC-V tests** | 37/37 at v19 (12,521 signature words); **re-run on v20 required** (`make act`) |
-| ⏳ **Gate level** | cocotb on a sky130 netlist passed at v19 (5 pass, 1 skipped); **re-run on v20 required** (`make gl`) |
-| ⏳ **Area and logic timing** | measured at v19; **re-run on v20 required** (`make area`, `make timing`) |
-| ⏳ **Tiny Tapeout pre-flight** | passed at v19 with the old top-module name; re-run after the rename |
-| ⏳ **Hardening** | runs on GitHub after a push (`gds` workflow): the real routing and timing at 50 MHz |
-| ⏳ **FPGA board** | Vivado build and a real Basys 3: `make bit && make prog` in `fpga/basys3` |
-| ⏳ **Silicon** | after submission to a Tiny Tapeout shuttle |
+| Stage | State | Evidence |
+|---|---|---|
+| RTL tested | ✅ done | 470 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; v20) |
+| Formally checked | ⬜ not done | no formal proofs exist for this design |
+| Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
+| Placed and routed | ❌ failed | LibreLane 3.0.14 stops in detailed placement, `DPL-0036`, at 2 × 2, locally and in the `gds` workflow; a larger tile or less logic is the owner's decision |
+| Timing checked | ⬜ not reached | needs a layout; the 12.65 ns figure above is an estimate before wires |
+| Submitted, fabricated, measured | ⬜ not yet | no chip exists |
+| FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
 <!-- progress:begin (generated by docs/tools/progress.py from docs/progress.json; do not edit) -->
 
@@ -94,30 +131,39 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 
 <!-- progress:end -->
 
+## Quick start
+
+Everything below runs on the simulated chip; you need Icarus Verilog 12 and Python 3
+([docs/TESTING.md](docs/TESTING.md) lists the rest).
+
+```sh
+make -C test tour                  # the recorded tour: 15 checks, writes test/tour.log
+python3 docs/tools/traces.py       # turn that recording into the explorer's tours
+make -C test sim                   # every self-check suite
+```
+
+Then open `docs/site/index.html` in a browser. The pages are self-contained files with no
+network loads, so they work offline and from a clone.
+
 ## What it looks like
 
-**From the board to the silicon.** The chip arrives in a QFN package on a carrier board that
+**From the board to the silicon.** The chip would arrive in a QFN package on a carrier board that
 plugs into the demo board; inside, every project on the shuttle shares one die behind a
 multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
 
 ![From the demo board to Tiqora's tiles on the die](docs/images/board_to_silicon.svg)
 
+**Where the area goes, to scale.** Each block's measured cell area from synthesis, laid out in
+the real 334.88 × 225.76 µm die outline. This is a treemap of measured numbers, not a
+placement: there is no routed layout yet.
 
-**The routed chip, once CI has built it.** Every push runs Tiny Tapeout's full hardening flow on GitHub, which
-places and wires every cell and publishes the result. Once the first `gds` run finishes, the
-image below is the actual layout that goes to the fab, and
-[this link opens it in 3D](https://normansrule.github.io/tiqora-skywater130/):
+![Treemap of each block's synthesized cell area inside the 2x2 die outline](docs/images/explorer/area_treemap.svg)
 
-![The routed Tiqora layout, rendered by the Tiny Tapeout CI](https://normansrule.github.io/tiqora-skywater130/gds_render.png)
+**An illustration, not a placement.** Every real sky130 cell of the synthesized design, drawn
+with its real geometry but packed into rows block by block by a simple script
+(`docs/tools/layout_preview.py`); a placer would put them elsewhere:
 
-<sub>(If that image is missing, the `gds` workflow hasn't run yet, or GitHub Pages isn't
-enabled: Settings → Pages → Source: GitHub Actions.)</sub>
-
-**Before routing, block by block.** Every cell of the synthesized design, placed by block
-inside the 334.9 × 225.8 µm tile — the register file's regular grid of flip-flops on the left,
-the irregular logic of the CPU beside it:
-
-![Every real sky130 standard cell in Tiqora, placed block by block inside the 2x2 tile](docs/images/layout_blocks.png)
+![Illustration: Tiqora's real sky130 cells packed into rows block by block, not a placement](docs/images/layout_blocks.png)
 
 **One flip-flop, taken apart.** The register file is 480 copies of this cell. Its real
 manufacturing layers — N-well, diffusion, polysilicon gates, contacts, local interconnect, vias,
@@ -125,12 +171,9 @@ metal 1 — separate and rejoin:
 
 ![One sky130 D flip-flop exploded into its manufacturing layers](docs/images/flipflop_exploded.svg)
 
-## Explore it interactively
-
-[**Open the chip explorer**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/explorer.html)
-(or open `docs/explorer.html` from a clone): zoom from the whole tile down to transistors,
-click any of the 24 pins to see what it does, step a 32-bit addition through the nibble adder
-one clock at a time, and browse all 48 instructions with their bit-level encodings.
+The older single-page explorer, [docs/explorer.html](docs/explorer.html), is still here; its
+zoom from the tile to transistors is drawn from the same row-packed illustration, not from a
+routed layout. The [explorer site](docs/site/index.html) replaces it.
 
 ## How small?
 
@@ -378,6 +421,14 @@ Then a terminal at 115,200 baud shows the demo: buttons timestamped to the 20 ns
 blinking from the timebase, and an echo. With the real QSPI Pmod on port JA, `make bit PMOD=1`
 tests the actual memory chips. Full guide: [fpga/basys3/README.md](fpga/basys3/README.md).
 
+![A simulated Basys 3 running the demo program: button presses are timestamped in the terminal, LED 0 blinks from the timebase, and a typed key comes back](docs/images/explorer/fpga.gif)
+
+<sub>**Simulated, not a real board.** `make -C fpga/basys3 record` runs the demo on the whole board
+design in Icarus Verilog, with the UART and the blink sped up so it fits in a short run;
+`fpga/basys3/rec_basys3.sv` writes down the LEDs, the 7-segment display, the buttons and the
+serial port, and `docs/tools/fpga_media.py` draws them. Nothing has run on a real Basys 3 yet.
+[Still image](docs/images/explorer/fpga.png) for readers with motion turned off.</sub>
+
 ## Using it
 
 **Hardware:** a Tiny Tapeout demo board and the Tiny Tapeout QSPI Pmod on the bidirectional
@@ -523,19 +574,19 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
-| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** at v19; re-run on v20 |
+| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
-| `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 17 |
+| `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
 | `make printf` | `tp_printf` against Python's `%` formatting, 23 cases | 23 |
 | `make spi` | software SPI reads a simulated W25Q128's JEDEC ID | 2 |
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
 | `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
-| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`): docs, ports, build config | passes |
-| `make timing` | critical-path estimate from real sky130 cell delays | 6.9 ns / 20 ns at v19; re-run on v20 |
+| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
+| `make timing` | critical-path estimate from real sky130 cell delays | 12.65 ns / 20 ns, slow corner, estimate before layout (v20) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
-| `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped at v19; re-run on v20 |
+| `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
 | `make lint` | Verilator `-Wall`, no waivers | clean |
 
@@ -564,6 +615,49 @@ treated as unsigned, arithmetic shifts losing the sign, a dropped carry between 
 the suite caught every one. One test was too weak to catch the `GPIO_CLR` bug at first; it was
 strengthened.
 
+## Design
+
+The explorer site is meant to read like a logic analyser's capture, kept calm enough for long
+reading. We call the direction **Scope**.
+
+- **Time runs left to right.** A thin cycle ruler under the header marks each section as a tick
+  and follows your place on the page. Recorded traces are amber; the cursor that marks "now",
+  links and focus rings are one cool probe blue. Light mode is the capture printed on paper;
+  dark mode is the instrument's screen.
+- **Readable first.** Body text is Atkinson Hyperlegible Next and values are Atkinson
+  Hyperlegible Mono, both drawn so that 0/O and 1/l/I never get confused on pages full of
+  `0x0000012B`. Headings use Barlow Semi Condensed, the lettering of an instrument's front
+  panel. Lines stay around 56 characters. All three fonts are SIL Open Font License files
+  inlined into the pages.
+- **Colour never carries meaning alone.** Every evidence label has a word and a drawn shape,
+  every signal row and block has its name, and the block colours were checked for
+  colour-vision deficiency in both themes.
+- **Motion is physical and quiet.** The tour cursor, the deadline lab and the register ring move
+  on a critically damped spring: they arrive quickly and settle without bouncing, and you can
+  interrupt them. Buttons give a 0.97 press. With reduced motion turned on, everything jumps
+  straight to its end state.
+- **The zoom is drawn the way [Visual 6502](http://www.visual6502.org/) draws a die**: every
+  layer as translucent colour on black, so a transistor shows where red polysilicon crosses
+  yellow diffusion. The cells and their geometry are Tiqora's real sky130 cells
+  (`docs/tools/die_map.py`); their positions come from a row packer, not a placer, and the page
+  says so at every zoom level. No Visual 6502 code or data is used, only the idea of the view.
+  As you scroll the stage stays still and the camera follows on a spring; with reduced motion it
+  becomes four still views with buttons.
+- **The overview opens like a product page.** The name, then the tile of real cells lying tilted
+  in perspective; as you scroll the copy lifts away and the tile settles flat, straight into the
+  zoom. Then four big numbers, each with how it was obtained. Scroll sets the target and the
+  same spring follows it; with reduced motion the tile simply rests flat.
+- **The Basys 3 board is a recording too, and it plays live.** On the overview you can play or
+  drag through the recorded run (`docs/site/lib/board.js`); the README shows the same run as an
+  animation. It looks like the board (green board, red 7-segment digits, green LEDs at their real
+  duty cycle) but every frame comes from a simulation, and its corner says *Simulated board, not
+  a real one*.
+- **Honest about where numbers come from.** Labs say *computed* and link to the recording they
+  are derived from; the zoom says *illustrative* where it is; nothing is drawn by hand.
+
+Every page works without JavaScript as plain text, keeps its keyboard controls, and has no
+horizontal scroll at phone width.
+
 ## Repository
 
 ```
@@ -578,14 +672,24 @@ sw/demoboard/  tpboot.py: program Tiqora through the demo board's USB-C port
 sw/            tiqora.h (timing), tp_io.h (UART/GPIO), tp_printf.h, tp_spi.h, crt0.S, link.ld, link_ram.ld,
                lib/rt.c, rv32e_check.py, tpload.py (UART loader), examples/, program generators
 test/          every testbench above
-docs/tools/    layout_preview.py, figures.py, build_explorer.py — regenerate every image
-               and the interactive explorer
+fpga/basys3/   the Digilent Basys 3 build; rec_basys3.sv records a simulated run (make record)
+docs/site/     the explorer site: pages/ (templates), lib/ (shared styles, scripts and fonts),
+               data/ (atlas, tours, die map), and the built pages next to them
+docs/atlas/    hand-written notes the atlas adds to what it reads from the RTL
+docs/fpga/     the recorded Basys 3 run behind the board animation
+docs/tools/    atlas.py, traces.py, die_map.py, build_site.py, check_site.py, readme_media.py,
+               site_shots.py, fpga_media.py: the site and its README pictures;
+               layout_preview.py, figures.py, build_explorer.py: the other images
 syn/           synthesis and area scripts
 .github/       Tiny Tapeout CI: gds (hardening + 3D viewer), test, docs, fpga
 ```
 
 Sister project: [tinytapeout-tiqora](https://github.com/Normansrule/tinytapeout-tiqora)
 — the same timing unit with no CPU, controlled over USB serial, in 1 × 2 tiles (140 €).
+
+## Maintainer
+
+Maintained by [@Normansrule](https://github.com/Normansrule); see [MAINTAINERS.md](MAINTAINERS.md).
 
 Apache 2.0 licensed. Credits: the nibble-serial approach follows TinyQV by Michael Bell;
 the sky130 PDK is by SkyWater and Google; fabrication via Tiny Tapeout.

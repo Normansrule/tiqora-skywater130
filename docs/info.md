@@ -28,10 +28,10 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 6.9 ns worst path against 20 ns (v19 estimate from cell delays; routed timing comes from CI) |
-| **Area** | 49,200–50,800 µm² of standard cells measured at v19; v20's prefetch adds an estimated 1.7% (generic-gate count) — re-measure with `make area` |
+| **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
+| **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 240 self-checking checks and 6 cocotb tests on RTL; cocotb on a sky130 gate netlist; the official RISC-V tests (37/37 at v19) |
+| **Verification** | 470 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (all v20) |
 
 
 ## Status
@@ -46,12 +46,11 @@ affect are marked for re-run rather than carried forward.
 | ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
 | ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |
 | ✅ **Docs (v20)** | every link, image, `make` target and script mentioned exists (`make docs`, part of `make sim`) |
-| ⏳ **Official RISC-V tests** | 37/37 at v19 (12,521 signature words); **re-run on v20 required** (`make act`) |
-| ⏳ **Gate level** | cocotb on a sky130 netlist passed at v19 (5 pass, 1 skipped); **re-run on v20 required** (`make gl`) |
-| ⏳ **Area and logic timing** | measured at v19; **re-run on v20 required** (`make area`, `make timing`) |
-| ⏳ **Tiny Tapeout pre-flight** | passed at v19 with the old top-module name; re-run after the rename |
-| ⏳ **Hardening** | runs on GitHub after a push (`gds` workflow): the real routing and timing at 50 MHz |
-| ⏳ **FPGA board** | Vivado build and a real Basys 3: `make bit && make prog` in `fpga/basys3` |
+| ✅ **Official RISC-V tests (v20)** | 37/37 (`make act`) |
+| ✅ **Gate level (v20)** | cocotb on a sky130 netlist: 5 pass, 1 skipped by design (`make gl`) |
+| ✅ **Area (v20)** | 50,880 µm², 1,191 flip-flops, 67% of the 2 × 2 die (`make area`); logic timing 12.65 ns, an estimate before layout (`make timing`) |
+| ❌ **Place and route** | LibreLane 3.0.14 stops in detailed placement with `DPL-0036` at 2 × 2, locally and in the `gds` workflow; no routed layout, routed timing or pre-flight yet |
+| ⏳ **FPGA board** | open-tool bitstream built and checked at the pins in simulation; not built with Vivado, not run on a real Basys 3 |
 | ⏳ **Silicon** | after submission to a Tiny Tapeout shuttle |
 
 ## What it looks like
@@ -63,19 +62,11 @@ multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
 ![From the demo board to Tiqora's tiles on the die](images/board_to_silicon.svg)
 
 
-**The routed chip, once CI has built it.** Every push runs Tiny Tapeout's full hardening flow on GitHub, which
-places and wires every cell and publishes the actual layout that goes to the fab, with
-[a 3D view of it](https://normansrule.github.io/tiqora-skywater130/).
+**An illustration, not a placement.** There is no routed layout yet. This is every real sky130
+cell of the synthesized design, drawn with its real geometry but packed into rows block by
+block by a simple script (`docs/tools/layout_preview.py`) inside the 334.9 × 225.8 µm tile:
 
-Once the first `gds` run finishes, the render is at
-https://normansrule.github.io/tiqora-skywater130/gds_render.png. If it is missing, the `gds`
-workflow hasn't finished yet, or GitHub Pages isn't enabled: Settings → Pages → Source: GitHub Actions.
-
-**Before routing, block by block.** Every cell of the synthesized design, placed by block
-inside the 334.9 × 225.8 µm tile — the register file's regular grid of flip-flops on the left,
-the irregular logic of the CPU beside it:
-
-![Every real sky130 standard cell in Tiqora, placed block by block inside the 2x2 tile](images/layout_blocks.png)
+![Illustration: Tiqora's real sky130 cells packed into rows block by block, not a placement](images/layout_blocks.png)
 
 **One flip-flop, taken apart.** The register file is 480 copies of this cell. Its real
 manufacturing layers — N-well, diffusion, polysilicon gates, contacts, local interconnect, vias,
@@ -85,10 +76,10 @@ metal 1 — separate and rejoin:
 
 ## Explore it interactively
 
-[**Open the chip explorer**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/explorer.html)
-(or open `docs/explorer.html` from a clone): zoom from the whole tile down to transistors,
-click any of the 24 pins to see what it does, step a 32-bit addition through the nibble adder
-one clock at a time, and browse all 48 instructions with their bit-level encodings.
+[**Open the explorer site**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html)
+(or open `docs/site/index.html` from a clone): six sequences recorded from the RTL with play,
+step and captions, a chip atlas of every block, measured area against the die, and the evidence
+behind every status line.
 
 ## How small?
 
@@ -475,19 +466,19 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
-| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** at v19; re-run on v20 |
+| `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
-| `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 17 |
+| `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
 | `make printf` | `tp_printf` against Python's `%` formatting, 23 cases | 23 |
 | `make spi` | software SPI reads a simulated W25Q128's JEDEC ID | 2 |
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
 | `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
-| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`): docs, ports, build config | passes |
-| `make timing` | critical-path estimate from real sky130 cell delays | 6.9 ns / 20 ns at v19; re-run on v20 |
+| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
+| `make timing` | critical-path estimate from real sky130 cell delays | 12.65 ns / 20 ns, slow corner, estimate before layout (v20) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
-| `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped at v19; re-run on v20 |
+| `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
 | `make lint` | Verilator `-Wall`, no waivers | clean |
 

@@ -1,0 +1,151 @@
+<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 2x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "deadline", "site", "board"], "scripts": ["die", "labs", "board"]} -->
+<section class="reveal bleed" id=reveal aria-labelledby=hero-h>
+ <div class=reveal-stage>
+  <div class=reveal-copy>
+   <p class=eyebrow>A RISC-V microcontroller for Tiny Tapeout</p>
+   <h1 id=hero-h>Tiqora</h1>
+   <p class=tagline>Time, as an operand.</p>
+  <p class=lede>A 32-bit RV32E processor that adds four bits per clock, plus a timing unit that stamps pin edges and fires output pulses on the exact clock tick software asked for. It is built for SkyWater sky130 through Tiny Tapeout and fits, as synthesized cells, in 67% of a 2x2 block of tiles. Its layout does not yet fit.</p>
+  <div class=row>
+   <a class=btn href="tours.html">Watch it run</a>
+   <a class="btn ghost" href="atlas.html">Open the chip atlas</a>
+   <a class="btn ghost" href="evidence.html">What is proven</a>
+  </div>
+  <p class=small>Every waveform on this site was recorded from the RTL in simulation. Every number carries how it was obtained: <span class="ev measured">measured</span> <span class="ev estimate">estimate</span> <span class="ev fail">failed</span> <span class="ev todo">not yet</span>.</p>
+ </div>
+  <div class=reveal-chip aria-hidden=true><div class=chip3d><i class=sheen></i></div><i class=shadow></i></div>
+  <p class=reveal-cap>{{die:cells}} real sky130 cells, packed by a script into one Tiny Tapeout 2x2 tile. Keep scrolling to fall into it. <span class="ev illustrative">illustrative</span></p>
+ </div>
+</section>
+<script>TQDie.reveal(document.getElementById("reveal"), DATA("die"));</script>
+
+
+<section class="zoom bleed" id=zoom aria-labelledby=zoom-h>
+ <div class=zoom-stage>
+  <canvas aria-hidden=true></canvas>
+  <p class=zoom-label>Drawing {{die:cells}} cells…</p>
+  <ul class=zoom-legend hidden aria-label="Layer colours">
+   <li><i style="--c:#d9bb3e"></i>diffusion</li>
+   <li><i style="--c:#d8463a"></i>polysilicon</li>
+   <li><i style="--c:#4f86d9"></i>local interconnect</li>
+   <li><i style="--c:#f2f2ee"></i>contacts</li>
+   <li><i style="--c:#7d858c"></i>metal 1</li>
+  </ul>
+  <div class=zoom-scale aria-hidden=true><span></span></div>
+ </div>
+ <div class=zoom-go role=group aria-label="Zoom level"><button type=button>A grain of salt</button><button type=button>The whole tile</button><button type=button>Rows of cells</button><button type=button>One flip-flop</button></div>
+ <div class=zoom-steps>
+  <div data-stage><div>
+   <h2 id=zoom-h>The size of a grain of salt</h2>
+   <p>The amber outline is all of Tiqora: a Tiny Tapeout 2x2 tile, <span class=num>{{die:tile}}</span> µm. Beside it, to scale, is a grain of table salt about 300 µm across: about the same size. <span class="ev illustrative">illustrative</span></p>
+   <p class=small>Scroll, and the view falls into it.</p>
+  </div></div>
+  <div data-stage><div>
+   <h2>{{die:cells}} cells in {{die:blocks}} blocks</h2>
+   <p>Synthesized with each block kept whole, Tiqora is <span class=num>{{die:cells}}</span> standard cells of <span class=num>{{die:kinds}}</span> kinds. The largest block is the {{die:big}}. Each block is outlined in its colour from the <a href=atlas.html>atlas</a>:{{die:cats}}. <span class="ev measured">measured</span> <span class=small>{{die:synth}}</span></p>
+   <p>A script packs them here row by row, one block at a time. That shows how big each block is, not where it will sit: the real layout does not fit at 2x2 yet. <span class="ev illustrative">illustrative</span></p>
+  </div></div>
+  <div data-stage><div>
+   <h2>Rows of real cells</h2>
+   <p>Each row is <span class=num>{{die:row}}</span> µm tall, and every other one is flipped so neighbours share a power rail. The shapes are the cells' real geometry from the SkyWater sky130 library, drawn the way <a href="http://www.visual6502.org/">Visual 6502</a> draws a die: every layer as translucent colour on black.</p>
+  </div></div>
+  <div data-stage><div>
+   <h2>One flip-flop</h2>
+   <p>Outlined in blue: one D flip-flop, <code>{{die:focus}}</code>, <span class=num>{{die:focus_w}} × {{die:row}}</span> µm. It sits in the {{die:home}}. Where red polysilicon crosses yellow diffusion is a transistor's gate; blue is local interconnect, white squares are contacts, and the pale bands are the metal 1 power rails.</p>
+  </div></div>
+ </div>
+</section>
+<script>
+TQDie.mount(document.getElementById("zoom"), DATA("die"), {
+  font: getComputedStyle(document.body).fontFamily,
+  labels: ["To scale. The grain of salt is illustrative.", "Real sky130 cells, packed by a script, not placed."]
+});
+</script>
+
+<section aria-labelledby=num-h>
+ <h2 id=num-h class=sr>In numbers</h2>
+ <div class=stats>
+  <div class=stat><b>{{die:tile_r}}<small>µm</small></b><span>all of it: one Tiny Tapeout 2x2 tile, the size the shuttle sets.</span></div>
+  <div class=stat><b>{{die:cells}}</b><span>standard cells, synthesized with each block kept whole. <span class="ev measured">measured</span></span></div>
+  <div class=stat><b>0<small>ticks late</small></b><span>TRIG0 rises on exactly the tick software armed. <span class="ev recorded">recorded</span> <a href="tours.html#seq=deadline">the deadline tour</a></span></div>
+  <div class=stat><b>8<small>clocks</small></b><span>for every 32-bit add: one 4-bit adder, eight nibbles. <span class="ev recorded">recorded</span> <a href="tours.html#seq=nibble-add">the add, nibble by nibble</a></span></div>
+ </div>
+</section>
+
+<section aria-labelledby=dl-h>
+ <h2 id=dl-h>Fire a deadline</h2>
+ <p>Software arms a channel with a tick number and moves on. When the timebase reaches that tick, the pin rises on exactly that clock, with no software in the path. Pick how far ahead to arm it.</p>
+ <div class=deadline id=deadline><p class=small>The lab needs JavaScript. <a href="tours.html#seq=deadline">The recorded deadline tour</a> shows the same moment, cycle by cycle.</p></div>
+</section>
+<script>
+TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs: DATA("site").clock_ns, resume: [10, 17], recordedHref: "tours.html#seq=deadline" });
+</script>
+
+<section aria-labelledby=board-h>
+ <h2 id=board-h>On a Basys 3, simulated</h2>
+ <p>The same RTL on a Digilent Basys 3, with the flash and RAMs emulated in block RAM and the board's USB port as Tiqora's serial port. Press play, or drag through the run: button presses are timestamped to the 20 ns tick, LED 0 blinks from the timebase, and a typed key comes back.</p>
+ <div class=board-live><div class=scroll id=board tabindex=0 role=region aria-label="The simulated board; scrolls sideways on narrow screens">
+  <img src="{{img:docs/images/explorer/fpga.png}}" width=880 height=560 alt="The simulated Basys 3 at the end of the demo run: the terminal lists each button press with its tick" style="display:block;max-width:100%;height:auto">
+ </div></div>
+ <p class=board-cap><span class="ev recorded">recorded</span> <span class="ev illustrative">simulated board, not a real one</span> <code>make -C fpga/basys3 record</code> runs the whole board design in Icarus Verilog and <code>fpga/basys3/rec_basys3.sv</code> writes down the LEDs, display, buttons and serial port; this board is drawn from that file, cycle by cycle. Timing is shortened for simulation (8 clocks per UART bit, LED 0 toggling every 40,000 ticks instead of every 25,000,000). Nothing has run on a real Basys 3 yet.</p>
+</section>
+<script>TQBoard.mount(document.getElementById("board"), DATA("board"));</script>
+
+<section aria-labelledby=io-h>
+ <h2 id=io-h>What goes in and what comes out</h2>
+ <figure class=hero-art aria-label="Data flow through Tiqora">{{static:flow}}</figure>
+</section>
+
+<section aria-labelledby=q>
+ <h2 id=q>Seven questions</h2>
+ <div class=qa><h3>What is Tiqora?</h3><div>
+  <p>A complete microcontroller for one Tiny Tapeout design slot of 2 × 2 tiles: an RV32E core (the 32-bit RISC-V base with 16 registers, here x1 to x15 plus x0), a QSPI memory controller, a UART, GPIO and a timing unit, behind the 24 Tiny Tapeout pins. It runs C compiled with Clang. The core is <em>nibble-serial</em>: one 4-bit adder does every 32-bit add in eight clocks, which is what makes the processor small.</p>
+  <p>Eleven <b>Xpulse</b> instructions on RISC-V's custom-0 opcode read the timebase, arm deadlines, wait for them and pop timestamped events. Example: <code>tarm x1, x0</code> then <code>twait x1</code> makes TRIG0 rise on tick x1 exactly, with no software in the path. <a href="tours.html#seq=deadline">See it happen</a>.</p>
+ </div></div>
+ <div class=qa><h3>What enters?</h3><div>
+  <p><b>Code and data</b> from the Tiny Tapeout QSPI Pmod: a 16 MB flash holds the program and two 8 MB RAMs hold data, reached four bits at a time over <code>uio[7:0]</code>. <b>Pin edges</b> on <code>ui_in[7:0]</code>, timestamped by the timing unit. <b>Serial bytes</b> on <code>ui_in[3]</code>, for <code>printf</code>-style I/O or, with <code>ui_in[7]</code> high at reset, to load a program with no flasher. One 50 MHz clock and an active-low reset.</p>
+ </div></div>
+ <div class=qa><h3>What happens inside?</h3><div>
+  <p>After reset the QSPI controller wakes both memory chips in six steps, then the core fetches. Each instruction is a pass of eight clocks while the register file rotates past the single adder, least significant nibble first. Xpulse instructions talk to the timing unit directly, with no bus access. <a href="tours.html#seq=reset">Reset and wake-up</a> · <a href="tours.html#seq=fetch">a fetch at the pins</a> · <a href="tours.html#seq=nibble-add">an add, nibble by nibble</a>.</p>
+ </div></div>
+ <div class=qa><h3>What comes out?</h3><div>
+  <p>On <code>uo_out[7:0]</code>: TRIG0 and TRIG1, the deadline outputs; EVT (events queued) and OVF (one was lost); HALT and ILLEGAL; a heartbeat; and UART TX on <code>uo_out[4]</code>. Any of them can be turned into a GPIO output instead. <a href="atlas.html">The pinout and every block</a>.</p>
+ </div></div>
+ <div class=qa><h3>What exists today?</h3><div>
+  <p>SystemVerilog RTL, a C toolchain set-up and libraries, a bootloader, testbenches, a Basys 3 FPGA build and Tiny Tapeout packaging. <b>No chip and no board run.</b> The layout fails placement at 2x2 (<code>DPL-0036</code>), so the tile size is still an open decision. <a href="physical.html">Physical design status</a>.</p>
+ </div></div>
+ <div class=qa><h3>What is proven or measured?</h3><div>
+  <p><span class="ev measured">measured</span> 470 RTL checks in 16 suites, 6 cocotb tests, the official RISC-V tests 37/37, gate-level simulation of the sky130 netlist, and synthesized cell area. <span class="ev estimate">estimate</span> logic timing before layout. <span class="ev fail">failed</span> place and route at 2x2. <span class="ev todo">not yet</span> formal proofs, signoff timing, a shuttle, silicon. <a href="evidence.html">The evidence ladder</a>.</p>
+ </div></div>
+ <div class=qa><h3>What can I try?</h3><div>
+  <p>Every tour on this site is regenerated by one command, and so is every check behind it:</p>
+<pre class=cmd><span class=c># Icarus Verilog 12 and Python 3</span>
+git clone {{repo}}
+cd tiqora-skywater130
+make -C test tour                <span class=c># the recorded tour: 15 checks</span>
+python3 docs/tools/traces.py     <span class=c># turn it into this site's fixtures</span>
+make -C test sim                 <span class=c># every suite</span></pre>
+  <p>Or change the operands of the recorded add in the <a href="tours.html#seq=nibble-add">nibble lab</a> and watch the eight phases recompute.</p>
+ </div></div>
+</section>
+
+<section aria-labelledby=tours>
+ <h2 id=tours>Six recorded tours, and the whole run</h2>
+ <p>Each one is a window of one simulation of the real top module, <code>tt_um_normansrule_tiqora</code>, with flash and RAM models on its pins. Play the 10 to 25 second summary, or step through every change.</p>
+ <ol class=tourlist id=tourcards></ol>
+</section>
+<script>
+(function () {
+  const box = document.getElementById("tourcards");
+  DATA("tours").forEach(f => {
+    const li = document.createElement("li");
+    li.innerHTML = "<a></a><p></p><span class=small></span>";
+    li.querySelector("a").href = "tours.html#seq=" + f.id;
+    li.querySelector("a").textContent = f.title;
+    li.querySelector("p").textContent = f.summary;
+    li.querySelector(".small").textContent = (f.cycles[1] - f.cycles[0] + 1).toLocaleString("en-US") + " cycles, " + f.captions + " captions";
+    box.append(li);
+  });
+})();
+</script>
+<noscript><p>The tour list needs JavaScript; the tours are also in <code>docs/site/data/traces/</code> as JSON.</p></noscript>

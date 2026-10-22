@@ -1,0 +1,406 @@
+{
+ "chip": "Tiqora",
+ "repo": "https://github.com/Normansrule/tiqora-skywater130",
+ "ref": "v20.1",
+ "clock_ns": 20,
+ "die_um": [
+  334.88,
+  225.76
+ ],
+ "die_source": "docs/tile_template.json (tt_block_2x2_pg.def)",
+ "footer": "Tiqora is a RISC-V microcontroller for a Tiny Tapeout 2x2 tile on SkyWater sky130. Nothing on these pages has run on real silicon or a real FPGA board; every number says how it was obtained.",
+ "data": {
+  "die": "docs/site/data/die.json"
+ },
+ "pages": [
+  {
+   "id": "index",
+   "nav": "Overview"
+  },
+  {
+   "id": "tours",
+   "nav": "Tours"
+  },
+  {
+   "id": "atlas",
+   "nav": "Chip atlas"
+  },
+  {
+   "id": "physical",
+   "nav": "Physical design"
+  },
+  {
+   "id": "evidence",
+   "nav": "Evidence"
+  }
+ ],
+ "flow": {
+  "title": "Tiqora: what enters, what happens inside, what comes out",
+  "desc": "Program and data come from the QSPI Pmod's flash and RAM through the QSPI controller and the bus to the nibble-serial RV32E core. Pin edges enter the timing unit, which the core drives with Xpulse instructions. Triggers, flags and UART TX leave on uo_out.",
+  "size": [
+   1000,
+   440
+  ],
+  "columns": [
+   {
+    "x": 20,
+    "label": "What enters"
+   },
+   {
+    "x": 255,
+    "label": "Inside the chip"
+   },
+   {
+    "x": 790,
+    "label": "What comes out"
+   }
+  ],
+  "chip_box": [
+   235,
+   40,
+   520,
+   380
+  ],
+  "chip_label": "tt_um_normansrule_tiqora · tp_soc · one 50 MHz clock",
+  "nodes": [
+   {
+    "id": "pmod",
+    "label": "QSPI Pmod (uio)",
+    "lines": [
+     "16 MB flash: the program",
+     "2 × 8 MB RAM: data",
+     "SD0–SD3, SCK, three selects"
+    ],
+    "x": 20,
+    "y": 60,
+    "w": 190,
+    "h": 76
+   },
+   {
+    "id": "pins",
+    "label": "ui_in[7:0]",
+    "lines": [
+     "IN0–IN7: edges to timestamp",
+     "ui_in[3]: UART RX",
+     "ui_in[7] at reset: bootloader"
+    ],
+    "x": 20,
+    "y": 190,
+    "w": 190,
+    "h": 76
+   },
+   {
+    "id": "clk",
+    "label": "clk, rst_n",
+    "lines": [
+     "50 MHz, one clock domain",
+     "synchronous reset"
+    ],
+    "x": 20,
+    "y": 330,
+    "w": 190,
+    "h": 62
+   },
+   {
+    "id": "qspi",
+    "label": "QSPI controller",
+    "lines": [
+     "wakes both memories,",
+     "streams 4-bit reads"
+    ],
+    "x": 255,
+    "y": 60,
+    "w": 210,
+    "h": 62,
+    "cat": "interface",
+    "blocks": [
+     "qspi_ctrl"
+    ]
+   },
+   {
+    "id": "bus",
+    "label": "Bus",
+    "lines": [
+     "decodes addr[31:28]"
+    ],
+    "x": 255,
+    "y": 150,
+    "w": 210,
+    "h": 48,
+    "cat": "control",
+    "blocks": [
+     "tp_bus"
+    ]
+   },
+   {
+    "id": "rom",
+    "label": "Boot ROM",
+    "lines": [
+     "UART loader table"
+    ],
+    "x": 255,
+    "y": 245,
+    "w": 210,
+    "h": 48,
+    "cat": "memory",
+    "blocks": [
+     "tp_bootrom"
+    ]
+   },
+   {
+    "id": "core",
+    "label": "Nibble-serial RV32E core",
+    "lines": [
+     "one 4-bit adder, 8 phases",
+     "registers rotate past it"
+    ],
+    "x": 510,
+    "y": 60,
+    "w": 225,
+    "h": 62,
+    "cat": "compute",
+    "blocks": [
+     "tp_ncore",
+     "tp_nregfile"
+    ]
+   },
+   {
+    "id": "sync",
+    "label": "Timing unit (Xpulse)",
+    "lines": [
+     "timebase · capture ·",
+     "event queue · deadlines"
+    ],
+    "x": 510,
+    "y": 190,
+    "w": 225,
+    "h": 62,
+    "cat": "timing",
+    "blocks": [
+     "sync_unit",
+     "sync_timebase",
+     "sync_capture",
+     "sync_event_fifo",
+     "sync_compare"
+    ]
+   },
+   {
+    "id": "periph",
+    "label": "UART and GPIO",
+    "lines": [
+     "printf, pin select"
+    ],
+    "x": 510,
+    "y": 330,
+    "w": 225,
+    "h": 48,
+    "cat": "interface",
+    "blocks": [
+     "tp_periph",
+     "tp_uart"
+    ]
+   },
+   {
+    "id": "uo",
+    "label": "uo_out[7:0]",
+    "lines": [
+     "TRIG0, TRIG1 on the exact tick",
+     "EVT, OVF, HALT, ILLEGAL",
+     "uo_out[4]: UART TX"
+    ],
+    "x": 790,
+    "y": 190,
+    "w": 190,
+    "h": 76
+   }
+  ],
+  "edges": [
+   [
+    "pmod",
+    "qspi",
+    "SD0–3, SCK, CS"
+   ],
+   [
+    "qspi",
+    "bus"
+   ],
+   [
+    "rom",
+    "bus"
+   ],
+   [
+    "bus",
+    "core",
+    "instructions, data"
+   ],
+   [
+    "core",
+    "sync",
+    "Xpulse"
+   ],
+   [
+    "pins",
+    "sync",
+    "edges"
+   ],
+   [
+    "sync",
+    "uo",
+    "triggers, flags"
+   ],
+   [
+    "bus",
+    "periph"
+   ],
+   [
+    "periph",
+    "uo",
+    "TX, GPIO"
+   ]
+  ]
+ },
+ "ladder": [
+  {
+   "target": "Tiny Tapeout tile, 2x2 (what info.yaml submits)",
+   "note": "Each rung needs the one below it. Nothing above rung 3 has been reached at the configured tile size.",
+   "rungs": [
+    {
+     "rung": "RTL tested",
+     "state": "measured",
+     "why": "470 checks in 16 suites and 6 cocotb tests from the pins (<code>make -C test sim</code>, v20); the official RISC-V tests, 37/37 (<code>make act</code>, v20); the recorded tour, 15/15 (<code>make -C test tour</code>)."
+    },
+    {
+     "rung": "Formally checked",
+     "state": "none",
+     "word": "not done",
+     "why": "No formal proofs exist for this design. The repository has no SymbiYosys or other formal set-up."
+    },
+    {
+     "rung": "Synthesized",
+     "state": "measured",
+     "why": "50,880 µm² of sky130 cells, 1,191 flip-flops: 67% of the 2x2 die (<code>make area</code>, Yosys 0.33, v20). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
+    },
+    {
+     "rung": "Placed and routed",
+     "state": "fail",
+     "word": "failed",
+     "why": "LibreLane 3.0.14 stops in detailed placement with DPL-0036 at 2x2, locally and on GitHub. An experimental 3x2 copy did not converge in routing (10,796 violations at pass 8)."
+    },
+    {
+     "rung": "Timing checked",
+     "state": "none",
+     "word": "not reached",
+     "why": "Needs a routed layout. The only timing number is a pre-layout estimate: 12.7 ns worst path at the slow corner against 20 ns (<code>make timing</code>, ABC, no wire delay)."
+    },
+    {
+     "rung": "Submitted to a shuttle",
+     "state": "none",
+     "word": "not yet",
+     "why": "Needs a clean GDS and the Tiny Tapeout pre-flight at the chosen tile size."
+    },
+    {
+     "rung": "Fabricated",
+     "state": "none",
+     "word": "not yet",
+     "why": "No chip exists."
+    },
+    {
+     "rung": "Measured on silicon",
+     "state": "none",
+     "word": "not yet",
+     "why": "No chip exists, so there are no silicon measurements and no photographs on these pages."
+    }
+   ]
+  },
+  {
+   "target": "CPU / GPU / TPU modes build (FPGA and full sky130 chip only)",
+   "note": "Compiled only with <code>-DTIQORA_MODES</code>; the Tiny Tapeout tile's gate netlist is byte-identical without it (<code>bash syn/tile_identity.sh</code>).",
+   "rungs": [
+    {
+     "rung": "RTL tested",
+     "state": "measured",
+     "why": "230 checks over seeds 1 to 6, 8 of 8 mutants caught (<code>make -C test modes</code>); the Basys 3 design in simulation, 9 checks and a 25-line transcript matching <code>sw/modes_model.py</code>."
+    },
+    {
+     "rung": "Synthesized",
+     "state": "measured",
+     "why": "70,679 µm² flat (<code>MODES=1 bash syn/area_sky130.sh</code>, Yosys 0.33): it does not fit 2x2."
+    },
+    {
+     "rung": "Placed and routed",
+     "state": "none",
+     "word": "not attempted",
+     "why": "Needs a larger die than any Tiny Tapeout tile set considered so far."
+    }
+   ]
+  },
+  {
+   "target": "Digilent Basys 3 FPGA",
+   "note": "",
+   "rungs": [
+    {
+     "rung": "Board design simulated",
+     "state": "measured",
+     "why": "26 checks over four programs (<code>make -C fpga/basys3 sim</code>, v20)."
+    },
+    {
+     "rung": "Bitstream built",
+     "state": "est",
+     "word": "built, open tools",
+     "why": "Yosys 0.70, nextpnr-xilinx and prjxray build one and its netlist passes 4/4 at the board pins. Not a Vivado build, so no Vivado timing sign-off."
+    },
+    {
+     "rung": "Run on a board",
+     "state": "none",
+     "word": "not yet",
+     "why": "Nothing has run on a real Basys 3."
+    }
+   ]
+  }
+ ],
+ "gif": {
+  "fixture": "deadline",
+  "signals": [
+   "instr",
+   "state",
+   "uart_tx",
+   "deadline0",
+   "armed0",
+   "trig0"
+  ],
+  "out": "docs/images/explorer/tour.gif"
+ },
+ "fpga": {
+  "title": "Tiqora on a Basys 3: the demo program, simulated",
+  "chip": "Tiqora RTL",
+  "inside": "RV32E core, timing unit, UART; flash and RAM emulated in block RAM",
+  "buttons": {
+   "C": "reset",
+   "L": "IN4",
+   "R": "IN5",
+   "U": "IN6"
+  },
+  "leds": [
+   "blink",
+   "TRIG1",
+   "EVT",
+   "OVF",
+   "TX",
+   "HALT",
+   "ILLEGAL",
+   "HB",
+   "flash",
+   "RAM A",
+   "RAM B",
+   "",
+   "",
+   "",
+   "",
+   "run"
+  ],
+  "terminal": "text",
+  "terminal_title": "PC terminal, USB serial",
+  "note": "Recorded from RTL simulation, not a board: fpga/basys3/tb_basys3.sv runs sw/examples/basys3_demo.c on the whole board design (make -C fpga/basys3 record; its 6 checks pass). Timing is shortened for simulation: the UART runs at 8 clocks per bit, and LED 0 toggles every 40,000 ticks instead of every 25,000,000. Nothing has run on a real Basys 3.",
+  "pmod": "QSPI Pmod: emulated in block RAM here"
+ }
+}

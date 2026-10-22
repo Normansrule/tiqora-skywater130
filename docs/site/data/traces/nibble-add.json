@@ -1,0 +1,1141 @@
+{
+ "captions": [
+  {
+   "at": 614,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "add x11, x9, x10 has arrived. The core waits in ALIGN until the register file's phase counter comes round to 0: every pass starts there."
+  },
+  {
+   "at": 620,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 0: nibble 0 of x9 is 8, of x10 9; with carry-in 0 the 4-bit adder gives 1, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 621,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 1: nibble 1 of x9 is 7, of x10 a; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 622,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 2: nibble 2 of x9 is 6, of x10 b; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 623,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 3: nibble 3 of x9 is 5, of x10 c; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 624,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 4: nibble 4 of x9 is 4, of x10 d; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 625,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 5: nibble 5 of x9 is 3, of x10 e; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 626,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 6: nibble 6 of x9 is 2, of x10 f; with carry-in 1 the 4-bit adder gives 2, carry-out 1. That nibble is written into x11 as it leaves the bottom of the rotation."
+  },
+  {
+   "at": 627,
+   "blocks": [
+    "tp_ncore",
+    "tp_nregfile"
+   ],
+   "text": "Phase 7: nibble 7 of x9 is 1, of x10 0; with carry-in 1 the 4-bit adder gives 2, carry-out 0. That nibble is written into x11 as it leaves the bottom of the rotation."
+  }
+ ],
+ "checks": [
+  {
+   "ok": true,
+   "text": "x9 + x10 = 0x22222221 reached RAM A, least significant byte first"
+  }
+ ],
+ "cycles": [
+  612,
+  630
+ ],
+ "id": "nibble-add",
+ "kind": "recorded",
+ "kind_text": "Recorded from an RTL simulation, not computed in the browser",
+ "marks": [
+  {
+   "at": 620,
+   "label": "phase 0"
+  },
+  {
+   "at": 627,
+   "label": "phase 7"
+  }
+ ],
+ "model": {
+  "recorded": [
+   {
+    "a": 305419896,
+    "b": 267242409,
+    "op": "add",
+    "phases": [
+     {
+      "a_n": 8,
+      "bx_n": 9,
+      "cin": 0,
+      "cout": 1,
+      "phase": 0,
+      "rf_wd": 1,
+      "sum_n": 1
+     },
+     {
+      "a_n": 7,
+      "bx_n": 10,
+      "cin": 1,
+      "cout": 1,
+      "phase": 1,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 6,
+      "bx_n": 11,
+      "cin": 1,
+      "cout": 1,
+      "phase": 2,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 5,
+      "bx_n": 12,
+      "cin": 1,
+      "cout": 1,
+      "phase": 3,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 4,
+      "bx_n": 13,
+      "cin": 1,
+      "cout": 1,
+      "phase": 4,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 3,
+      "bx_n": 14,
+      "cin": 1,
+      "cout": 1,
+      "phase": 5,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 2,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 6,
+      "rf_wd": 2,
+      "sum_n": 2
+     },
+     {
+      "a_n": 1,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 0,
+      "phase": 7,
+      "rf_wd": 2,
+      "sum_n": 2
+     }
+    ],
+    "result": 572662305
+   },
+   {
+    "a": 4294967295,
+    "b": 1,
+    "op": "add",
+    "phases": [
+     {
+      "a_n": 15,
+      "bx_n": 1,
+      "cin": 0,
+      "cout": 1,
+      "phase": 0,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 1,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 2,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 3,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 4,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 5,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 6,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 1,
+      "cout": 1,
+      "phase": 7,
+      "rf_wd": 0,
+      "sum_n": 0
+     }
+    ],
+    "result": 0
+   },
+   {
+    "a": 4294967295,
+    "b": 1,
+    "op": "sub",
+    "phases": [
+     {
+      "a_n": 15,
+      "bx_n": 14,
+      "cin": 1,
+      "cout": 1,
+      "phase": 0,
+      "rf_wd": 14,
+      "sum_n": 14
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 1,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 2,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 3,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 4,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 5,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 6,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 7,
+      "rf_wd": 15,
+      "sum_n": 15
+     }
+    ],
+    "result": 4294967294
+   },
+   {
+    "a": 2147483648,
+    "b": 2147483648,
+    "op": "add",
+    "phases": [
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 0,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 1,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 2,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 3,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 4,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 5,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 6,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 8,
+      "bx_n": 8,
+      "cin": 0,
+      "cout": 1,
+      "phase": 7,
+      "rf_wd": 0,
+      "sum_n": 0
+     }
+    ],
+    "result": 0
+   },
+   {
+    "a": 2147483648,
+    "b": 2147483648,
+    "op": "sub",
+    "phases": [
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 0,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 1,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 2,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 3,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 4,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 5,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 6,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 8,
+      "bx_n": 7,
+      "cin": 1,
+      "cout": 1,
+      "phase": 7,
+      "rf_wd": 0,
+      "sum_n": 0
+     }
+    ],
+    "result": 0
+   },
+   {
+    "a": 15,
+    "b": 16,
+    "op": "add",
+    "phases": [
+     {
+      "a_n": 15,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 0,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 1,
+      "cin": 0,
+      "cout": 0,
+      "phase": 1,
+      "rf_wd": 1,
+      "sum_n": 1
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 2,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 3,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 4,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 5,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 6,
+      "rf_wd": 0,
+      "sum_n": 0
+     },
+     {
+      "a_n": 0,
+      "bx_n": 0,
+      "cin": 0,
+      "cout": 0,
+      "phase": 7,
+      "rf_wd": 0,
+      "sum_n": 0
+     }
+    ],
+    "result": 31
+   },
+   {
+    "a": 15,
+    "b": 16,
+    "op": "sub",
+    "phases": [
+     {
+      "a_n": 15,
+      "bx_n": 15,
+      "cin": 1,
+      "cout": 1,
+      "phase": 0,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 14,
+      "cin": 1,
+      "cout": 0,
+      "phase": 1,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 2,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 3,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 4,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 5,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 6,
+      "rf_wd": 15,
+      "sum_n": 15
+     },
+     {
+      "a_n": 0,
+      "bx_n": 15,
+      "cin": 0,
+      "cout": 0,
+      "phase": 7,
+      "rf_wd": 15,
+      "sum_n": 15
+     }
+    ],
+    "result": 4294967295
+   }
+  ],
+  "what": "the browser recomputes any operands with the same nibble recurrence; docs/tools/check_site.py checks it against every recorded operation below"
+ },
+ "provenance": {
+  "command": "make -C test tour  (then python3 docs/tools/traces.py)",
+  "program": "sw/mktour.py",
+  "sampling": "one sample per clock, on the falling edge, after every flip-flop has updated; cycle 0 is the first rising edge after reset is released; 1 cycle = 20 ns at 50 MHz",
+  "simulator": "Icarus Verilog version 12.0 (stable) ()",
+  "sources": {
+   "src/boot/tp_bootrom.sv": "7c543243b98372361b1ee8b071fae004617e0c08a9e2edd2eb91b9bec6e18790",
+   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
+   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/core/tp_ncore.sv": "78238b1fae525f200681cc44d2059921c63923adb2b6400c52343a5b4822201b",
+   "src/core/tp_nregfile.sv": "dd376d3ba50e2ee57d1ebb5ac33eb63aeb4f47236b690058ef4b26b1dc2df3fa",
+   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
+   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
+   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
+   "src/sync/sync_compare.sv": "532fda2a6751b3b1134744324ca9260de87b18ccb572aa18e21f0da8df998224",
+   "src/sync/sync_event_fifo.sv": "8072350d74f351b9ad8bbfbf90613ebb21058e3ccea1e7ea7e41ffdc945d1304",
+   "src/sync/sync_timebase.sv": "c7a8d227e898022290a6fd1fade22e451c9b5adf532139151d7c8872ceb1f1ef",
+   "src/sync/sync_unit.sv": "9b659ce29646ac5f536a629f6fcf83acc039761c72c61e4e8a1b4b592be4f270",
+   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
+   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
+   "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
+   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
+   "test/tb_tour.sv": "e4d90d112b50a4b2fa35432b94bc1d1be1a6be99f03f7422588dcc771d7d99d6"
+  },
+  "testbench": "test/tb_tour.sv"
+ },
+ "schema": 1,
+ "signals": [
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     0
+    ],
+    [
+     614,
+     1
+    ],
+    [
+     620,
+     2
+    ],
+    [
+     628,
+     0
+    ]
+   ],
+   "enum": [
+    "FETCH",
+    "ALIGN",
+    "PASS",
+    "TWAIT",
+    "HALT",
+    "MEM",
+    "XP",
+    "SHIFT"
+   ],
+   "id": "state",
+   "kind": "enum",
+   "label": "core state",
+   "meaning": "tp_ncore's state register",
+   "width": 3
+  },
+  {
+   "block": "tp_nregfile",
+   "changes": [
+    [
+     612,
+     0
+    ],
+    [
+     613,
+     1
+    ],
+    [
+     614,
+     2
+    ],
+    [
+     615,
+     3
+    ],
+    [
+     616,
+     4
+    ],
+    [
+     617,
+     5
+    ],
+    [
+     618,
+     6
+    ],
+    [
+     619,
+     7
+    ],
+    [
+     620,
+     0
+    ],
+    [
+     621,
+     1
+    ],
+    [
+     622,
+     2
+    ],
+    [
+     623,
+     3
+    ],
+    [
+     624,
+     4
+    ],
+    [
+     625,
+     5
+    ],
+    [
+     626,
+     6
+    ],
+    [
+     627,
+     7
+    ],
+    [
+     628,
+     0
+    ],
+    [
+     629,
+     1
+    ],
+    [
+     630,
+     2
+    ]
+   ],
+   "id": "phase",
+   "kind": "bus",
+   "label": "phase",
+   "meaning": "register-file rotation phase 0..7",
+   "width": 3
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     9
+    ],
+    [
+     613,
+     10
+    ],
+    [
+     614,
+     6
+    ],
+    [
+     615,
+     5
+    ],
+    [
+     616,
+     4
+    ],
+    [
+     617,
+     3
+    ],
+    [
+     618,
+     2
+    ],
+    [
+     619,
+     1
+    ],
+    [
+     620,
+     8
+    ],
+    [
+     621,
+     7
+    ],
+    [
+     622,
+     6
+    ],
+    [
+     623,
+     5
+    ],
+    [
+     624,
+     4
+    ],
+    [
+     625,
+     3
+    ],
+    [
+     626,
+     2
+    ],
+    [
+     627,
+     1
+    ],
+    [
+     628,
+     8
+    ],
+    [
+     629,
+     7
+    ],
+    [
+     630,
+     6
+    ]
+   ],
+   "id": "a_n",
+   "kind": "bus",
+   "label": "a nibble (rs1)",
+   "meaning": "adder input A",
+   "width": 4
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     9
+    ],
+    [
+     613,
+     10
+    ],
+    [
+     614,
+     11
+    ],
+    [
+     615,
+     12
+    ],
+    [
+     616,
+     13
+    ],
+    [
+     617,
+     14
+    ],
+    [
+     618,
+     15
+    ],
+    [
+     619,
+     0
+    ],
+    [
+     620,
+     9
+    ],
+    [
+     621,
+     10
+    ],
+    [
+     622,
+     11
+    ],
+    [
+     623,
+     12
+    ],
+    [
+     624,
+     13
+    ],
+    [
+     625,
+     14
+    ],
+    [
+     626,
+     15
+    ],
+    [
+     627,
+     0
+    ],
+    [
+     628,
+     9
+    ],
+    [
+     629,
+     10
+    ],
+    [
+     630,
+     11
+    ]
+   ],
+   "id": "bx_n",
+   "kind": "bus",
+   "label": "b nibble (rs2)",
+   "meaning": "adder input B (inverted for sub)",
+   "width": 4
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     0
+    ],
+    [
+     613,
+     1
+    ],
+    [
+     620,
+     0
+    ],
+    [
+     621,
+     1
+    ],
+    [
+     628,
+     0
+    ]
+   ],
+   "id": "cin",
+   "kind": "bit",
+   "label": "carry in",
+   "meaning": "sub at phase 0, else the carry flip-flop",
+   "width": 1
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     2
+    ],
+    [
+     613,
+     5
+    ],
+    [
+     614,
+     2
+    ],
+    [
+     620,
+     1
+    ],
+    [
+     621,
+     2
+    ],
+    [
+     628,
+     1
+    ]
+   ],
+   "id": "sum_n",
+   "kind": "bus",
+   "label": "sum nibble",
+   "meaning": "adder output",
+   "width": 4
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     612,
+     1
+    ],
+    [
+     619,
+     0
+    ],
+    [
+     620,
+     1
+    ],
+    [
+     627,
+     0
+    ],
+    [
+     628,
+     1
+    ]
+   ],
+   "id": "cout",
+   "kind": "bit",
+   "label": "carry out",
+   "meaning": "into the carry flip-flop",
+   "width": 1
+  },
+  {
+   "block": "tp_nregfile",
+   "changes": [
+    [
+     612,
+     0
+    ],
+    [
+     620,
+     1
+    ],
+    [
+     628,
+     0
+    ]
+   ],
+   "id": "rf_we",
+   "kind": "bit",
+   "label": "rf_we",
+   "meaning": "register-file write enable",
+   "width": 1
+  },
+  {
+   "block": "tp_nregfile",
+   "changes": [
+    [
+     612,
+     2
+    ],
+    [
+     613,
+     5
+    ],
+    [
+     614,
+     2
+    ],
+    [
+     620,
+     1
+    ],
+    [
+     621,
+     2
+    ],
+    [
+     628,
+     1
+    ]
+   ],
+   "id": "rf_wd",
+   "kind": "bus",
+   "label": "rf_wd",
+   "meaning": "nibble written into rd",
+   "width": 4
+  }
+ ],
+ "summary": "One add through the single 4-bit adder: eight clocks, least significant nibble first, the carry held in a flip-flop between them.",
+ "title": "A 32-bit add, four bits per clock"
+}

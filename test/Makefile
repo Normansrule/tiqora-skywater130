@@ -67,9 +67,9 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim
+.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust modes shared docs
+sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust modes tour shared docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
@@ -249,6 +249,15 @@ spi:
 docs:
 	cd .. && python3 docs/tools/check_docs.py
 	cd .. && python3 docs/tools/progress.py --check
+	cd .. && python3 docs/tools/check_site.py
+	cd .. && python3 docs/tools/die_map.py --check
+
+# the explorer site: atlas against the RTL (needs Yosys), tours against a fresh
+# simulation, then the site itself
+explorer:
+	@if command -v yosys > /dev/null; then cd .. && python3 docs/tools/atlas.py --check; else echo "explorer: yosys not found, atlas check skipped"; fi
+	cd .. && python3 docs/tools/traces.py --check
+	cd .. && python3 docs/tools/check_site.py
 
 # The README's "minimal program", compiled VERBATIM from README.md, run on the
 # real top level from flash and from RAM, with the promised behaviour checked
@@ -283,6 +292,14 @@ adjust:
 	@$(MAKE) -s run PROG=../sw/examples/adjust_cross.c > adjust_out.txt 2>&1 || { cat adjust_out.txt; exit 1; }
 	@grep -E "^(A|C):" adjust_out.txt; grep "pins:" adjust_out.txt
 	@python3 -c "import re,sys; t=open('adjust_out.txt').read(); m=re.search(r'TRIG0 pulses=(\\d+).*TRIG1 pulses=(\\d+)', t); a,c=int(m.group(1)),int(m.group(2)); ok=[a==1 and 'still armed after the step: 0' in t, c==1, 'adjust done' in t]; [print(('  ok    ' if o else '  FAIL  ')+n) for o,n in zip(ok,['forward step past an armed deadline fires it AT the step, exactly once (no skip, no repeat)','backward step before a deadline delays it and it fires exactly once','program ran to completion'])]; print('%d checks, %d failures' % (len(ok), ok.count(False))); sys.exit(0 if all(ok) else 1)"
+
+# The explorer's guided tours, recorded from this RTL: sw/mktour.py's program run
+# from the flash model at the pins, every narrated step checked, one trace line
+# per clock written to tour_trace.txt for docs/tools/traces.py.
+tour:
+	python3 ../sw/mktour.py tour.hex > /dev/null
+	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
+	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
 
 # The timing unit (src/sync/*.sv) is shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;

@@ -1,0 +1,118 @@
+<!-- {"title": "Tours", "description": "Six tours of Tiqora recorded from RTL simulation: reset and memory wake-up, a QSPI fetch, a nibble-serial add, a deadline on the exact tick, capture and overflow, and a bus stall.", "data": ["traces", "site", "blocks"], "scripts": ["model", "wave", "player", "labs"]} -->
+<h1>Tours of a running Tiqora</h1>
+<p class=lede>One simulation of the submitted top module, <code>tt_um_normansrule_tiqora</code>, with models of the QSPI Pmod's flash and RAMs on its pins, running <code>sw/mktour.py</code>'s program. Nothing here is animated by hand: the waveforms are the recording, and every caption is anchored to a cycle found in it.</p>
+<div class=note><b>How to read it.</b> One column is one clock (20 ns at 50 MHz), sampled on the falling edge. The table beside the waveform gives every value at the cursor, and marks the ones that just changed with ◂. The blocks a caption talks about are listed with ◆. The <span class="ev recorded">recorded</span> label stays on every sequence; the nibble lab further down is <span class="ev computed">computed</span> in your browser instead.</div>
+<div id=player></div>
+
+<section aria-labelledby=lab-h>
+ <h2 id=lab-h>Nibble lab: change the operands</h2>
+ <p>The core has one 4-bit adder. A 32-bit add takes eight clocks, one nibble each, least significant first, with the carry held in a flip-flop between them. A subtract feeds the inverted second operand and a carry-in of 1. Type any two operands and the eight phases are recomputed here, in <code>docs/site/lib/model.js</code>.</p>
+ <div class=lab>
+  <div class=card>
+   <form id=labform onsubmit="return false">
+    <div class=row style="align-items:end">
+     <div style="flex:1 1 140px"><label for=la>rs1 (A)</label><input id=la value="0x12345678" inputmode=text autocomplete=off spellcheck=false aria-describedby=lerr></div>
+     <div style="flex:0 0 90px"><label for=lop>operation</label><select id=lop><option value=add>add</option><option value=sub>sub</option></select></div>
+     <div style="flex:1 1 140px"><label for=lb>rs2 (B)</label><input id=lb value="0x0FEDCBA9" inputmode=text autocomplete=off spellcheck=false aria-describedby=lerr></div>
+    </div>
+    <p id=lerr class=small role=status></p>
+    <label for=lpre>or a recorded operation</label>
+    <select id=lpre></select>
+   </form>
+   <p class=small style="margin-top:.8rem">Accepts hex (<code>0x…</code>) or decimal, negative values as two's complement.</p>
+  </div>
+  <div class=card>
+   <p><span id=lkind class="ev computed">computed in the browser</span></p>
+   <p class=mono style="font-size:1.15rem" id=lres></p>
+   <p id=lcheck class=small></p>
+   <div class=row><button class="btn ghost" type=button id=lstep>Step a phase</button><button class="btn ghost" type=button id=lall>Show all</button></div>
+  </div>
+ </div>
+ <div class=ringbox>
+  <div id=ring></div>
+  <p>The same eight phases as a ring. The register file never sits still: its 32 bits rotate past the adder four at a time, so phase <i>n</i> is whichever nibble is at the adder on clock <i>n</i>, and the carry waits in one flip-flop for the next.</p>
+ </div>
+ <div class=tablewrap style="margin-top:1rem"><table class=nibs id=lt aria-describedby=lt-cap><caption id=lt-cap class=sr>Each phase of the add or subtract</caption></table></div>
+</section>
+<noscript><p>The tours need JavaScript. The recorded data is in <code>docs/site/data/traces/</code> as JSON, one file per tour.</p></noscript>
+<script>
+(function () {
+  const site = DATA("site"), fixtures = DATA("traces");
+  const M = TQModel;
+  const add = fixtures.find(f => f.id === "nibble-add");
+  const recorded = add ? add.model.recorded : [];
+  let shown = 8, cur = null;
+  const $ = id => document.getElementById(id);
+
+  const ring = TQLabs.ring($("ring"));
+  const pre = $("lpre");
+  pre.append(new Option("choose one…", ""));
+  recorded.forEach((r, i) => pre.append(new Option(r.op + " " + M.hex(r.a) + ", " + M.hex(r.b), i)));
+  pre.addEventListener("change", () => {
+    const r = recorded[+pre.value]; if (!r) return;
+    $("la").value = M.hex(r.a); $("lb").value = M.hex(r.b); $("lop").value = r.op; shown = 8; calc();
+  });
+
+  function calc(phaseHi) {
+    const a = M.parseWord($("la").value), b = M.parseWord($("lb").value), op = $("lop").value;
+    $("la").setAttribute("aria-invalid", a === null); $("lb").setAttribute("aria-invalid", b === null);
+    if (a === null || b === null) { $("lerr").textContent = "Not a 32-bit value: use 0x followed by up to 8 hex digits, or a decimal number."; return; }
+    $("lerr").textContent = "";
+    cur = M.nibbleOp(a, b, op);
+    const direct = (op === "add" ? a + b : a - b) >>> 0;
+    const rec = recorded.find(r => r.op === op && r.a === a && r.b === b);
+    $("lres").textContent = M.hex(a) + (op === "add" ? " + " : " − ") + M.hex(b) + " = " + M.hex(cur.result);
+    let msg = cur.result === direct ? "✓ Equals 32-bit " + op + " computed directly. " : "✕ Differs from 32-bit arithmetic. ";
+    if (rec) {
+      const same = rec.result === cur.result && rec.phases.every((p, i) => ["a_n", "bx_n", "cin", "sum_n", "cout"].every(k => p[k] === cur.phases[i][k]));
+      $("lkind").className = "ev recorded"; $("lkind").textContent = "recorded by the RTL too";
+      msg += same ? "✓ The RTL tour recorded this exact operation, and all eight phases match it." : "✕ The RTL recording of this operation differs.";
+    } else {
+      $("lkind").className = "ev computed"; $("lkind").textContent = "computed in the browser";
+      msg += "This operation was not recorded; the model is checked against the recorded ones by docs/tools/check_site.py.";
+    }
+    $("lcheck").textContent = msg;
+    draw(phaseHi);
+  }
+
+  function draw(hi) {
+    ring.update(cur, shown, hi);
+    const rows = [["phase", p => p.phase], ["A nibble", p => p.a_n.toString(16)], ["B nibble" + ($("lop").value === "sub" ? " (inverted)" : ""), p => p.bx_n.toString(16)],
+                  ["carry in", p => p.cin], ["sum", p => p.sum_n.toString(16)], ["carry out", p => p.cout]];
+    const t = $("lt");
+    t.querySelectorAll("tr").forEach(r => r.remove());
+    rows.forEach(([name, fn], ri) => {
+      const tr = document.createElement("tr");
+      const th = document.createElement("th"); th.scope = "row"; th.textContent = name; tr.append(th);
+      cur.phases.forEach((p, i) => {
+        const td = document.createElement(ri === 0 ? "th" : "td");
+        td.textContent = i < shown ? fn(p) : "·";
+        if (i === hi || (hi === undefined && i === shown - 1 && shown < 8)) td.style.background = "color-mix(in srgb, var(--accent) 16%, transparent)";
+        tr.append(td);
+      });
+      t.append(tr);
+    });
+  }
+
+  ["la", "lb", "lop"].forEach(id => $(id).addEventListener("input", () => { pre.value = ""; shown = 8; calc(); }));
+  $("lstep").addEventListener("click", () => { shown = shown >= 8 ? 1 : shown + 1; calc(); });
+  $("lall").addEventListener("click", () => { shown = 8; calc(); });
+  calc();
+
+  TQPlayer.mount(document.getElementById("player"), {
+    fixtures, chip: site.chip, clockNs: site.clock_ns, blocks: DATA("blocks"), initial: "deadline",
+    onSeek(fx, c) {
+      if (fx.id !== "nibble-add") return;
+      const ph = fx.signals.find(s => s.id === "phase"), stS = fx.signals.find(s => s.id === "state");
+      const p = TQWave.valueAt(ph, c), s = TQWave.valueAt(stS, c);
+      const r = recorded[0];
+      if (!r) return;
+      if (M.parseWord($("la").value) !== r.a || M.parseWord($("lb").value) !== r.b || $("lop").value !== r.op) {
+        $("la").value = M.hex(r.a); $("lb").value = M.hex(r.b); $("lop").value = r.op;
+      }
+      shown = 8;
+      calc(s === 2 ? p : undefined);
+    }
+  });
+})();
+</script>

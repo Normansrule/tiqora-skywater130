@@ -92,6 +92,11 @@ make sim          # the whole board design at 100 MHz: three runs, about five mi
 All pass. `make resources` gives a Yosys estimate for the XC7A35T: about 1,800 LUTs (9%),
 750 flip-flops (2%) and 40 of 50 block RAMs (80%, nearly all of it the memory emulator).
 
+`make record` runs the demo once more with `rec_basys3.sv` beside the bench, which writes what the
+board shows to `docs/fpga/basys3_demo.rec`; `python3 docs/tools/fpga_media.py` turns that into
+the README's board animation. It is a simulation: timing is shortened (8 clocks per UART bit,
+LED 0 toggling every 40,000 ticks), and nothing has run on a real board.
+
 ## If something is wrong
 
 | Symptom | Likely cause |
