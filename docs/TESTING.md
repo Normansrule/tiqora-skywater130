@@ -92,6 +92,7 @@ python3 docs/tools/exploded_cell.py ~/pdk/sky130A/libs.ref/sky130_fd_sc_hd     #
 python3 docs/tools/build_explorer.py               # the interactive explorer page
 python3 docs/tools/atlas.py                        # the explorer site's chip atlas (needs Yosys)
 python3 docs/tools/traces.py                       # its tours, from make -C test tour
+python3 docs/tools/motion.py                       # every tour as an animation (before build_site.py)
 python3 docs/tools/build_site.py                   # its pages, docs/site/*.html
 python3 docs/tools/readme_media.py                 # the README animation
 python3 docs/tools/silicon_views.py                # pin map at real positions, packaging, connections

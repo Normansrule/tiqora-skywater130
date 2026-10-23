@@ -2,7 +2,9 @@
 """animations.py — the animated explanatory diagrams in docs/images.
 
 All CSS-animated SVG, so GitHub plays them inline in the README, and all
-respect prefers-reduced-motion. Run from the repo root.
+respect prefers-reduced-motion: with motion reduced, each one is a still of
+its finished state (every result, every pulse), not a blank. Run from the
+repo root.
 """
 BG, CARD, FG, DIM, RULE = "#0b0e14", "#161b22", "#e9ecef", "#8b949e", "#30363d"
 LI, MET, POLY, DIFF, GOLD = "#4f8cff", "#b08cff", "#e5534b", "#3ddc97", "#ffd23f"
@@ -11,7 +13,7 @@ MONO = "font-family='JetBrains Mono,SFMono-Regular,Consolas,monospace'"
 
 def svg(w, h, title, css, body):
     return (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 {w} {h}' {FONT}><title>{title}</title>"
-            f"<style>{css}@media (prefers-reduced-motion:reduce){{*{{animation:none!important}}}}</style>"
+            f"<style>{css}@media (prefers-reduced-motion:reduce){{*{{animation:none!important}}.still{{opacity:1!important}}}}</style>"
             f"<rect width='{w}' height='{h}' rx='16' fill='{BG}'/>{body}</svg>")
 
 # ---------------------------------------------------------------- register file
@@ -35,7 +37,7 @@ def regfile():
     port = (f"<rect x='{x0-4}' y='{y0-10}' width='{CW+2}' height='{4*(CH+22)-2}' rx='9' fill='none' "
             f"stroke='{DIFF}' stroke-width='3'/>"
             f"<text x='{x0+CW/2-3}' y='{y0-20}' text-anchor='middle' fill='{DIFF}' font-size='14' font-weight='700'>read port</text>")
-    ph = "".join(f"<text class='p{k}' x='{x0 + 8*CW + 70}' y='{y0+95}' fill='{GOLD}' font-size='56' font-weight='800' {MONO}>{k}</text>"
+    ph = "".join(f"<text class='p{k}{" still" if k == 0 else ""}' x='{x0 + 8*CW + 70}' y='{y0+95}' fill='{GOLD}' font-size='56' font-weight='800' {MONO}>{k}</text>"
                  for k in range(8))
     css.append("".join(f"@keyframes q{k}{{0%,{k*12.5:.2f}%{{opacity:0}}{k*12.5+0.01:.2f}%,{(k+1)*12.5:.2f}%{{opacity:1}}{(k+1)*12.5+0.01:.2f}%,100%{{opacity:0}}}}"
                        f".p{k}{{animation:q{k} 8s infinite;opacity:0}}" for k in range(8)))
@@ -74,14 +76,14 @@ def adder():
                     f"<text x='{x+60}' y='168' text-anchor='middle' fill='{LI}' font-size='26' {MONO}>{na:X}</text>"
                     f"<text x='{x+60}' y='202' text-anchor='middle' fill='{MET}' font-size='26' {MONO}>+{nb:X}</text>"
                     f"<line x1='{x+22}' y1='218' x2='{x+98}' y2='218' stroke='{RULE}'/>"
-                    f"<g class='r{k}'><text x='{x+60}' y='256' text-anchor='middle' fill='{FG}' font-size='32' font-weight='800' {MONO}>{out:X}</text>"
+                    f"<g class='r{k} still'><text x='{x+60}' y='256' text-anchor='middle' fill='{FG}' font-size='32' font-weight='800' {MONO}>{out:X}</text>"
                     f"<text x='{x+60}' y='292' text-anchor='middle' fill='{POLY if cout else DIM}' font-size='13'>carry out {cout}</text>"
                     + (f"<text x='{x-10}' y='262' text-anchor='middle' fill='{POLY}' font-size='26'>‹</text>" if cout and k < 7 else "")
                     + "</g>")
         carry = cout
     res = (a + b) & 0xFFFFFFFF
     css.append(f"@keyframes fin{{0%,90%{{opacity:0}}92%,99%{{opacity:1}}100%{{opacity:0}}}}.fin{{animation:fin 9s infinite;opacity:0}}")
-    body.append(f"<text class='fin' x='600' y='385' text-anchor='middle' fill='{DIFF}' font-size='20' font-weight='800' {MONO}>= 0x{res:08X}</text>")
+    body.append(f"<text class='fin still' x='600' y='385' text-anchor='middle' fill='{DIFF}' font-size='20' font-weight='800' {MONO}>= 0x{res:08X}</text>")
     open("docs/images/nibble_add.svg", "w").write(svg(W, H, "Nibble-serial addition", "".join(css), "".join(body)))
 
 # ---------------------------------------------------------------- deterministic timing
@@ -109,7 +111,7 @@ def timing():
             css.append(f"@keyframes {k}{{0%,{t:.1f}%{{opacity:0}}{t+1:.1f}%,97%{{opacity:1}}100%{{opacity:0}}}}"
                        f".{k}{{animation:{k} 7s infinite;opacity:0}}")
             body.append(f"<line x1='{xd}' y1='{y-18}' x2='{xd}' y2='{y+52}' stroke='{GOLD}' stroke-width='1.5' stroke-dasharray='4 4'/>"
-                        f"<rect class='{k}' x='{xp}' y='{y+4}' width='14' height='36' fill='{col}'/>")
+                        f"<rect class='{k} still' x='{xp}' y='{y+4}' width='14' height='36' fill='{col}'/>")
     body.append(f"<text x='{X0}' y='350' fill='{GOLD}' font-size='13'>- - - deadlines</text>"
                 f"<g class='cur'><line x1='{X0}' y1='118' x2='{X0}' y2='330' stroke='{FG}' stroke-width='2' opacity='.6'/></g>"
                 f"<text x='40' y='385' fill='{DIM}' font-size='12'>Upper row: checked at the trigger pin in RTL simulation (make soc). "

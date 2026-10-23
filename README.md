@@ -46,13 +46,15 @@ curious how small a whole computer can get.
 
 | | |
 |---|---|
-| [**Overview**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html) | fire a deadline of your own; scroll from a grain of salt down to one flip-flop; what goes in, what happens inside, what comes out, what is proven |
-| [**Tours**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
-| [**Chip atlas**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
-| [**Physical design**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/physical.html) | measured cell area per block against the die, and why the layout does not fit yet |
-| [**Evidence**](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
+| [**Overview**](https://normansrule.github.io/tiqora-skywater130/index.html) | fire a deadline of your own; scroll from a grain of salt down to one flip-flop; what goes in, what happens inside, what comes out, what is proven |
+| [**Tours**](https://normansrule.github.io/tiqora-skywater130/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
+| [**Chip atlas**](https://normansrule.github.io/tiqora-skywater130/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
+| [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the die, and why the layout does not fit yet |
+| [**Evidence**](https://normansrule.github.io/tiqora-skywater130/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
 
 Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.
+The links above are the GitHub Pages copy, published by `.github/workflows/pages.yaml` on every push to
+`main`; if it is not up, the same pages open [through htmlpreview](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html).
 
 ![The overview's opening shot: Tiqora's name above its tile of real sky130 cells, tilted in perspective and settling flat as you scroll](docs/images/explorer/site-hero.jpg)
 
@@ -146,6 +148,16 @@ Then open `docs/site/index.html` in a browser. The pages are self-contained file
 network loads, so they work offline and from a clone.
 
 ## What it looks like
+
+**Watch it run.** Every recorded tour also plays as an animation: a cursor sweeps the window
+from caption to caption and uncovers the waveform the simulation wrote. This one is the whole
+tour program, reset to `HALT`; the others sit next to the part of this README they show
+(reset and fetch under [Memory map](#memory-map), the add under [Inside](#inside), the deadline
+and the capture queue under [Instruction set](#instruction-set) and [Try it](#try-it-today-on-the-simulated-chip)).
+
+![Recorded from the RTL: the whole tour program from reset to HALT, its instructions, core states and pins](docs/images/motion/overview.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=overview). With reduced motion on, it is a still of the whole window.</sub>
 
 **From the board to the silicon.** The chip would arrive in a QFN package on a carrier board that
 plugs into the demo board; inside, every project on the shuttle shares one die behind a
@@ -256,6 +268,13 @@ An addition is eight clocks through one 4-bit adder, the carry held in a flip-fl
 
 ![A 32-bit add, four bits per clock](docs/images/nibble_add.svg)
 
+The same add, recorded from the RTL: the phase counter, the two nibbles, the carry and the
+register-file write, clock by clock.
+
+![Recorded from the RTL: one 32-bit add through the 4-bit adder, eight phases, the carry in a flip-flop](docs/images/motion/nibble-add.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=nibble-add). With reduced motion on, it is a still of the whole window.</sub>
+
 That sounds slow until you remember that instructions arrive over a 4-bit QSPI bus, at least
 16 clocks per word. An 8-clock execute isn't the bottleneck. The same idea lets TinyQV (Michael
 Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent implementation.
@@ -294,6 +313,26 @@ it needed 4 × 2 tiles (560 €). The rewrite halved the price and added the UAR
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
 | `0x3000_0000` | — | GPIO and UART registers |
 | `0x4000_0000` | 172 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+
+**From reset to the first instruction.** The chip wakes its own flash and RAMs whatever state
+they were left in, then reads the first word:
+
+![Recorded from the RTL: reset, the six-step memory wake-up on CS0 and CS1, then the first fetch](docs/images/motion/reset.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=reset). With reduced motion on, it is a still of the whole window.</sub>
+
+**Two fetches at the pins**, one with a full address preamble and one streamed, at SCK = clk/2:
+
+![Recorded from the RTL: two QSPI instruction fetches, command, address, dummy and data nibbles on SD3..SD0](docs/images/motion/fetch.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=fetch). With reduced motion on, it is a still of the whole window.</sub>
+
+**An address with nothing behind it.** A load from `0x5000_0000` waits forever; only reset
+recovers:
+
+![Recorded from the RTL: a load from an unmapped address stalls in MEM until reset](docs/images/motion/stall.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=stall). With reduced motion on, it is a still of the whole window.</sub>
 
 ### GPIO and UART registers (`0x3000_0000` + offset)
 
@@ -345,6 +384,13 @@ functions in `sw/tiqora.h`:
 Not implemented, by design: interrupts, CSRs, compressed instructions, misaligned-access
 traps. An illegal instruction is skipped and latches the `ILLEGAL` pin.
 
+Both of those, recorded: an illegal word raises `ILLEGAL`, then three pin edges arrive at a
+two-deep queue, two are popped in order with exact timestamps and the third raises `OVF`:
+
+![Recorded from the RTL: an illegal instruction raises ILLEGAL; three edges into a two-deep queue, two popped by TPOP, OVF on the third](docs/images/motion/capture.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=capture). With reduced motion on, it is a still of the whole window.</sub>
+
 **CPU, GPU and TPU modes** (FPGA and full-chip builds only, not the Tiny Tapeout tile).
 `MSET` switches the core between CPU mode, a GPU mode with eight byte-lane pixel
 instructions on custom-2, and a TPU mode with an int8 dot-product accumulator on custom-3.
@@ -383,6 +429,13 @@ Two different things are deterministic here, and they are worth keeping apart:
   all eight phases and checks the bound.
 
 ![Deadlines and trigger edges: the trigger pin lands on the deadline tick](docs/images/deterministic_timing.svg)
+
+And recorded, not drawn: `TIME`, `TARM` and `TWAIT`, then `TRIG0` rising on the armed tick
+while a UART byte goes out on its own.
+
+![Recorded from the RTL: TIME, TARM and TWAIT, then TRIG0 rises on exactly the armed tick](docs/images/motion/deadline.svg)
+
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=deadline). With reduced motion on, it is a still of the whole window.</sub>
 
 Point `PROG=` at any C file of your own.
 
@@ -678,10 +731,11 @@ docs/site/     the explorer site: pages/ (templates), lib/ (shared styles, scrip
 docs/atlas/    hand-written notes the atlas adds to what it reads from the RTL
 docs/fpga/     the recorded Basys 3 run behind the board animation
 docs/tools/    atlas.py, traces.py, die_map.py, build_site.py, check_site.py, readme_media.py,
-               site_shots.py, fpga_media.py: the site and its README pictures;
+               motion.py, site_shots.py, fpga_media.py: the site and its README pictures;
                layout_preview.py, figures.py, build_explorer.py: the other images
 syn/           synthesis and area scripts
-.github/       Tiny Tapeout CI: gds (hardening + 3D viewer), test, docs, fpga
+.github/       Tiny Tapeout CI: gds (hardening, pre-flight, gate-level test), test, docs, fpga;
+               pages (publishes docs/site to GitHub Pages)
 ```
 
 Sister project: [tinytapeout-tiqora](https://github.com/Normansrule/tinytapeout-tiqora)
