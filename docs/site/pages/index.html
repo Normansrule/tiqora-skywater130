@@ -129,6 +129,30 @@ make -C test sim                 <span class=c># every suite</span></pre>
  </div></div>
 </section>
 
+<section aria-labelledby=reels-h>
+ <h2 id=reels-h>Watch it run</h2>
+ <p>Every recorded tour, playing on its own: a cursor sweeps each window from caption to caption and uncovers the waveform the simulation wrote. Nothing here is computed in the browser.</p>
+ {{static:motion}}
+ <h3>Three drawings that move</h3>
+ <p>These explain an idea rather than replay a recording, so they are marked <span class="ev illustrative">illustrative</span>. They follow your system's reduced-motion setting, not the pause button.</p>
+ <div class=reels>
+  <figure class=reel><img src="{{img:docs/images/regfile_rotation.svg}}" width=1000 height=470 alt="The rotating register file: every register shifts by one nibble each clock, and the read port only ever sees one 4-bit slot" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Area numbers in it are measured with Yosys against the sky130 library; drawn by <code>docs/tools/animations.py</code></span></figcaption></figure>
+  <figure class=reel><img src="{{img:docs/images/nibble_add.svg}}" width=1200 height=420 alt="0x1234ABCD plus 0x0FED5432 through one 4-bit adder, one nibble per clock, the carry held in a flip-flop" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><a href="tours.html#seq=nibble-add">The same add, recorded from the RTL</a></figcaption></figure>
+  <figure class=reel><img src="{{img:docs/images/deterministic_timing.svg}}" width=1100 height=400 alt="Trigger pulses landing on every deadline tick, above a qualitative illustration of interrupt jitter" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Upper row checked at the pin by <code>make soc</code>; the lower row is an illustration, not a measurement.</span></figcaption></figure>
+ </div>
+</section>
+<script>
+(function () {
+  const b = document.getElementById("reel-pause"), box = document.getElementById("reels");
+  b.addEventListener("click", () => {
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on);
+    b.textContent = on ? "Play the animations" : "Pause the animations";
+    box.toggleAttribute("data-paused", on);
+  });
+})();
+</script>
+
 <section aria-labelledby=tours>
  <h2 id=tours>Six recorded tours, and the whole run</h2>
  <p>Each one is a window of one simulation of the real top module, <code>tt_um_normansrule_tiqora</code>, with flash and RAM models on its pins. Play the 10 to 25 second summary, or step through every change.</p>

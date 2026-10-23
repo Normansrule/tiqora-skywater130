@@ -402,5 +402,100 @@
   "terminal_title": "PC terminal, USB serial",
   "note": "Recorded from RTL simulation, not a board: fpga/basys3/tb_basys3.sv runs sw/examples/basys3_demo.c on the whole board design (make -C fpga/basys3 record; its 6 checks pass). Timing is shortened for simulation: the UART runs at 8 clocks per bit, and LED 0 toggles every 40,000 ticks instead of every 25,000,000. Nothing has run on a real Basys 3.",
   "pmod": "QSPI Pmod: emulated in block RAM here"
+ },
+ "motion": {
+  "out": "docs/images/motion",
+  "reels": [
+   {
+    "fixture": "overview",
+    "signals": [
+     "instr",
+     "state",
+     "trig0",
+     "uart_tx",
+     "ill",
+     "ovf",
+     "halt"
+    ]
+   },
+   {
+    "fixture": "reset",
+    "signals": [
+     "rst_n",
+     "cs_f",
+     "cs_r",
+     "sck",
+     "sd",
+     "q_state",
+     "waking",
+     "state"
+    ]
+   },
+   {
+    "fixture": "fetch",
+    "signals": [
+     "cs_f",
+     "sck",
+     "sd_oe",
+     "sd",
+     "q_state",
+     "imem_rvalid",
+     "imem_rdata",
+     "state"
+    ]
+   },
+   {
+    "fixture": "nibble-add",
+    "signals": [
+     "state",
+     "phase",
+     "a_n",
+     "bx_n",
+     "cin",
+     "sum_n",
+     "cout",
+     "rf_we",
+     "rf_wd"
+    ]
+   },
+   {
+    "fixture": "deadline",
+    "signals": [
+     "instr",
+     "state",
+     "uart_tx",
+     "now",
+     "deadline0",
+     "armed0",
+     "trig0"
+    ]
+   },
+   {
+    "fixture": "capture",
+    "signals": [
+     "instr",
+     "state",
+     "ui0",
+     "ui1",
+     "qcount",
+     "evt",
+     "ovf",
+     "ill",
+     "t_rdata"
+    ]
+   },
+   {
+    "fixture": "stall",
+    "signals": [
+     "state",
+     "rst_n",
+     "dmem_req",
+     "dmem_addr",
+     "halt",
+     "ill",
+     "waking"
+    ]
+   }
+  ]
  }
 }
