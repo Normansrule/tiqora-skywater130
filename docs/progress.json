@@ -77,7 +77,7 @@
         {
           "step": "full sky130 chip with the modes",
           "state": "todo",
-          "next": "70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh) does not fit 2x2; needs a larger die"
+          "next": "70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh), 62% of the 3x2 die; never tried in layout"
         }
       ]
     },
@@ -136,18 +136,28 @@
             "label": "measured",
             "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test area",
-            "result": "60,750 µm², 1191 flip-flops: 80% of 2x2, with the cells the Tiny Tapeout flow may not use removed"
+            "result": "50,880 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed"
           }
         },
         {
-          "step": "place and route at 2x2",
-          "state": "blocked",
-          "next": "LibreLane 3.0.14 stops at detailed placement (DPL-0036); a larger tile or less logic is the owner's call"
+          "step": "place and route at 3x2",
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "PR #4 7bee2a9, LibreLane 3.0.14",
+            "command": "GitHub run 40213473443: gds and gl_test",
+            "result": "clean GDS at 3x2, placement density 50; cocotb passes on the routed netlist"
+          }
         },
         {
           "step": "Tiny Tapeout pre-flight",
-          "state": "todo",
-          "next": "runs after a clean GDS"
+          "state": "done",
+          "evidence": {
+            "label": "measured",
+            "version": "PR #4 7bee2a9",
+            "command": "GitHub run 40213473443: precheck",
+            "result": "pass"
+          }
         }
       ]
     },
@@ -161,7 +171,7 @@
             "label": "measured",
             "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test timing",
-            "result": "worst path 17.04 ns at ss_100C_1v60 (7.37 ns typical), budget 20 ns, before wire delay"
+            "result": "worst path 12.57 ns at ss_100C_1v60 (6.17 ns typical), budget 20 ns, before wire delay"
           }
         },
         {
@@ -177,7 +187,7 @@
         {
           "step": "signoff timing after routing",
           "state": "todo",
-          "next": "comes with a clean GDS"
+          "next": "read the per-corner slacks from the GDS_logs artifact of GitHub run 40213473443 (the gds workflow does not fail on timing)"
         }
       ]
     },
@@ -187,7 +197,7 @@
         {
           "step": "shuttle submission",
           "state": "todo",
-          "next": "after a clean GDS and pre-flight"
+          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, routed timing still to be read"
         },
         {
           "step": "first chip tested",

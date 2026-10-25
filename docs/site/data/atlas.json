@@ -6,39 +6,39 @@
   "modes": {
    "define": "TIQORA_MODES",
    "modules_um2": {
-    "qspi_ctrl": 7917.6,
-    "sync_capture": 930.9,
-    "sync_compare": 6881.6,
-    "sync_event_fifo": 2795.2,
-    "sync_timebase": 5530.3,
-    "sync_unit": 5143.7,
-    "tp_bootrom": 1248.7,
-    "tp_bus": 1508.9,
-    "tp_mac": 21005.1,
-    "tp_ncore": 13890.8,
-    "tp_nregfile": 12191.7,
-    "tp_periph": 1858.0,
-    "tp_simd": 11143.2,
-    "tp_soc": 246.5,
-    "tp_uart": 3281.9,
+    "qspi_ctrl": 6457.4,
+    "sync_capture": 890.9,
+    "sync_compare": 5549.1,
+    "sync_event_fifo": 2652.5,
+    "sync_timebase": 4367.9,
+    "sync_unit": 4376.7,
+    "tp_bootrom": 987.2,
+    "tp_bus": 1332.5,
+    "tp_mac": 14938.1,
+    "tp_ncore": 11328.4,
+    "tp_nregfile": 11294.6,
+    "tp_periph": 1498.9,
+    "tp_simd": 8157.8,
+    "tp_soc": 236.5,
+    "tp_uart": 2688.8,
     "tt_um_normansrule_tiqora": 28.8
    },
-   "total_hierarchical_um2": 95602.9408
+   "total_hierarchical_um2": 76786.144
   },
   "modules_um2": {
-   "qspi_ctrl": 8022.7,
-   "sync_capture": 930.9,
-   "sync_compare": 6881.6,
-   "sync_event_fifo": 2795.2,
-   "sync_timebase": 5530.3,
-   "sync_unit": 5143.7,
-   "tp_bootrom": 1248.7,
-   "tp_bus": 1508.9,
-   "tp_ncore": 12792.3,
-   "tp_nregfile": 12191.7,
-   "tp_periph": 1858.0,
-   "tp_soc": 246.5,
-   "tp_uart": 3221.8,
+   "qspi_ctrl": 6478.7,
+   "sync_capture": 890.9,
+   "sync_compare": 5549.1,
+   "sync_event_fifo": 2652.5,
+   "sync_timebase": 4367.9,
+   "sync_unit": 4376.7,
+   "tp_bootrom": 987.2,
+   "tp_bus": 1332.5,
+   "tp_ncore": 10398.7,
+   "tp_nregfile": 11294.6,
+   "tp_periph": 1498.9,
+   "tp_soc": 236.5,
+   "tp_uart": 2683.8,
    "tt_um_normansrule_tiqora": 28.8
   },
   "sources": {
@@ -61,7 +61,7 @@
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c"
   },
   "tool": "Yosys 0.33",
-  "total_hierarchical_um2": 62401.0976,
+  "total_hierarchical_um2": 52776.8672,
   "what": "sky130_fd_sc_hd cell area per module, hierarchical synthesis before placement (the flattened netlist the flow builds is smaller: synthesis optimizes across boundaries)"
  },
  "blocks": [
@@ -3801,6 +3801,6 @@
   },
   "tool": "Yosys 0.33"
  },
- "tiles": "2x2",
+ "tiles": "3x2",
  "top": "tt_um_normansrule_tiqora"
 }

@@ -89,25 +89,25 @@ open("docs/images/block_diagram.svg","w").write(svg(W,H,"".join(b),"Tiqora block
 
 # ------------------------------------------------------------------ scale
 W, H = 1200, 460
-s = 1.1   # px per um
+s = 1.0   # px per um
 b = [f"<text x='600' y='44' fill='{FG}' font-size='26' font-weight='700' text-anchor='middle'>How small is it?</text>",
-     f"<text x='600' y='72' fill='{DIM}' font-size='15' text-anchor='middle'>everything drawn to the same scale · 100 µm = 110 px</text>"]
+     f"<text x='600' y='72' fill='{DIM}' font-size='15' text-anchor='middle'>everything drawn to the same scale · 100 µm = 100 px</text>"]
 x0, base = 90, 390
-tw, th = 334.88*s, 225.76*s
+tw, th = 508.76*s, 225.76*s   # the 3x2 tile (tt_block_3x2_pg.def)
 b.append(f"<rect x='{x0}' y='{base-th}' width='{tw}' height='{th}' fill='#1f2a44' stroke='{C['core']}' stroke-width='3'/>")
 b.append(f"<text x='{x0+tw/2}' y='{base-th/2}' fill='{FG}' font-size='17' font-weight='700' text-anchor='middle'>Tiqora</text>")
-b.append(f"<text x='{x0+tw/2}' y='{base-th/2+22}' fill='{DIM}' font-size='13' text-anchor='middle'>0.335 × 0.226 mm</text>")
-b.append(f"<text x='{x0+tw/2}' y='{base-th/2+40}' fill='{DIM}' font-size='13' text-anchor='middle'>≈ 5,000 logic cells</text>")
-hx = x0+tw+80
+b.append(f"<text x='{x0+tw/2}' y='{base-th/2+22}' fill='{DIM}' font-size='13' text-anchor='middle'>0.509 × 0.226 mm</text>")
+b.append(f"<text x='{x0+tw/2}' y='{base-th/2+40}' fill='{DIM}' font-size='13' text-anchor='middle'>≈ 6,000 logic cells</text>")
+hx = x0+tw+60
 b.append(f"<rect x='{hx}' y='{base-250}' width='{70*s}' height='250' fill='#b08968' opacity='.85'/>")
 b.append(f"<text x='{hx+35*s}' y='{base+22}' fill='{FG}' font-size='14' text-anchor='middle'>human hair</text><text x='{hx+35*s}' y='{base+40}' fill='{DIM}' font-size='12' text-anchor='middle'>~70 µm wide</text>")
-sx = hx+170; sw = 300*s
+sx = hx+150; sw = 300*s
 b.append(f"<rect x='{sx}' y='{base-sw}' width='{sw}' height='{sw}' rx='14' fill='#e9ecef' opacity='.9' transform='rotate(-4 {sx+sw/2} {base-sw/2})'/>")
 b.append(f"<text x='{sx+sw/2}' y='{base+22}' fill='{FG}' font-size='14' text-anchor='middle'>grain of table salt</text><text x='{sx+sw/2}' y='{base+40}' fill='{DIM}' font-size='12' text-anchor='middle'>~0.3 mm</text>")
-rx = sx+sw+70
+rx = sx+sw+60
 b.append(f"<circle cx='{rx}' cy='{base-8}' r='{7.5*s/2+1}' fill='#ff5d73'/>")
 b.append(f"<text x='{rx}' y='{base+22}' fill='{FG}' font-size='14' text-anchor='middle'>red blood cell</text><text x='{rx}' y='{base+40}' fill='{DIM}' font-size='12' text-anchor='middle'>~7.5 µm</text>")
-b.append(f"<line x1='{x0}' y1='{base+60}' x2='{x0+110}' y2='{base+60}' stroke='{FG}' stroke-width='3'/><text x='{x0+120}' y='{base+65}' fill='{DIM}' font-size='13'>100 µm</text>")
+b.append(f"<line x1='{x0}' y1='{base+60}' x2='{x0+100*s}' y2='{base+60}' stroke='{FG}' stroke-width='3'/><text x='{x0+100*s+10}' y='{base+65}' fill='{DIM}' font-size='13'>100 µm</text>")
 open("docs/images/scale.svg","w").write(svg(W,H,"".join(b),"Tiqora size comparison"))
 
 # (the nibble adder is animated now: see animations.py)

@@ -4,11 +4,11 @@
  "ref": "v20.1",
  "clock_ns": 20,
  "die_um": [
-  334.88,
+  508.76,
   225.76
  ],
- "die_source": "docs/tile_template.json (tt_block_2x2_pg.def)",
- "footer": "Tiqora is a RISC-V microcontroller for a Tiny Tapeout 2x2 tile on SkyWater sky130. Nothing on these pages has run on real silicon or a real FPGA board; every number says how it was obtained.",
+ "die_source": "docs/tile_template.json (tt_block_3x2_pg.def)",
+ "footer": "Tiqora is a RISC-V microcontroller for a Tiny Tapeout 3x2 tile on SkyWater sky130. Nothing on these pages has run on real silicon or a real FPGA board; every number says how it was obtained.",
  "data": {
   "die": "docs/site/data/die.json"
  },
@@ -261,8 +261,8 @@
  },
  "ladder": [
   {
-   "target": "Tiny Tapeout tile, 2x2 (what info.yaml submits)",
-   "note": "Each rung needs the one below it. Nothing above rung 3 has been reached at the configured tile size.",
+   "target": "Tiny Tapeout tile, 3x2 (what info.yaml submits)",
+   "note": "Each rung needs the one below it.",
    "rungs": [
     {
      "rung": "RTL tested",
@@ -278,25 +278,24 @@
     {
      "rung": "Synthesized",
      "state": "measured",
-     "why": "60,750 µm² of sky130 cells, 1,191 flip-flops: 80% of the 2x2 die (<code>make area</code>, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
+     "why": "50,880 µm² of sky130 cells, 1,191 flip-flops: 44% of the 3x2 die (<code>make area</code>, Yosys 0.33, main 2026-10-25, with the cells this design's flow excludes removed). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
     },
     {
      "rung": "Placed and routed",
-     "state": "fail",
-     "word": "failed",
-     "why": "LibreLane 3.0.14 stops in detailed placement with DPL-0036 at 2x2, locally and on GitHub. An experimental 3x2 copy did not converge in routing (10,796 violations at pass 8)."
+     "state": "measured",
+     "why": "3x2 at placement density 50: the <code>gds</code> and <code>precheck</code> workflows pass, and the cocotb tests pass on the routed netlist (<code>gl_test</code>) (GitHub run 40213473443, LibreLane 3.0.14, commit 7bee2a9)."
     },
     {
      "rung": "Timing checked",
      "state": "none",
-     "word": "not reached",
-     "why": "Needs a routed layout. The only timing number is a pre-layout estimate: 12.7 ns worst path at the slow corner against 20 ns (<code>make timing</code>, ABC, no wire delay)."
+     "word": "not read yet",
+     "why": "The routed layout exists (GitHub run 40213473443), but the <code>gds</code> workflow does not fail on timing and its reports could not be downloaded here. The pre-wire estimate is 12.57 ns at the slow corner against 20 ns (<code>make timing</code>, ABC, no wire delay)."
     },
     {
      "rung": "Submitted to a shuttle",
      "state": "none",
      "word": "not yet",
-     "why": "Needs a clean GDS and the Tiny Tapeout pre-flight at the chosen tile size."
+     "why": "A clean GDS and the Tiny Tapeout pre-flight exist at 3x2 (GitHub run 40213473443, LibreLane 3.0.14). Submitting it is the owner's step."
     },
     {
      "rung": "Fabricated",
@@ -324,7 +323,7 @@
     {
      "rung": "Synthesized",
      "state": "measured",
-     "why": "70,679 µm² flat (<code>MODES=1 bash syn/area_sky130.sh</code>, Yosys 0.33): it does not fit 2x2."
+     "why": "70,679 µm² flat (<code>MODES=1 bash syn/area_sky130.sh</code>, Yosys 0.33): 62% of the 3x2 die, never tried in layout."
     },
     {
      "rung": "Placed and routed",

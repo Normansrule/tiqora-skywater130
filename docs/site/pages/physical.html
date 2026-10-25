@@ -1,26 +1,26 @@
-<!-- {"title": "Physical design", "description": "Where Tiqora stands on the way to a layout: measured cell area per block against the 2x2 die, and why place and route has not passed.", "data": ["atlas"], "scripts": []} -->
+<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and what is still to read.", "data": ["atlas"], "scripts": []} -->
 <h1>Physical design</h1>
-<div class="note bad"><b>There is no Tiqora layout yet.</b> At the 2x2 tile size <code>info.yaml</code> submits, LibreLane 3.0.14 stops in detailed placement with <code>DPL-0036</code>, both on GitHub and locally. So this page has no layout image, no utilisation map, no routed timing and no power map: none of them exists to show.</div>
+<div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). Its routed timing reports have not been read yet: the workflow does not fail on timing, and its log files could not be downloaded where this page was written. No chip exists yet.</div>
 
 <h2>Three different areas</h2>
 <p>They are easy to mix up, and the numbers below use each in exactly one sense.</p>
 <div class=grid>
- <div class=card><h3>Die area</h3><p><b>75,602 µm²</b>: the 2x2 tile, 334.88 × 225.76 µm, from Tiny Tapeout's template <code>tt_block_2x2_pg.def</code>. Fixed by the tile count.</p></div>
- <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. Only a layout run reports it; for Tiqora none has reached that point at 2x2.</p></div>
- <div class=card><h3>Summed cell area</h3><p><b>60,750 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80), using only the cells the Tiny Tapeout flow allows. Before placement, so with no timing-repair buffers, taps or fill. 80% of the die.</p></div>
+ <div class=card><h3>Die area</h3><p><b>114,858 µm²</b>: the 3x2 tile, 508.76 × 225.76 µm, from Tiny Tapeout's template <code>tt_block_3x2_pg.def</code>. Fixed by the tile count.</p></div>
+ <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. Only a layout run reports it; the numbers from the passing run are in its log files, not yet read.</p></div>
+ <div class=card><h3>Summed cell area</h3><p><b>50,880 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80), using the cells <code>src/synth_exclude.cells</code> leaves. Before placement, so with no timing-repair buffers, taps or fill. 44% of the die.</p></div>
 </div>
 
 <h2>Where the cells go</h2>
-<p>Each block's cells, synthesized one module at a time and drawn <b>to scale</b> inside the 2x2 die outline. Positions mean nothing: the placer would spread these cells over the whole core, mixed together.</p>
+<p>Each block's cells, synthesized one module at a time and drawn <b>to scale</b> inside the 3x2 die outline. Positions mean nothing: the placer would spread these cells over the whole core, mixed together.</p>
 <figure class=figure>
  <div class=treemap>{{static:treemap}}</div>
- <figcaption><span class="ev measured">measured</span> <code>python3 docs/tools/atlas.py --area sky130_fd_sc_hd__tt_025C_1v80.lib</code> (Yosys 0.33, hierarchical: each module synthesized without flattening). The hierarchical sum, 62,401 µm², is larger than the flat 60,750 µm² because synthesis cannot optimise across module boundaries. Colours follow the atlas categories, and every block is named in the table below.</figcaption>
+ <figcaption><span class="ev measured">measured</span> <code>python3 docs/tools/atlas.py --area sky130_fd_sc_hd__tt_025C_1v80.lib</code> (Yosys 0.33, hierarchical: each module synthesized without flattening). The hierarchical sum, 52,777 µm², is larger than the flat 50,880 µm² because synthesis cannot optimise across module boundaries. Colours follow the atlas categories, and every block is named in the table below.</figcaption>
 </figure>
 <div id=areatable></div>
 
-<h2>Why it does not fit yet</h2>
-<p>Placement needs room to spread cells, add timing-repair buffers and route wires. Cell area at 80% of the die leaves too little: <code>DPL-0036</code> means the detailed placer could not legalise every cell. An experimental copy at 3x2 got through placement but did not converge in routing (10,796 violations at pass 8). For comparison, Tiqora-Serial's experimental 2x2 copy, at 33% of its die in synthesized cells, hardened clean.</p>
-<p>The way forward is the owner's decision: a larger tile set, or less logic. Either way, the next measurement is a clean LibreLane run, then the Tiny Tapeout pre-flight, then signoff timing.</p>
+<h2>How it got to fit</h2>
+<p>At 2x2, placement failed with <code>DPL-0036</code>. Two things were wrong. LibreLane's default cell list (the PDK's <code>no_synth.cells</code>) bans the drive-strength-1 cells, so synthesis used larger cells and the design came out at 59,797 µm², 80% of the 2x2 die; and even at the smaller size, 2x2 left too little room to route. <code>src/synth_exclude.cells</code> allows the drive-strength-1 cells (the cells with known layout problems stay banned through the PDK's separate list), and the tile count went to 3x2 at placement density 50. With both, the <code>gds</code>, <code>precheck</code> and <code>gl_test</code> workflows pass <span class="ev measured">measured</span> (GitHub run 40213473443).</p>
+<p>Still to read from that run: the core area, the utilisation after placement, and the setup and hold slack at each corner. Tiqora-Serial's 1x2 layout misses setup at the slow corner by 1.30 ns, so Tiqora's slow-corner number matters before a submission.</p>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 <script>
 (function () {
