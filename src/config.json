@@ -9,16 +9,16 @@
 
   "//": "If you get stuck with this config, please open an issue or get in touch via the discord.",
 
-  "//": "Tiqora: cells measure 49,186 um^2, about 68% of the 2x2 tile's placeable area, against the real sky130_fd_sc_hd library (make area). A placement target below the design's own utilization fails with GPL-0302, so the target is raised to 72, inside the range Tiny Tapeout reports working. If routing congests, 3x2 is the fallback.",
+  "//": "Tiqora at 3x2: the placement target is lowered to 50 so the cells spread across the bigger die. At the default packing (72) they stay clustered and detailed routing stalls (about 6,600 violations locally); at 50 global routing uses 52% of the tracks and detailed routing converges.",
 
   "//": "Here are some of the variables you may want to change:",
 
   "//": "PL_TARGET_DENSITY_PCT - You can increase this if Global Placement fails with error GPL-0302.",
   "//": "Users have reported that values up to 80 worked well for them.",
-  "PL_TARGET_DENSITY_PCT": 72,
+  "PL_TARGET_DENSITY_PCT": 50,
 
   "//": "SYNTH_EXCLUDED_CELL_FILE - cells synthesis may not use. synth_exclude.cells is the PDK default minus its ban on drive-strength-1 cells (see the file).",
-  "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25). Without it the layout does not fit the tile.",
+  "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement at 2x2 uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25).",
   "SYNTH_EXCLUDED_CELL_FILE": "dir::synth_exclude.cells",
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
