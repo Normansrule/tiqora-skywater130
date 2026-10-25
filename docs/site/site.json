@@ -278,7 +278,7 @@
     {
      "rung": "Synthesized",
      "state": "measured",
-     "why": "50,880 µm² of sky130 cells, 1,191 flip-flops: 67% of the 2x2 die (<code>make area</code>, Yosys 0.33, v20). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
+     "why": "60,750 µm² of sky130 cells, 1,191 flip-flops: 80% of the 2x2 die (<code>make area</code>, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
     },
     {
      "rung": "Placed and routed",

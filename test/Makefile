@@ -188,11 +188,11 @@ bridge:
 # for the real flow's resizer. No wire delay: the routed report in CI is final.
 LIB ?= $(HOME)/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 timing:
-	cd .. && { grep '^read_verilog' syn/synth_check.ys; \
+	cd .. && python3 syn/dont_use.py $(LIB) /tmp/tp_timing.lib && { grep '^read_verilog' syn/synth_check.ys; \
 	  echo 'hierarchy -check -top tt_um_normansrule_tiqora'; \
 	  echo 'synth -top tt_um_normansrule_tiqora -flatten'; \
-	  echo 'dfflibmap -liberty $(LIB)'; \
-	  echo 'abc -D 20000 -liberty $(LIB) -script +strash;dch;map,-D,20000;topo;buffer,-p;upsize,-D,20000;dnsize,-D,20000;stime,-p'; \
+	  echo 'dfflibmap -liberty /tmp/tp_timing.lib'; \
+	  echo 'abc -D 20000 -liberty /tmp/tp_timing.lib -script +strash;dch;map,-D,20000;topo;buffer,-p;upsize,-D,20000;dnsize,-D,20000;stime,-p'; \
 	} > /tmp/tp_timing.ys && yosys -q -l /tmp/tp_timing.log -s /tmp/tp_timing.ys >/dev/null && \
 	  grep -E 'Delay =' /tmp/tp_timing.log | sed -E 's/.*Delay = *([0-9.]+) ps.*/worst register-to-register path: \1 ps (budget 20000 ps at 50 MHz, before wire delay)/' && \
 	  grep -E 'Start-point' /tmp/tp_timing.log | sed 's/^ABC: /  /'

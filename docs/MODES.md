@@ -50,8 +50,8 @@ tests check this at the TRIG0 pin.
 
 | | Without modes | With modes | Source |
 |---|---|---|---|
-| sky130 cells | 6,047 | 8,755 | measured (v20, Yosys 0.33, `bash syn/area_sky130.sh` and `MODES=1 bash syn/area_sky130.sh`) |
-| sky130 cell area | 50,880 µm² | 70,679 µm² (+39%) | same |
+| sky130 cells | 5,706 | 8,734 | measured (main 2026-10-25, Yosys 0.33, `bash syn/area_sky130.sh` and `MODES=1 bash syn/area_sky130.sh`, with the cells the Tiny Tapeout flow may not use removed) |
+| sky130 cell area | 60,750 µm² | 87,817 µm² (+45%) | same |
 | flip-flops | 1,191 | 1,225 (2 mode bits, 32 accumulator bits) | same |
 | MSET issue to commit | | 12 to 16 clocks over 29 switches | measured (v20 modes, `make -C test modes SEED=1`) |
 | MSET issue to next issue | | 28 to 32 clocks (ADDI: 18 at best) | same |

@@ -136,7 +136,7 @@
             "label": "measured",
             "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test area",
-            "result": "50,880 µm², 1191 flip-flops: 67% of 2x2"
+            "result": "60,750 µm², 1191 flip-flops: 80% of 2x2, with the cells the Tiny Tapeout flow may not use removed"
           }
         },
         {
@@ -161,7 +161,7 @@
             "label": "measured",
             "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test timing",
-            "result": "worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns"
+            "result": "worst path 17.04 ns at ss_100C_1v60 (7.37 ns typical), budget 20 ns, before wire delay"
           }
         },
         {

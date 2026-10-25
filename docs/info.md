@@ -28,8 +28,8 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
-| **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
+| **Logic timing** | 17.04 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, main 2026-10-25); routed timing needs a layout |
+| **Area** | 60,750 µm² of standard cells, 80% of the 2 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
 | **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
@@ -48,7 +48,7 @@ affect are marked for re-run rather than carried forward.
 | ✅ **Docs (v20)** | every link, image, `make` target and script mentioned exists (`make docs`, part of `make sim`) |
 | ✅ **Official RISC-V tests (v20)** | 37/37 (`make act`) |
 | ✅ **Gate level (v20)** | cocotb on a sky130 netlist: 5 pass, 1 skipped by design (`make gl`) |
-| ✅ **Area (v20)** | 50,880 µm², 1,191 flip-flops, 67% of the 2 × 2 die (`make area`); logic timing 12.65 ns, an estimate before layout (`make timing`) |
+| ✅ **Area (main 2026-10-25)** | 60,750 µm², 1,191 flip-flops, 80% of the 2 × 2 die (`make area`); logic timing 17.04 ns, an estimate before layout (`make timing`) |
 | ❌ **Place and route** | LibreLane 3.0.14 stops in detailed placement with `DPL-0036` at 2 × 2, locally and in the `gds` workflow; no routed layout, routed timing or pre-flight yet |
 | ⏳ **FPGA board** | open-tool bitstream built and checked at the pins in simulation; not built with Vivado, not run on a real Basys 3 |
 | ⏳ **Silicon** | after submission to a Tiny Tapeout shuttle |
@@ -480,7 +480,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
 | `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
 | Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
-| `make timing` | critical-path estimate from real sky130 cell delays | 12.65 ns / 20 ns, slow corner, estimate before layout (v20) |
+| `make timing` | critical-path estimate from real sky130 cell delays | 17.04 ns / 20 ns, slow corner, estimate before layout (main 2026-10-25) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |

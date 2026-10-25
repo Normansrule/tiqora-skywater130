@@ -78,8 +78,8 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
-| **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
+| **Logic timing** | 17.04 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, main 2026-10-25); routed timing needs a layout |
+| **Area** | 60,750 µm² of standard cells, 80% of the 2 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
 | **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
@@ -93,9 +93,9 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 |---|---|---|
 | RTL tested | ✅ done | 474 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; main 2026-10-25) |
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
-| Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
+| Synthesized | ✅ done | 60,750 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
 | Placed and routed | ❌ failed | LibreLane 3.0.14 stops in detailed placement, `DPL-0036`, at 2 × 2, locally and in the `gds` workflow; a larger tile or less logic is the owner's decision |
-| Timing checked | ⬜ not reached | needs a layout; the 12.65 ns figure above is an estimate before wires |
+| Timing checked | ⬜ not reached | needs a layout; the 17.04 ns figure above is an estimate before wires |
 | Submitted, fabricated, measured | ⬜ not yet | no chip exists |
 | FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
@@ -120,10 +120,10 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 |  |  | CPU, GPU, TPU demo on the bitstream's gate netlist | ✅ | 4/4; every serial character matches sw/modes_model.py; measured (v20 modes, Yosys 0.70, 2026-10-18, `make -C fpga/basys3 netlist-modes`) |
 |  |  | Vivado bitstream | ⬜ | next: make bit in fpga/basys3 on a machine with Vivado |
 |  |  | running on a real board | ⬜ | next: make prog in fpga/basys3, then check the LEDs and the serial port |
-| **Tiny Tapeout GDS and pre-flight** | `███░░░░░░░` 1/3 | cell area after synthesis, before placement | ✅ | 50,880 µm², 1191 flip-flops: 67% of 2x2; measured (main, Yosys 0.33, 2026-10-25, `make -C test area`) |
+| **Tiny Tapeout GDS and pre-flight** | `███░░░░░░░` 1/3 | cell area after synthesis, before placement | ✅ | 60,750 µm², 1191 flip-flops: 80% of 2x2, with the cells the Tiny Tapeout flow may not use removed; measured (main, Yosys 0.33, 2026-10-25, `make -C test area`) |
 |  |  | place and route at 2x2 | ⛔ | next: LibreLane 3.0.14 stops at detailed placement (DPL-0036); a larger tile or less logic is the owner's call |
 |  |  | Tiny Tapeout pre-flight | ⬜ | next: runs after a clean GDS |
-| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
+| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 17.04 ns at ss_100C_1v60 (7.37 ns typical), budget 20 ns, before wire delay; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
 |  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main, 2026-10-25, `make -C test gl`) |
 |  |  | signoff timing after routing | ⬜ | next: comes with a clean GDS |
 | **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: after a clean GDS and pre-flight |
@@ -642,7 +642,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
 | `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
 | Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
-| `make timing` | critical-path estimate from real sky130 cell delays | 12.65 ns / 20 ns, slow corner, estimate before layout (v20) |
+| `make timing` | critical-path estimate from real sky130 cell delays | 17.04 ns / 20 ns, slow corner, estimate before layout (main 2026-10-25) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
