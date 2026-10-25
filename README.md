@@ -81,7 +81,7 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Logic timing** | 17.04 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, main 2026-10-25); routed timing needs a layout |
 | **Area** | 60,750 µm² of standard cells, 80% of the 2 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
+| **Verification** | 490 checks in 17 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
 **Contents:** [Status](#status) · [Quick start](#quick-start) · [What it looks like](#what-it-looks-like) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Design](#design) · [Repository](#repository) · [Maintainer](#maintainer)
 
@@ -91,7 +91,7 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 
 | Stage | State | Evidence |
 |---|---|---|
-| RTL tested | ✅ done | 474 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; main 2026-10-25) |
+| RTL tested | ✅ done | 490 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; main 2026-10-25) |
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
 | Synthesized | ✅ done | 60,750 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
 | Placed and routed | ❌ failed | LibreLane 3.0.14 stops in detailed placement, `DPL-0036`, at 2 × 2, locally and in the `gds` workflow; a larger tile or less logic is the owner's decision |
@@ -107,7 +107,7 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 
 | Milestone | Progress | Step | State | Evidence or next step |
 |---|---|---|---|---|
-| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 474 checks in 16 suites, plus 6 cocotb tests; measured (main, 2026-10-25, `make -C test sim`) |
+| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 490 checks in 17 suites, plus 6 cocotb tests; measured (main, 2026-10-25, `make -C test sim`) |
 |  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (main, 2026-10-25, `make -C test act`) |
 |  |  | whole Basys 3 design in simulation | ✅ | 26 checks across 4 programs; measured (v20, 2026-10-18, `make -C fpga/basys3 sim`) |
 | **CPU / GPU / TPU modes** | `██████░░░░` 3/5 | Python model, directed, random and mutant tests | ✅ | 230 checks, seeds 1 to 6; 8 of 8 mutants caught; measured (v20 modes, 2026-10-18, `make -C test modes SEED=1`) |
@@ -632,6 +632,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
+| `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |

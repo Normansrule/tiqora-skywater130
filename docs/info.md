@@ -31,7 +31,7 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Logic timing** | 17.04 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, main 2026-10-25); routed timing needs a layout |
 | **Area** | 60,750 µm² of standard cells, 80% of the 2 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells the Tiny Tapeout flow may not use removed; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
+| **Verification** | 490 checks in 17 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
 
 ## Status
@@ -41,7 +41,7 @@ affect are marked for re-run rather than carried forward.
 
 | | |
 |---|---|
-| ✅ **RTL simulation (main 2026-10-25)** | 474 checks across sixteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
+| ✅ **RTL simulation (main 2026-10-25)** | 490 checks across seventeen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
 | ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
 | ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
 | ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |
@@ -470,6 +470,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
+| `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |

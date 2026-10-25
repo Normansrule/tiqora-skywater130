@@ -19,7 +19,7 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 
 ```bash
 cd ~/tiqora-skywater130/test
-make sim        # all sixteen self-checking suites, 474 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
+make sim        # all seventeen self-checking suites, 490 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
 ```
@@ -37,6 +37,7 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | boot | 14 | the UART bootloader, end to end, with RAM timing checked; a RAM program re-enters it by jumping to 0x4000_0000 with hostile registers, then a second program loads |
 | wake | 14 | the chip wakes the flash and RAM from cold, warm and pre-set states |
 | c | 12 | a Clang-compiled C program from flash and via the bootloader |
+| mcu | 16 | the chip as a microcontroller: C from flash, a host on the UART, pins, trigger tick, capture timestamp, RAM |
 | bridge | 10 | the demo-board bridge vs a simulated chip with jitter and clock error |
 | printf | 23 | `tp_printf`, character for character against Python's `%` formatting |
 | spi | 2 | the software SPI reads a simulated W25Q128 flash's JEDEC ID (`EF 40 18`) |

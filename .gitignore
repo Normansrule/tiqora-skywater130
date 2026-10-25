@@ -37,3 +37,4 @@ test/tb_run_*.log
 test/gate_level_netlist.v
 test/tb.fst
 test/reenter.hex
+test/mcu_flash.*

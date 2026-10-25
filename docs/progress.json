@@ -11,7 +11,7 @@
             "label": "measured",
             "version": "main, 2026-10-25",
             "command": "make -C test sim",
-            "result": "474 checks in 16 suites, plus 6 cocotb tests"
+            "result": "490 checks in 17 suites, plus 6 cocotb tests"
           }
         },
         {

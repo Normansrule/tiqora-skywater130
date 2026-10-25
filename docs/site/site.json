@@ -267,7 +267,7 @@
     {
      "rung": "RTL tested",
      "state": "measured",
-     "why": "474 checks in 16 suites and 6 cocotb tests from the pins (<code>make -C test sim</code>, main 2026-10-25); the official RISC-V tests, 37/37 (<code>make act</code>, main 2026-10-25); the recorded tour, 15/15 (<code>make -C test tour</code>)."
+     "why": "490 checks in 17 suites and 6 cocotb tests from the pins (<code>make -C test sim</code>, main 2026-10-25); the official RISC-V tests, 37/37 (<code>make act</code>, main 2026-10-25); the recorded tour, 15/15 (<code>make -C test tour</code>)."
     },
     {
      "rung": "Formally checked",

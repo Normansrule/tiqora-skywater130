@@ -19,6 +19,8 @@
 #                   switch latency, deadline edge across switches. SEED=n
 #   make c          a Clang-compiled C program, from flash and over the UART bootloader
 #                   (needs: pip install ziglang pyelftools)
+#   make mcu        the chip used as a microcontroller: a C program from flash talks
+#                   to a host over the UART, reads and drives pins, times edges
 #   make run PROG=../sw/examples/hello.c
 #                   compile any C file and run it on the simulated chip, output live
 #   make act        the official RISC-V architecture tests, all 37 RV32E (~10 min)
@@ -67,9 +69,9 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
+.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust modes tour shared docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
@@ -176,6 +178,13 @@ c_ram.elf: pytools $(C_SRCS) ../sw/link_ram.ld ../sw/tiqora.h ../sw/tp_io.h
 	python3 ../sw/rv32e_check.py $<
 	$(ZOBJ) -O binary $< $*.bin
 	python3 -c "import sys;d=open('$*.bin','rb').read();d+=b'\0'*((-len(d))%4);print('\n'.join('%08x'%int.from_bytes(d[i:i+4],'little') for i in range(0,len(d),4)))" > $@
+
+MCU_SRCS = ../sw/crt0.S ../sw/lib/rt.c ../sw/examples/mcu_e2e.c
+mcu_flash.elf: pytools $(MCU_SRCS) ../sw/link.ld ../sw/tiqora.h ../sw/tp_io.h
+	$(ZCC) $(CFLAGS_C) -T ../sw/link.ld -Wl,--gc-sections -o $@ $(MCU_SRCS)
+mcu: mcu_flash.hex
+	@sh iv.sh -g2012 -o tb_mcu.vvp -s tb_mcu $(RTL) qspi_model.sv tb_mcu.sv
+	sh vv.sh tb_mcu.vvp
 
 c: c_flash.hex c_ram.hex
 	@sh iv.sh -g2012 -o tb_c.vvp -s tb_c $(RTL) qspi_model.sv tb_c.sv
