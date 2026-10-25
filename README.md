@@ -81,7 +81,7 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
 | **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 470 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (all v20) |
+| **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
 **Contents:** [Status](#status) · [Quick start](#quick-start) · [What it looks like](#what-it-looks-like) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Design](#design) · [Repository](#repository) · [Maintainer](#maintainer)
 
@@ -91,7 +91,7 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 
 | Stage | State | Evidence |
 |---|---|---|
-| RTL tested | ✅ done | 470 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; v20) |
+| RTL tested | ✅ done | 474 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; main 2026-10-25) |
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
 | Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
 | Placed and routed | ❌ failed | LibreLane 3.0.14 stops in detailed placement, `DPL-0036`, at 2 × 2, locally and in the `gds` workflow; a larger tile or less logic is the owner's decision |
@@ -107,8 +107,8 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 
 | Milestone | Progress | Step | State | Evidence or next step |
 |---|---|---|---|---|
-| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 470 checks in 16 suites, plus 6 cocotb tests; measured (v20, 2026-10-18, `make -C test sim`) |
-|  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (v20, 2026-10-18, `make -C test act`) |
+| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 474 checks in 16 suites, plus 6 cocotb tests; measured (main, 2026-10-25, `make -C test sim`) |
+|  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (main, 2026-10-25, `make -C test act`) |
 |  |  | whole Basys 3 design in simulation | ✅ | 26 checks across 4 programs; measured (v20, 2026-10-18, `make -C fpga/basys3 sim`) |
 | **CPU / GPU / TPU modes** | `██████░░░░` 3/5 | Python model, directed, random and mutant tests | ✅ | 230 checks, seeds 1 to 6; 8 of 8 mutants caught; measured (v20 modes, 2026-10-18, `make -C test modes SEED=1`) |
 |  |  | Tiny Tapeout tile unchanged with the modes off | ✅ | gate netlist byte-identical, 6047 cells; measured (v20 modes, 2026-10-18, `bash syn/tile_identity.sh v20`) |
@@ -120,11 +120,11 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 |  |  | CPU, GPU, TPU demo on the bitstream's gate netlist | ✅ | 4/4; every serial character matches sw/modes_model.py; measured (v20 modes, Yosys 0.70, 2026-10-18, `make -C fpga/basys3 netlist-modes`) |
 |  |  | Vivado bitstream | ⬜ | next: make bit in fpga/basys3 on a machine with Vivado |
 |  |  | running on a real board | ⬜ | next: make prog in fpga/basys3, then check the LEDs and the serial port |
-| **Tiny Tapeout GDS and pre-flight** | `███░░░░░░░` 1/3 | cell area after synthesis, before placement | ✅ | 50,880 µm², 1191 flip-flops: 67% of 2x2; measured (v20, Yosys 0.33, 2026-10-18, `make -C test area`) |
+| **Tiny Tapeout GDS and pre-flight** | `███░░░░░░░` 1/3 | cell area after synthesis, before placement | ✅ | 50,880 µm², 1191 flip-flops: 67% of 2x2; measured (main, Yosys 0.33, 2026-10-25, `make -C test area`) |
 |  |  | place and route at 2x2 | ⛔ | next: LibreLane 3.0.14 stops at detailed placement (DPL-0036); a larger tile or less logic is the owner's call |
 |  |  | Tiny Tapeout pre-flight | ⬜ | next: runs after a clean GDS |
-| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns; measured (v20, Yosys 0.33, 2026-10-18, `make -C test timing`) |
-|  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (v20, 2026-10-18, `make -C test gl`) |
+| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
+|  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main, 2026-10-25, `make -C test gl`) |
 |  |  | signoff timing after routing | ⬜ | next: comes with a clean GDS |
 | **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: after a clean GDS and pre-flight |
 |  |  | first chip tested | ⬜ | next: after the shuttle returns |
@@ -311,8 +311,13 @@ it needed 4 × 2 tiles (560 €). The rewrite halved the price and added the UAR
 | `0x0000_0000` | 16 MB | QSPI flash (CS0) — code and constants, executes in place |
 | `0x1000_0000` | 8 MB | QSPI RAM A (CS1) |
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
+| `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach (offsets in `src/tp_pkg.sv`, `SR_*`) |
 | `0x3000_0000` | — | GPIO and UART registers |
 | `0x4000_0000` | 172 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+
+Only address bits 31:28 (which device) and 23:0 (where in it) are decoded (`src/bus/tp_bus.sv`),
+so each device repeats every 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again. The
+bootloader takes the length it is sent as given, so `sw/tpload.py` refuses images over 8 MB.
 
 **From reset to the first instruction.** The chip wakes its own flash and RAMs whatever state
 they were left in, then reads the first word:

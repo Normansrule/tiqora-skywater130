@@ -19,22 +19,22 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 
 ```bash
 cd ~/tiqora-skywater130/test
-make sim        # all sixteen self-checking suites, 470 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
+make sim        # all sixteen self-checking suites, 474 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
 ```
 
-Each testbench ends with a line like `51 checks, 0 failures`. `make sim` covers:
+Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` stops with an error at the first bench that reports a failure (`test/vv.sh` turns the verdict into an exit status; before 2026-10-25 a failing bench still let `make` succeed). `make sim` covers:
 
 | Bench | Checks | What it proves |
 |---|---:|---|
-| unit | 48 | timing-unit blocks, rotating register file, UART, GPIO |
+| unit | 49 | timing-unit blocks, rotating register file (including 4,000 random clocks against a model, every phase), UART, GPIO |
 | soc | 12 | boots, arms a deadline, the trigger lands on the exact tick |
 | isa | 51 | every RV32E base instruction vs Python-computed results |
 | stress | 18 | 8 simultaneous captures, queue overflow, 2³² rollover |
 | wrap | 10 | `TWAIT` across the timebase rollover |
 | xpulse | 15 | all eleven timing instructions |
-| boot | 11 | the UART bootloader, end to end, with RAM timing checked |
+| boot | 14 | the UART bootloader, end to end, with RAM timing checked; a RAM program re-enters it by jumping to 0x4000_0000 with hostile registers, then a second program loads |
 | wake | 14 | the chip wakes the flash and RAM from cold, warm and pre-set states |
 | c | 12 | a Clang-compiled C program from flash and via the bootloader |
 | bridge | 10 | the demo-board bridge vs a simulated chip with jitter and clock error |

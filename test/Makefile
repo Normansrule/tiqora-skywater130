@@ -88,7 +88,7 @@ modes:
 	python3 ../sw/modes_model.py
 	python3 ../sw/mkmodes.py $(SEED)
 	@sh iv.sh -g2012 -DTIQORA_MODES -o tb_modes.vvp -s tb_modes $(MODES_RTL) qspi_model.sv tb_modes.sv
-	vvp -n tb_modes.vvp
+	sh vv.sh -n tb_modes.vvp
 
 area:
 	cd .. && bash syn/area_sky130.sh $(LIB)
@@ -96,33 +96,34 @@ area:
 prog:
 	python3 ../sw/mkprog.py prog.hex
 	python3 ../sw/mkhello.py hello.hex >/dev/null
+	python3 ../sw/mkreenter.py reenter.hex >/dev/null
 	python3 ../sw/mkisa.py  isa.hex
 	python3 ../sw/mkwrap.py wrap.hex
 	python3 ../sw/mkxpulse.py xpulse.hex
 
 unit:
 	@sh iv.sh -g2012 -o tb_unit.vvp -s tb_unit $(RTL) tb_unit.sv
-	vvp tb_unit.vvp
+	sh vv.sh tb_unit.vvp
 
 soc: prog
 	@sh iv.sh -g2012 -o tb_soc.vvp -s tb_soc $(RTL) qspi_model.sv tb_soc.sv
-	vvp tb_soc.vvp
+	sh vv.sh tb_soc.vvp
 
 isa: prog
 	@sh iv.sh -g2012 -o tb_isa.vvp -s tb_isa $(RTL) qspi_model.sv tb_isa.sv
-	vvp tb_isa.vvp
+	sh vv.sh tb_isa.vvp
 
 stress:
 	@sh iv.sh -g2012 -o tb_stress.vvp -s tb_stress $(RTL) tb_stress.sv
-	vvp tb_stress.vvp
+	sh vv.sh tb_stress.vvp
 
 wrap: prog
 	@sh iv.sh -g2012 -o tb_wrap.vvp -s tb_wrap $(RTL) qspi_model.sv tb_wrap.sv
-	vvp tb_wrap.vvp
+	sh vv.sh tb_wrap.vvp
 
 xpulse: prog
 	@sh iv.sh -g2012 -o tb_xpulse.vvp -s tb_xpulse $(RTL) qspi_model.sv tb_xpulse.sv
-	vvp tb_xpulse.vvp
+	sh vv.sh tb_xpulse.vvp
 
 clean-sim:
 	rm -rf .zig-cache-test .zig-cache-act run_* tb_run_* readme_*
@@ -137,11 +138,11 @@ endif
 
 boot: prog
 	@sh iv.sh -g2012 -o tb_boot.vvp -s tb_boot $(RTL) qspi_model.sv tb_boot.sv
-	vvp tb_boot.vvp
+	sh vv.sh tb_boot.vvp
 
 wake: prog
 	@sh iv.sh -g2012 -o tb_wake.vvp -s tb_wake $(RTL) qspi_model.sv tb_wake.sv
-	vvp tb_wake.vvp
+	sh vv.sh tb_wake.vvp
 
 # ---- C programs, compiled with the Clang inside `pip install ziglang` ----
 # Checked before any C build: which python3 is running, and whether it has the
@@ -178,7 +179,7 @@ c_ram.elf: pytools $(C_SRCS) ../sw/link_ram.ld ../sw/tiqora.h ../sw/tp_io.h
 
 c: c_flash.hex c_ram.hex
 	@sh iv.sh -g2012 -o tb_c.vvp -s tb_c $(RTL) qspi_model.sv tb_c.sv
-	vvp tb_c.vvp
+	sh vv.sh tb_c.vvp
 
 bridge:
 	python3 ../sw/demoboard/test_tpboot.py

@@ -328,6 +328,45 @@ module tb_unit;
             chk(ga === ~vals[5], "and the new value is in place afterwards");
         end
 
+        // The rotation invariant, checked on every clock rather than at pass
+        // boundaries: random writes of single nibbles at whatever phase they
+        // land on, random read addresses, compared each cycle against a model
+        // that stores registers unrotated. If the invariant ("at phase k,
+        // bits [3:0] of every register hold its logical nibble k") broke for
+        // any register at any phase, a read would disagree.
+        begin : rf_random
+            reg [31:0] model [0:15];
+            integer seed, c, bad, writes, p, j;
+            reg [3:0] ea, eb;
+            reg [31:0] ga, gb;
+            seed = 7;
+            if ($value$plusargs("RFSEED=%d", seed)) ;
+            $display("        random seed %0d (+RFSEED=n)", seed);
+            model[0] = 32'd0;
+            for (j = 1; j < 16; j = j + 1) begin
+                rf_read(j[3:0], 4'd0, ga, gb);
+                model[j] = ga;
+            end
+            rf_sync;
+            bad = 0; writes = 0;
+            for (c = 0; c < 4000; c = c + 1) begin
+                p = rf_phase;
+                rf_ra = $random(seed); rf_rb = $random(seed);
+                rf_we = $random(seed); rf_wa = $random(seed); rf_wd = $random(seed);
+                #1;
+                ea = model[rf_ra][4*p +: 4];
+                eb = model[rf_rb][4*p +: 4];
+                if (rf_qa !== ea || rf_qb !== eb) bad = bad + 1;
+                if (rf_we && rf_wa != 4'd0) begin
+                    model[rf_wa][4*p +: 4] = rf_wd;
+                    writes = writes + 1;
+                end
+                @(negedge clk);
+            end
+            rf_we = 1'b0;
+            chk(bad == 0, $sformatf("4000 random clocks (%0d nibble writes at every phase): both ports match the model every clock", writes));
+        end
+
         // -------------------------------------------------------------
         section("tp_uart");
         repeat (3) @(negedge clk); ua_rst = 1'b0;

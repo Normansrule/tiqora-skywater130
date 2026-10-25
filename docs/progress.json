@@ -9,9 +9,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, 2026-10-18",
+            "version": "main, 2026-10-25",
             "command": "make -C test sim",
-            "result": "470 checks in 16 suites, plus 6 cocotb tests"
+            "result": "474 checks in 16 suites, plus 6 cocotb tests"
           }
         },
         {
@@ -19,7 +19,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, 2026-10-18",
+            "version": "main, 2026-10-25",
             "command": "make -C test act",
             "result": "37/37"
           }
@@ -134,7 +134,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, Yosys 0.33, 2026-10-18",
+            "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test area",
             "result": "50,880 µm², 1191 flip-flops: 67% of 2x2"
           }
@@ -159,7 +159,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, Yosys 0.33, 2026-10-18",
+            "version": "main, Yosys 0.33, 2026-10-25",
             "command": "make -C test timing",
             "result": "worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns"
           }
@@ -169,7 +169,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, 2026-10-18",
+            "version": "main, 2026-10-25",
             "command": "make -C test gl",
             "result": "5 pass, 1 skipped by design"
           }

@@ -31,7 +31,7 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
 | **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
 | **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 470 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (all v20) |
+| **Verification** | 474 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
 
 
 ## Status
@@ -41,7 +41,7 @@ affect are marked for re-run rather than carried forward.
 
 | | |
 |---|---|
-| ✅ **RTL simulation (v20)** | 470 checks across sixteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
+| ✅ **RTL simulation (main 2026-10-25)** | 474 checks across sixteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
 | ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
 | ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
 | ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |
@@ -198,8 +198,12 @@ it needed 4 × 2 tiles (560 €). The rewrite halved the price and added the UAR
 | `0x0000_0000` | 16 MB | QSPI flash (CS0) — code and constants, executes in place |
 | `0x1000_0000` | 8 MB | QSPI RAM A (CS1) |
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
+| `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach |
 | `0x3000_0000` | — | GPIO and UART registers |
 | `0x4000_0000` | 172 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+
+Only address bits 31:28 (device) and 23:0 (offset) are decoded, so each device repeats every
+16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again.
 
 ### GPIO and UART registers (`0x3000_0000` + offset)
 
