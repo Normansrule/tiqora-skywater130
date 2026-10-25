@@ -1,10 +1,11 @@
 # info.yaml — Tiny Tapeout project metadata for Tiqora.
 # See https://tinytapeout.com for the current schema.
 #
-# `tiles: "2x2"` is MEASURED: 49,186 um^2 of sky130_fd_sc_hd cells (flattened
-# netlist), about 68% of the tile's placeable area; src/config.json raises the
-# placement target density to 72 to match. Reproduce: cd test && make area.
-# (The earlier 32-bit core measured 69,866 um^2 and needed 4x2.)
+# `tiles: "3x2"`: at 2x2 the cells fit (48,763 um^2 in LibreLane 3.0.14's own
+# synthesis with src/synth_exclude.cells) but the wiring does not: global
+# routing needed 153% of the routing tracks. At 3x2 with placement density 50
+# (src/config.json) a local run used 52% of the tracks and detailed routing
+# reached 0 violations. (The earlier 32-bit core measured 69,866 um^2 and needed 4x2.)
 
 project:
   title:        "Tiqora: RISC-V microcontroller with hardware timestamping"
@@ -16,7 +17,7 @@ project:
                                     # At 50 MHz: 21 clocks per sequential
                                     # instruction, 20 ns timestamp resolution.
 
-  tiles:        "2x2"
+  tiles:        "3x2"
 
   top_module:   "tt_um_normansrule_tiqora"
 
