@@ -17,6 +17,10 @@
   "//": "Users have reported that values up to 80 worked well for them.",
   "PL_TARGET_DENSITY_PCT": 72,
 
+  "//": "SYNTH_EXCLUDED_CELL_FILE - cells synthesis may not use. synth_exclude.cells is the PDK default minus its ban on drive-strength-1 cells (see the file).",
+  "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25). Without it the layout does not fit the tile.",
+  "SYNTH_EXCLUDED_CELL_FILE": "dir::synth_exclude.cells",
+
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
   "CLOCK_PERIOD": 20,
