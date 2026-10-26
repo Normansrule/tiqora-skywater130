@@ -9,9 +9,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main, 2026-10-25",
+            "version": "verify-audits, 2026-10-26",
             "command": "make -C test sim",
-            "result": "490 checks in 17 suites, plus 6 cocotb tests"
+            "result": "493 checks in 18 suites, plus 6 cocotb tests"
           }
         },
         {

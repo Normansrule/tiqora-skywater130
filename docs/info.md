@@ -31,7 +31,7 @@ delay are separate matters), and can be disciplined to an external reference.
 | **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25) |
 | **Area** | 50,880 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile) |
-| **Verification** | 490 checks in 17 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
+| **Verification** | 493 checks in 18 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, verify-audits 2026-10-26) |
 
 
 ## Status
@@ -41,7 +41,7 @@ affect are marked for re-run rather than carried forward.
 
 | | |
 |---|---|
-| ✅ **RTL simulation (main 2026-10-25)** | 490 checks across seventeen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
+| ✅ **RTL simulation (verify-audits 2026-10-26)** | 493 checks across eighteen suites, including 230 for the CPU, GPU and TPU modes (`cd test && make sim`), plus 6 cocotb tests from the pins only |
 | ✅ **README example (v20)** | the minimal program below, compiled verbatim from this file, run from flash and RAM: one 8-tick pulse at the TRIG0 pin (`make readme`) |
 | ✅ **Software (v20)** | Clang-compiled C, the UART bootloader, `printf`, software SPI, all run on the simulated chip |
 | ✅ **FPGA, simulated (v20)** | the whole Digilent Basys 3 design at 100 MHz: 26 checks over four programs, including the CPU, GPU, TPU mode demo (`make -C fpga/basys3 sim`) |

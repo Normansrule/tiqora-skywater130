@@ -19,7 +19,7 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 
 ```bash
 cd ~/tiqora-skywater130/test
-make sim        # all seventeen self-checking suites, 490 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
+make sim        # all eighteen self-checking suites, 493 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
 make warnings   # lint, plus Yosys synthesis with zero warnings (needs Yosys; not in CI)
@@ -45,7 +45,27 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
 | latency | 1 | software resumes 10–17 clocks after a `TWAIT` deadline, on all 8 rotation phases |
 | adjust | 3 | a time step neither skips nor repeats a deadline |
-| shared | 5 files | the timing unit matches Tiqora-Serial's, by SHA-256 manifest |
+| shared | 7 files | the timing unit and its reference model match Tiqora-Serial's, by SHA-256 manifest |
+| syncref | 3 | the timing unit against a Python reference model (`test/sync_model.py`), every output on every clock, 60,000 random clocks in each of three builds: Tiqora, Tiqora-Serial and a small stress build |
+
+**Two gaps the reference model found (reported, not fixed).** The timing
+unit promises that every pin event is either queued or counted by the sticky
+overflow flag. `make syncref` counts two ways that promise breaks in its
+180,000 random clocks, and prints both:
+
+* **A backlog overwritten (46 events).** Edges on several channels in one
+  clock are queued one per clock, lowest channel first, from a backlog. If
+  any enabled channel has a new edge before that backlog drains (up to 7
+  clocks for 8 channels), the new edges replace the backlog and the events
+  still waiting are dropped. Both chips can hit this.
+* **A TMARK collision (36 events).** The queue takes one word per clock.
+  When a `TMARK` and a pin event arrive in the same clock, the mark takes the
+  slot and the pin event is dropped. Only Tiqora can hit this; Tiqora-Serial
+  ties its Xpulse port off.
+
+In neither case is the overflow flag set, so the loss is silent. Both fixes
+belong in `src/sync/sync_unit.sv`, which is shared byte for byte with
+Tiqora-Serial, so they wait for the maintainer's decision.
 
 ## Measuring speed
 
