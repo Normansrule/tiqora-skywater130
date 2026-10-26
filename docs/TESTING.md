@@ -22,7 +22,7 @@ cd ~/tiqora-skywater130/test
 make sim        # all seventeen self-checking suites, 490 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
-make warnings   # lint, plus Yosys synthesis with zero warnings (part of make sim)
+make warnings   # lint, plus Yosys synthesis with zero warnings (needs Yosys; not in CI)
 ```
 
 Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` stops with an error at the first bench that reports a failure (`test/vv.sh` turns the verdict into an exit status; before 2026-10-25 a failing bench still let `make` succeed). `make sim` covers:
