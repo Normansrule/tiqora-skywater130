@@ -186,8 +186,14 @@
         },
         {
           "step": "signoff timing after routing",
-          "state": "todo",
-          "next": "read the per-corner slacks from the GDS_logs artifact of GitHub run 40213473443 (the gds workflow does not fail on timing)"
+          "state": "doing",
+          "evidence": {
+            "label": "measured",
+            "version": "verify-audits src/config.json, LibreLane 3.0.14, 2026-10-26",
+            "command": "local LibreLane run (librelane src/config.json)",
+            "result": "setup +6.45 ns typical, -0.26 ns nom_ss, -0.75 ns max_ss (22 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0"
+          },
+          "next": "shorten the worst slow-corner path or accept about 48 MHz at the slowest corner"
         }
       ]
     },
@@ -197,7 +203,7 @@
         {
           "step": "shuttle submission",
           "state": "todo",
-          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, routed timing still to be read"
+          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 0.75 ns"
         },
         {
           "step": "first chip tested",

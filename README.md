@@ -78,7 +78,7 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25); routed timing: see the status table |
+| **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25); routed: +6.45 ns typical, −0.75 ns at the worst slow corner (measured, local LibreLane 3.0.14, 2026-10-26) |
 | **Area** | 50,880 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile, the price this README has always used) |
 | **Verification** | 490 checks in 17 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
@@ -95,7 +95,7 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
 | Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
 | Placed and routed | ✅ done | 3 × 2, placement density 50: the `gds` and `precheck` workflows pass (GitHub run 40213473443, LibreLane 3.0.14, 7bee2a9); gate-level cocotb on that netlist passes (`gl_test`, same run) |
-| Timing checked | ⏳ not read yet | the `gds` workflow passes without checking timing, and its timing reports (the GDS_logs artifact of GitHub run 40213473443) cannot be downloaded from the environment that wrote this; pre-wire estimate 12.57 ns at the slow corner against 20 ns. Tiqora-Serial's 1 × 2 layout misses setup at the slow corner by 1.30 ns, so this needs reading before a submission |
+| Timing checked | ⚠️ misses at the slow corner | setup slack +6.45 ns at the typical corner (nom_tt_025C_1v80), −0.26 ns at nominal slow (nom_ss_100C_1v60) and −0.75 ns at the worst slow corner (max_ss_100C_1v60, 22 paths); hold met at every corner (worst +0.10 ns, fast corner) (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-26; the same run: routing DRC 0, Magic DRC 0, LVS 0, antenna 0, core utilisation 61%). At 20 ns (50 MHz) the chip meets timing at typical silicon and needs about 20.8 ns (≈48 MHz, an estimate from the slack) at the slowest corner. The `gds` workflow does not fail on timing |
 | Submitted, fabricated, measured | ⬜ not yet | no chip exists |
 | FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
@@ -125,8 +125,8 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 |  |  | Tiny Tapeout pre-flight | ✅ | pass; measured (PR #4 7bee2a9, `GitHub run 40213473443: precheck`) |
 | **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.57 ns at ss_100C_1v60 (6.17 ns typical), budget 20 ns, before wire delay; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
 |  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main, 2026-10-25, `make -C test gl`) |
-|  |  | signoff timing after routing | ⬜ | next: read the per-corner slacks from the GDS_logs artifact of GitHub run 40213473443 (the gds workflow does not fail on timing) |
-| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, routed timing still to be read |
+|  |  | signoff timing after routing | 🔄 | setup +6.45 ns typical, -0.26 ns nom_ss, -0.75 ns max_ss (22 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0; measured (verify-audits src/config.json, LibreLane 3.0.14, 2026-10-26, `local LibreLane run (librelane src/config.json)`) |
+| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 0.75 ns |
 |  |  | first chip tested | ⬜ | next: after the shuttle returns |
 
 ✅ done · 🔄 in progress · ⬜ not started · ⛔ blocked. Only measured results count as done.

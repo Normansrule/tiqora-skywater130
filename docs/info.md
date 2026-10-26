@@ -50,7 +50,7 @@ affect are marked for re-run rather than carried forward.
 | ✅ **Gate level (v20)** | cocotb on a sky130 netlist: 5 pass, 1 skipped by design (`make gl`) |
 | ✅ **Area (main 2026-10-25)** | 50,880 µm², 1,191 flip-flops, 44% of the 3 × 2 die (`make area`); logic timing 12.57 ns, an estimate before wires (`make timing`) |
 | ✅ **Layout** | 3 × 2, density 50: `gds`, `precheck` and `gl_test` pass (GitHub run 40213473443, LibreLane 3.0.14, 7bee2a9) |
-| ⏳ **Routed timing** | the passing run's timing reports are not read yet; Tiqora-Serial's 1 × 2 layout misses setup at the slow corner by 1.30 ns, so check this before submitting |
+| ⚠️ **Routed timing** | +6.45 ns setup slack at the typical corner, −0.75 ns at the worst slow corner (22 paths); hold met everywhere (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-26: DRC 0, LVS 0, antenna 0) |
 | ⏳ **FPGA board** | open-tool bitstream built and checked at the pins in simulation; not built with Vivado, not run on a real Basys 3 |
 | ⏳ **Silicon** | after submission to a Tiny Tapeout shuttle |
 

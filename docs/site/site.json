@@ -287,9 +287,9 @@
     },
     {
      "rung": "Timing checked",
-     "state": "none",
-     "word": "not read yet",
-     "why": "The routed layout exists (GitHub run 40213473443), but the <code>gds</code> workflow does not fail on timing and its reports could not be downloaded here. The pre-wire estimate is 12.57 ns at the slow corner against 20 ns (<code>make timing</code>, ABC, no wire delay)."
+     "state": "fail",
+     "word": "missed at the slow corner",
+     "why": "Routed: setup slack +6.45 ns at the typical corner, -0.26 ns at nominal slow and -0.75 ns at the worst slow corner (22 paths); hold met at every corner (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-26; DRC 0, LVS 0, antenna 0). At 50 MHz it meets timing on typical silicon; the slowest corner needs about 20.8 ns (an estimate from the slack)."
     },
     {
      "rung": "Submitted to a shuttle",

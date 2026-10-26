@@ -1,12 +1,12 @@
-<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and what is still to read.", "data": ["atlas"], "scripts": []} -->
+<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and its routed timing.", "data": ["atlas"], "scripts": []} -->
 <h1>Physical design</h1>
-<div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). Its routed timing reports have not been read yet: the workflow does not fail on timing, and its log files could not be downloaded where this page was written. No chip exists yet.</div>
+<div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). A local run of the same configuration routes with 0 DRC, 0 LVS and 0 antenna errors and meets timing at the typical corner; it misses setup at the slowest corner by 0.75 ns <span class="ev measured">measured</span>. No chip exists yet.</div>
 
 <h2>Three different areas</h2>
 <p>They are easy to mix up, and the numbers below use each in exactly one sense.</p>
 <div class=grid>
  <div class=card><h3>Die area</h3><p><b>114,858 µm²</b>: the 3x2 tile, 508.76 × 225.76 µm, from Tiny Tapeout's template <code>tt_block_3x2_pg.def</code>. Fixed by the tile count.</p></div>
- <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. Only a layout run reports it; the numbers from the passing run are in its log files, not yet read.</p></div>
+ <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. <b>110,874 µm²</b> <span class="ev measured">measured</span>, 61% filled with cells after placement and timing repair (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-26).</p></div>
  <div class=card><h3>Summed cell area</h3><p><b>50,880 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80), using the cells <code>src/synth_exclude.cells</code> leaves. Before placement, so with no timing-repair buffers, taps or fill. 44% of the die.</p></div>
 </div>
 
@@ -20,7 +20,14 @@
 
 <h2>How it got to fit</h2>
 <p>At 2x2, placement failed with <code>DPL-0036</code>. Two things were wrong. LibreLane's default cell list (the PDK's <code>no_synth.cells</code>) bans the drive-strength-1 cells, so synthesis used larger cells and the design came out at 59,797 µm², 80% of the 2x2 die; and even at the smaller size, 2x2 left too little room to route. <code>src/synth_exclude.cells</code> allows the drive-strength-1 cells (the cells with known layout problems stay banned through the PDK's separate list), and the tile count went to 3x2 at placement density 50. With both, the <code>gds</code>, <code>precheck</code> and <code>gl_test</code> workflows pass <span class="ev measured">measured</span> (GitHub run 40213473443).</p>
-<p>Still to read from that run: the core area, the utilisation after placement, and the setup and hold slack at each corner. Tiqora-Serial's 1x2 layout misses setup at the slow corner by 1.30 ns, so Tiqora's slow-corner number matters before a submission.</p>
+<h2>Routing and timing</h2>
+<p>Locally, detailed routing first stalled on its last few shorts for hours: global routing held back 30% of the tracks and ended with 58 overflowing regions. With <code>GRT_ADJUSTMENT</code> at 0.15 global routing has no overflow and detailed routing finishes with 0 violations in about half an hour. Smaller clock-tree clusters (<code>CTS_SINK_CLUSTERING_SIZE</code> 10) and timing repair after global routing then took the worst slow-corner slack from −1.10 ns to −0.75 ns <span class="ev measured">measured</span> (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-26).</p>
+<table><tr><th>Corner</th><th>Setup slack</th><th>Hold slack</th></tr>
+<tr><td>typical (nom_tt_025C_1v80)</td><td>+6.45 ns</td><td>+0.30 ns</td></tr>
+<tr><td>slow, nominal wires (nom_ss_100C_1v60)</td><td>−0.26 ns</td><td>+0.84 ns</td></tr>
+<tr><td>slow, worst wires (max_ss_100C_1v60)</td><td>−0.75 ns (22 paths)</td><td>+0.85 ns</td></tr>
+<tr><td>fast (nom_ff_n40C_1v95)</td><td>+8.28 ns</td><td>+0.10 ns</td></tr></table>
+<p>The worst path is a chain of about 40 drive-strength-1 cells. At 50 MHz the chip meets timing on typical silicon; at the slowest corner it needs about 20.8 ns, roughly 48 MHz (an estimate from the slack). The same run still reports slow-corner slew warnings on about 1,550 pins; the resizer does not clear them after the final routing.</p>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 <script>
 (function () {
