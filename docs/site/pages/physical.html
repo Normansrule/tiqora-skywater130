@@ -7,14 +7,14 @@
 <div class=grid>
  <div class=card><h3>Die area</h3><p><b>114,858 µm²</b>: the 3x2 tile, 508.76 × 225.76 µm, from Tiny Tapeout's template <code>tt_block_3x2_pg.def</code>. Fixed by the tile count.</p></div>
  <div class=card><h3>Core area</h3><p>The part of the die where cells may be placed, inside the power ring and the pin keep-outs. <b>110,874 µm²</b> <span class="ev measured">measured</span>, 61% filled with cells after placement and timing repair (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-26).</p></div>
- <div class=card><h3>Summed cell area</h3><p><b>50,880 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80), using the cells <code>src/synth_exclude.cells</code> leaves. Before placement, so with no timing-repair buffers, taps or fill. 44% of the die.</p></div>
+ <div class=card><h3>Summed cell area</h3><p><b>50,965 µm²</b> <span class="ev measured">measured</span>: every standard cell Yosys 0.33 maps the flat design to, added up (<code>make area</code>, tt_025C_1v80), using the cells <code>src/synth_exclude.cells</code> leaves. Before placement, so with no timing-repair buffers, taps or fill. 44% of the die.</p></div>
 </div>
 
 <h2>Where the cells go</h2>
 <p>Each block's cells, synthesized one module at a time and drawn <b>to scale</b> inside the 3x2 die outline. Positions mean nothing: the placer would spread these cells over the whole core, mixed together.</p>
 <figure class=figure>
  <div class=treemap>{{static:treemap}}</div>
- <figcaption><span class="ev measured">measured</span> <code>python3 docs/tools/atlas.py --area sky130_fd_sc_hd__tt_025C_1v80.lib</code> (Yosys 0.33, hierarchical: each module synthesized without flattening). The hierarchical sum, 52,777 µm², is larger than the flat 50,880 µm² because synthesis cannot optimise across module boundaries. Colours follow the atlas categories, and every block is named in the table below.</figcaption>
+ <figcaption><span class="ev measured">measured</span> <code>python3 docs/tools/atlas.py --area sky130_fd_sc_hd__tt_025C_1v80.lib</code> (Yosys 0.33, hierarchical: each module synthesized without flattening). The hierarchical sum, 52,777 µm², is larger than the flat 50,965 µm² because synthesis cannot optimise across module boundaries. Colours follow the atlas categories, and every block is named in the table below.</figcaption>
 </figure>
 <div id=areatable></div>
 

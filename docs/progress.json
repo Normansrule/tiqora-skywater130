@@ -11,7 +11,7 @@
             "label": "measured",
             "version": "verify-audits, 2026-10-26",
             "command": "make -C test sim",
-            "result": "493 checks in 18 suites, plus 6 cocotb tests"
+            "result": "495 checks in 18 suites, plus 6 cocotb tests"
           }
         },
         {
@@ -134,9 +134,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main, Yosys 0.33, 2026-10-25",
+            "version": "verify-audits, Yosys 0.33, 2026-10-26",
             "command": "make -C test area",
-            "result": "50,880 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed"
+            "result": "50,965 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed"
           }
         },
         {

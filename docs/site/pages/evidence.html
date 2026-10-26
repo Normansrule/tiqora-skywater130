@@ -20,7 +20,7 @@
   <tr><th>Wake on a deadline</th><td>32 clocks</td><td>16 clocks</td><td>unchanged</td><td>unchanged</td></tr>
   <tr><th>RTL checks</th><td>not recorded here</td><td>240 checks in 15 suites before the modes were added; 470 in 16 with them</td><td>same</td><td>+ the recorded tour, 15 checks</td></tr>
   <tr><th>Official RISC-V tests</th><td>37/37</td><td>37/37 <span class="ev measured">measured</span></td><td>unchanged RTL</td><td>unchanged RTL</td></tr>
-  <tr><th>Cell area</th><td>49,200 to 50,800 µm², as the v19 README stated</td><td>50,880 µm² <span class="ev measured">measured</span> <code>make area</code></td><td>unchanged RTL</td><td>per block, 52,777 µm² hierarchical; same with the layout's cell list</td></tr>
+  <tr><th>Cell area</th><td>49,200 to 50,800 µm², as the v19 README stated</td><td>50,965 µm² <span class="ev measured">measured</span> <code>make area</code></td><td>unchanged RTL</td><td>per block, 52,777 µm² hierarchical; same with the layout's cell list</td></tr>
   <tr><th>Layout</th><td>the README said pre-flight passed; no report backs it</td><td>2x2 fails placement, <code>DPL-0036</code> <span class="ev fail">failed</span></td><td>unchanged</td><td>3x2, drive-strength-1 cells allowed: <code>gds</code>, <code>precheck</code> and <code>gl_test</code> pass <span class="ev measured">measured</span> (GitHub run 40213473443)</td></tr>
   <tr><th>Documentation</th><td></td><td>datasheet PDF fails on GitHub: web images and WebP</td><td>datasheet builds; <code>check_docs.py</code> guards it</td><td>this site, the atlas and the tours</td></tr>
  </tbody>
