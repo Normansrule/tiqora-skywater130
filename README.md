@@ -2,6 +2,10 @@
 
 **RV32E + 11 Xpulse timing instructions · Tiny Tapeout 2 × 2 tiles · SkyWater sky130 · Apache 2.0 · maintained by [@Normansrule](https://github.com/Normansrule)**
 
+### [▶ Open the project website: normansrule.github.io/tiqora-skywater130](https://normansrule.github.io/tiqora-skywater130/)
+
+Everything in this repository, explained and explorable in your browser: watch the chip run, fire a deadline of your own, open the chip atlas and check the evidence behind every number. No install, works on a phone.
+
 ![A deadline recorded from the RTL: TIME, TARM and TWAIT, then TRIG0 rises on exactly the programmed tick](docs/images/explorer/tour.gif)
 
 <sub>Recorded, not drawn: one window of `make -C test tour`, a simulation of the submitted top module
@@ -54,7 +58,7 @@ curious how small a whole computer can get.
 
 Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.
 The links above are the GitHub Pages copy, published by `.github/workflows/pages.yaml` on every push to
-`main`; if it is not up, the same pages open [through htmlpreview](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html).
+`main`; should it ever be down, the same pages open [through htmlpreview](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html).
 
 ![The overview's opening shot: Tiqora's name above its tile of real sky130 cells, tilted in perspective and settling flat as you scroll](docs/images/explorer/site-hero.jpg)
 
