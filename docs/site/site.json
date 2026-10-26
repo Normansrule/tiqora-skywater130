@@ -1,6 +1,11 @@
 {
  "chip": "Tiqora",
  "repo": "https://github.com/Normansrule/tiqora-skywater130",
+ "url": "https://normansrule.github.io/tiqora-skywater130/",
+ "sibling": {
+  "name": "Tiqora-Serial, the same timing unit without a processor",
+  "url": "https://normansrule.github.io/tinytapeout-tiqora/"
+ },
  "ref": "v20.1",
  "clock_ns": 20,
  "die_um": [
