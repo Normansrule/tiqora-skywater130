@@ -69,11 +69,17 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour warnings shared docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
+
+# Zero tool warnings: Verilator -Wall and Yosys synthesis must both be silent.
+warnings: lint
+	cd .. && yosys -s syn/synth_check.ys > /tmp/tp_yosys_warn.log 2>&1 || { tail -20 /tmp/tp_yosys_warn.log; exit 1; }
+	@if grep -i "warning" /tmp/tp_yosys_warn.log; then echo "FAIL  Yosys printed warnings"; exit 1; fi
+	@echo "Verilator and Yosys: 0 warnings"
 
 lint: modes-lint
 	verilator --lint-only -Wall --timing $(RTL) --top-module tt_um_normansrule_tiqora
