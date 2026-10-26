@@ -131,10 +131,12 @@ module tp_ncore #(
     logic        second;          // the current/next pass is the write-back pass
     logic [31:0] ir;
     logic [31:2] pc;
+    logic [31:2] pc4_q;           // pc + 1 word, one clock behind pc (see below)
     logic [31:0] mar, mdr;
     logic [4:0]  shamt;
     logic        carry_q, acarry_q, eq_q;
     logic        illegal_q;
+    logic        redirect_q;      // a taken branch or jump: load pc from mar, then fetch
 
     // ------------------------------------------------------------------
     // Decode (combinational, from ir)
@@ -247,7 +249,16 @@ module tp_ncore #(
 
     logic [31:0] pc_full, pc4_full;
     assign pc_full  = {pc, 2'b00};
-    assign pc4_full = {pc + 30'd1, 2'b00};
+    assign pc4_full = {pc4_q, 2'b00};
+
+    // pc4_q is pc + 1 computed one clock earlier, so the incrementer feeds a
+    // flip-flop instead of the fetch address, the boot ROM and the QSPI start.
+    // It is read only in ALIGN and the first PASS (prefetch address, JAL's
+    // link nibbles, the fall-through pc), and pc never changes in the clock
+    // before either: pc is written on a pass's last nibble, which leaves
+    // ALIGN/PASS or starts the write-back pass (pc_advanced, pc4_q unused),
+    // and in FETCH's redirect clock, which cannot also take an instruction.
+    always_ff @(posedge clk) pc4_q <= pc + 30'd1;
 
     logic [3:0] imm_n, pc_n, pc4_n;
     assign imm_n = imm     [{phase, 2'b00} +: 4];
@@ -395,8 +406,15 @@ module tp_ncore #(
     assign prefetch_ok = legal && !(is_ld || is_st || is_br || is_jal || is_jalr || is_sys);
     assign pc_advanced = second || !(state == S_ALIGN || state == S_PASS);
 
-    assign imem_req   = (state == S_FETCH) || (prefetch_ok && state != S_HALT);
-    assign imem_ready = (state == S_FETCH);
+    // A taken branch or jump spends its first FETCH clock copying the target
+    // from mar into pc (redirect_q), so the branch decision only has to reach
+    // one flip-flop on the last nibble instead of all 30 pc bits. It costs
+    // one clock per taken branch or jump, beside the QSPI transaction of tens
+    // of clocks that each one starts.
+    logic fetching;
+    assign fetching   = (state == S_FETCH) && !redirect_q;
+    assign imem_req   = fetching || (prefetch_ok && state != S_HALT);
+    assign imem_ready = fetching;
     assign imem_addr  = pc_advanced ? pc_full : pc4_full;
 
     // ------------------------------------------------------------------
@@ -469,6 +487,7 @@ module tp_ncore #(
             pc        <= boot ? BOOT_PC[31:2] : RESET_PC[31:2];
             second    <= 1'b0;
             illegal_q <= 1'b0;
+            redirect_q <= 1'b0;
             ir        <= 32'h0000_0013;           // NOP until the first fetch
         end else begin
             // carries and the equality chain advance during every pass
@@ -479,7 +498,10 @@ module tp_ncore #(
             end
 
             unique case (state)
-                S_FETCH: if (imem_rvalid) begin
+                S_FETCH: if (redirect_q) begin
+                    pc         <= mar[31:2];
+                    redirect_q <= 1'b0;
+                end else if (imem_rvalid) begin
                     ir     <= imem_rdata;
                     second <= 1'b0;
                     state  <= (phase == 3'd7) ? S_PASS : S_ALIGN;
@@ -500,17 +522,16 @@ module tp_ncore #(
                             shamt[4] <= rs2_n[0];
 
                         if (last) begin
-                            pc <= pc + 30'd1;          // default: fall through
+                            pc <= pc4_q;               // default: fall through
                             if (!legal) begin
                                 illegal_q <= 1'b1;
                                 state     <= S_FETCH;
                             end else if (is_sys) begin
                                 pc    <= pc;           // PC stays on the ECALL
                                 state <= S_HALT;
-                            end else if (is_jal || is_jalr ||
-                                         (is_br && taken)) begin
-                                pc    <= mar_next[31:2];
-                                state <= S_FETCH;
+                            end else if (is_jal || is_jalr || is_br) begin
+                                redirect_q <= is_jal || is_jalr || taken;
+                                state      <= S_FETCH;
                             end else if (is_slt) begin
                                 // result is ready exactly as phase 0 comes
                                 // round, so the write-back pass follows at once
