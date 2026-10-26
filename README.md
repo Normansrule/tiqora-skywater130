@@ -53,14 +53,14 @@ curious how small a whole computer can get.
 | [**Overview**](https://normansrule.github.io/tiqora-skywater130/index.html) | fire a deadline of your own; scroll from a grain of salt down to one flip-flop; what goes in, what happens inside, what comes out, what is proven |
 | [**Tours**](https://normansrule.github.io/tiqora-skywater130/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
 | [**Chip atlas**](https://normansrule.github.io/tiqora-skywater130/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
-| [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the 3 × 2 die, and what the layout run showed |
+| [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the 3 × 2 die, what the layout run showed, and the routed layout to zoom into, down to every wire, with a clock edge you can send |
 | [**Evidence**](https://normansrule.github.io/tiqora-skywater130/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
 
 Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.
 The links above are the GitHub Pages copy, published by `.github/workflows/pages.yaml` on every push to
 `main`; should it ever be down, the same pages open [through htmlpreview](https://htmlpreview.github.io/?https://github.com/Normansrule/tiqora-skywater130/blob/main/docs/site/index.html).
 
-![The overview's opening shot: Tiqora's name above its tile of real sky130 cells, tilted in perspective and settling flat as you scroll](docs/images/explorer/site-hero.jpg)
+![The overview's opening shot: Tiqora's name above its real routed layout, tilted in perspective and settling flat as you scroll](docs/images/explorer/site-hero.jpg)
 
 | Fire a deadline | The zoom's last view |
 |---|---|
@@ -174,6 +174,22 @@ the real 334.88 × 225.76 µm die outline. This is a treemap of measured numbers
 placement: there is no routed layout yet.
 
 ![Treemap of each block's synthesized cell area inside the 3x2 die outline](docs/images/explorer/area_treemap.svg)
+
+**The real layout, routed.** Every cell where the placer put it and every wire the router drew,
+from a local LibreLane 3.0.14 run of the 3x2 configuration (with the global-routing adjustment
+lowered to 0.15, because the default stalled locally; GitHub's run routes at the default):
+`docs/tools/routed_map.py` reads the run's DEF into `docs/site/data/routed.json` and
+`docs/tools/routed_render.py` draws it. Only the colours are chosen: each metal layer has its own,
+and where layers cross they add.
+
+![The routed 3x2 layout of Tiqora: standard-cell rows under a dense mesh of metal wiring, each metal layer a different colour](docs/images/routed.jpg)
+
+**A clock edge, travelling.** The same layout dimmed, with the clock tree lit in the order an edge
+reaches it: from the `clk` pin through 4 levels of clock buffers to all 1,191 flip-flops, which flash.
+
+![The clock tree of the routed layout lighting up level by level from the clk pin until every flip-flop flashes](docs/images/routed_clock.gif)
+
+<sub>[Still image](docs/images/routed_clock.png) for readers with motion turned off. [Explore it on the website](https://normansrule.github.io/tiqora-skywater130/physical.html#routed-h): zoom, pan, turn layers on and off, and send the edge yourself.</sub>
 
 **An illustration, not a placement.** Every real sky130 cell of the synthesized design, drawn
 with its real geometry but packed into rows block by block by a simple script

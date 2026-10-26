@@ -45,7 +45,7 @@
  <p class=routed-hint>Scroll or pinch to zoom, drag to pan. With the keyboard: + and − zoom, arrows pan, 0 fits the die.</p>
 </div>
 <p>The clock button lights the clock tree the way an edge travels: from the <code>clk</code> pin through {{routed:levels}} levels of clock buffers ({{routed:nets}} nets) to the {{routed:clocked}} flip-flops, which flash when it arrives. Clock-tree buffers are drawn amber.</p>
-<p class=small>From a local {{routed:flow}} run on {{routed:pdk}}, placement density {{routed:density}}%, read from the DEF after detailed routing and fill by <code>docs/tools/routed_map.py</code>. Wire segments per layer: {{routed:layers}}. The layout GitHub builds may differ in detail; this one is the same design, configuration and flow version.</p>
+<p class=small>From a local {{routed:flow}} run on {{routed:pdk}}, placement density {{routed:density}}%{{routed:note}}, read from the DEF after detailed routing and fill by <code>docs/tools/routed_map.py</code>. Wire segments per layer: {{routed:layers}}. The layout GitHub builds from the same source may differ in detail.</p>
 <script>TQLayout.explore(document.getElementById("routed"), DATA("routed"));</script>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 <script>
