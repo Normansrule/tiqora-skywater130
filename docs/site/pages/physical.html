@@ -1,4 +1,4 @@
-<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and what is still to read.", "data": ["atlas"], "scripts": []} -->
+<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and what is still to read.", "data": ["atlas", "routed"], "scripts": ["die", "layout"]} -->
 <h1>Physical design</h1>
 <div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). Its routed timing reports have not been read yet: the workflow does not fail on timing, and its log files could not be downloaded where this page was written. No chip exists yet.</div>
 
@@ -21,6 +21,32 @@
 <h2>How it got to fit</h2>
 <p>At 2x2, placement failed with <code>DPL-0036</code>. Two things were wrong. LibreLane's default cell list (the PDK's <code>no_synth.cells</code>) bans the drive-strength-1 cells, so synthesis used larger cells and the design came out at 59,797 µm², 80% of the 2x2 die; and even at the smaller size, 2x2 left too little room to route. <code>src/synth_exclude.cells</code> allows the drive-strength-1 cells (the cells with known layout problems stay banned through the PDK's separate list), and the tile count went to 3x2 at placement density 50. With both, the <code>gds</code>, <code>precheck</code> and <code>gl_test</code> workflows pass <span class="ev measured">measured</span> (GitHub run 40213473443).</p>
 <p>Still to read from that run: the core area, the utilisation after placement, and the setup and hold slack at each corner. Tiqora-Serial's 1x2 layout misses setup at the slow corner by 1.30 ns, so Tiqora's slow-corner number matters before a submission.</p>
+<h2 id=routed-h>The routed layout</h2>
+<p>Every cell where the placer put it and every wire the router drew: {{routed:signal}} cells that do the work, {{routed:phys}} more that only fill the rows (taps, fill and decoupling), and {{routed:segments}} wire segments, {{routed:wire_mm}} mm of metal, on the {{routed:die}} µm die. Each metal layer gets its own colour, and where layers cross, the colours add.</p>
+<div class=routed-x id=routed>
+ <div class=routed-bar role=group aria-label="What to show">
+  <span class=routed-group>
+   <button type=button data-layer=met1 aria-pressed=true><i class=sw-met1></i>metal 1</button>
+   <button type=button data-layer=met2 aria-pressed=true><i class=sw-met2></i>metal 2</button>
+   <button type=button data-layer=met3 aria-pressed=true><i class=sw-met3></i>metal 3</button>
+   <button type=button data-layer=met4 aria-pressed=true><i class=sw-met4></i>metal 4</button>
+  </span>
+  <span class=routed-group>
+   <button type=button data-class=0 aria-pressed=true><i class=sw-ff></i>flip-flops</button>
+   <button type=button data-class=1 aria-pressed=true><i class=sw-logic></i>logic</button>
+   <button type=button data-class=2 aria-pressed=true><i class=sw-buf></i>buffers</button>
+   <button type=button data-class=4 aria-pressed=true><i class=sw-phys></i>fill</button>
+  </span>
+  <button type=button class=routed-clock data-clock aria-pressed=false>Send a clock edge</button>
+  <span class=routed-readout aria-live=polite></span>
+ </div>
+ <noscript><img src="{{img:docs/images/routed.jpg}}" alt="The routed layout: every placed cell and routed wire, each metal layer in its own colour."></noscript>
+ <canvas class=routed tabindex=0 role=img aria-label="The routed layout: {{routed:signal}} cells and {{routed:segments}} wire segments. Scroll or use plus and minus to zoom, drag or use the arrow keys to pan."></canvas>
+ <p class=routed-hint>Scroll or pinch to zoom, drag to pan. With the keyboard: + and − zoom, arrows pan, 0 fits the die.</p>
+</div>
+<p>The clock button lights the clock tree the way an edge travels: from the <code>clk</code> pin through {{routed:levels}} levels of clock buffers ({{routed:nets}} nets) to the {{routed:clocked}} flip-flops, which flash when it arrives. Clock-tree buffers are drawn amber.</p>
+<p class=small>From a local {{routed:flow}} run on {{routed:pdk}}, placement density {{routed:density}}%, read from the DEF after detailed routing and fill by <code>docs/tools/routed_map.py</code>. Wire segments per layer: {{routed:layers}}. The layout GitHub builds may differ in detail; this one is the same design, configuration and flow version.</p>
+<script>TQLayout.explore(document.getElementById("routed"), DATA("routed"));</script>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 <script>
 (function () {
