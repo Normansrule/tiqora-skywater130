@@ -652,13 +652,13 @@ html { overflow-x: clip; }
 <h2>How it got to fit</h2>
 <p>At 2x2, placement failed with <code>DPL-0036</code>. Two things were wrong. LibreLane's default cell list (the PDK's <code>no_synth.cells</code>) bans the drive-strength-1 cells, so synthesis used larger cells and the design came out at 59,797 µm², 80% of the 2x2 die; and even at the smaller size, 2x2 left too little room to route. <code>src/synth_exclude.cells</code> allows the drive-strength-1 cells (the cells with known layout problems stay banned through the PDK's separate list), and the tile count went to 3x2 at placement density 50. With both, the <code>gds</code>, <code>precheck</code> and <code>gl_test</code> workflows pass <span class="ev measured">measured</span> (GitHub run 40213473443).</p>
 <h2>Routing and timing</h2>
-<p>Locally, detailed routing first stalled on its last few shorts for hours: global routing held back 30% of the tracks and ended with 58 overflowing regions. With <code>GRT_ADJUSTMENT</code> at 0.15 global routing has no overflow and detailed routing finishes with 0 violations in about half an hour. Smaller clock-tree clusters (<code>CTS_SINK_CLUSTERING_SIZE</code> 10) and timing repair after global routing then took the worst slow-corner slack from −1.10 ns to −0.75 ns <span class="ev measured">measured</span> (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-26).</p>
+<p>Locally, detailed routing first stalled on its last few shorts for hours: global routing held back 30% of the tracks and ended with 58 overflowing regions. With <code>GRT_ADJUSTMENT</code> at 0.15 global routing has no overflow and detailed routing finishes with 0 violations in about half an hour. Smaller clock-tree clusters (<code>CTS_SINK_CLUSTERING_SIZE</code> 10) and timing repair after global routing then took the worst slow-corner slack from −1.10 ns to −0.75 ns; the same flow on the RTL with the event-loss fix (52 more cells) lands at −1.52 ns, on the boot-ROM fetch path, which shows how much this slack moves from one placement to the next <span class="ev measured">measured</span> (measured, local LibreLane 3.0.14 run of <code>src/config.json</code>, 2026-10-27).</p>
 <table><tr><th>Corner</th><th>Setup slack</th><th>Hold slack</th></tr>
-<tr><td>typical (nom_tt_025C_1v80)</td><td>+6.45 ns</td><td>+0.30 ns</td></tr>
-<tr><td>slow, nominal wires (nom_ss_100C_1v60)</td><td>−0.26 ns</td><td>+0.84 ns</td></tr>
-<tr><td>slow, worst wires (max_ss_100C_1v60)</td><td>−0.75 ns (22 paths)</td><td>+0.85 ns</td></tr>
-<tr><td>fast (nom_ff_n40C_1v95)</td><td>+8.28 ns</td><td>+0.10 ns</td></tr></table>
-<p>The worst path is a chain of about 40 drive-strength-1 cells. At 50 MHz the chip meets timing on typical silicon; at the slowest corner it needs about 20.8 ns, roughly 48 MHz (an estimate from the slack). The same run still reports slow-corner slew warnings on about 1,550 pins; the resizer does not clear them after the final routing.</p>
+<tr><td>typical (nom_tt_025C_1v80)</td><td>+6.87 ns</td><td>+0.30 ns</td></tr>
+<tr><td>slow, nominal wires (nom_ss_100C_1v60)</td><td>−0.98 ns</td><td>+0.84 ns</td></tr>
+<tr><td>slow, worst wires (max_ss_100C_1v60)</td><td>−1.52 ns (51 paths)</td><td>+0.85 ns</td></tr>
+<tr><td>fast (nom_ff_n40C_1v95)</td><td>+8.53 ns</td><td>+0.10 ns</td></tr></table>
+<p>The worst path runs from the program counter through the boot ROM to the read-data register. At 50 MHz the chip meets timing on typical silicon; at the slowest corner it needs about 21.5 ns, roughly 46 MHz (an estimate from the slack), which the maintainer accepted as its slow-corner rating. The same run still reports slow-corner slew warnings on about 1,520 pins; the resizer does not clear them after the final routing.</p>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 
 </main>
