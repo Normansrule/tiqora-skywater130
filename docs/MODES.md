@@ -50,13 +50,13 @@ tests check this at the TRIG0 pin.
 
 | | Without modes | With modes | Source |
 |---|---|---|---|
-| sky130 cells | 6,047 | 8,755 | measured (main 2026-10-25, Yosys 0.33, `bash syn/area_sky130.sh` and `MODES=1 bash syn/area_sky130.sh`, with the cells this design's flow excludes (src/synth_exclude.cells) removed) |
-| sky130 cell area | 50,880 µm² | 70,679 µm² (+39%) | same |
+| sky130 cells | 6,099 | 8,813 | measured (main 3684851, 2026-10-27, Yosys 0.33, `bash syn/area_sky130.sh` and `MODES=1 bash syn/area_sky130.sh`, with the cells this design's flow excludes (src/synth_exclude.cells) removed) |
+| sky130 cell area | 50,965 µm² | 71,134 µm² (+40%) | same |
 | flip-flops | 1,191 | 1,225 (2 mode bits, 32 accumulator bits) | same |
 | MSET issue to commit | | 12 to 16 clocks over 29 switches | measured (v20 modes, `make -C test modes SEED=1`) |
 | MSET issue to next issue | | 28 to 32 clocks (ADDI: 18 at best) | same |
 
-At 70,679 µm² the modes build would be 62% of the 3x2 tile, against 44%
+At 71,134 µm² the modes build would be 62% of the 3x2 tile, against 44%
 without it, and it has never been through layout. That is the reason it is
 kept out of the tile. Most of the
 added area is the eight 8×8 multipliers (four in `PMUL.B`, four in `TMAC`).

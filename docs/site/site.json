@@ -6,7 +6,7 @@
   "name": "Tiqora-Serial, the same timing unit without a processor",
   "url": "https://normansrule.github.io/tinytapeout-tiqora/"
  },
- "ref": "v20.1",
+ "ref": "main",
  "clock_ns": 20,
  "die_um": [
   508.76,
@@ -273,7 +273,7 @@
     {
      "rung": "RTL tested",
      "state": "measured",
-     "why": "495 checks in 18 suites and 6 cocotb tests from the pins (<code>make -C test sim</code>, verify-audits 2026-10-26); the official RISC-V tests, 37/37 (<code>make act</code>, main 2026-10-25); the recorded tour, 15/15 (<code>make -C test tour</code>)."
+     "why": "495 checks in 18 suites and 6 cocotb tests from the pins (<code>make -C test sim</code>, main 3684851, 2026-10-27); the official RISC-V tests, 37/37 (<code>make act</code>, main 3684851, 2026-10-27); the recorded tour, 15/15 (<code>make -C test tour</code>)."
     },
     {
      "rung": "Formally checked",
@@ -284,12 +284,12 @@
     {
      "rung": "Synthesized",
      "state": "measured",
-     "why": "50,965 µm² of sky130 cells, 1,191 flip-flops: 44% of the 3x2 die (<code>make area</code>, Yosys 0.33, verify-audits 2026-10-26, with the cells this design's flow excludes removed). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>)."
+     "why": "50,965 µm² of sky130 cells, 1,191 flip-flops: 44% of the 3x2 die (<code>make area</code>, Yosys 0.33, main 3684851, 2026-10-27, with the cells this design's flow excludes removed). Gate-level simulation of that netlist: 5 pass, 1 skipped by design (<code>make gl</code>, same day)."
     },
     {
      "rung": "Placed and routed",
      "state": "measured",
-     "why": "3x2 at placement density 50: the <code>gds</code> and <code>precheck</code> workflows pass, and the cocotb tests pass on the routed netlist (<code>gl_test</code>) (GitHub run 40213473443, LibreLane 3.0.14, commit 7bee2a9)."
+     "why": "3x2 at placement density 50: the <code>gds</code> and <code>precheck</code> workflows pass, and the cocotb tests pass on the routed netlist (<code>gl_test</code>); the flow reports DRC, LVS and antenna passed (GitHub run 40431523830 on main, LibreLane 3.0.14, commit 3684851)."
     },
     {
      "rung": "Timing checked",
@@ -301,7 +301,7 @@
      "rung": "Submitted to a shuttle",
      "state": "none",
      "word": "not yet",
-     "why": "A clean GDS and the Tiny Tapeout pre-flight exist at 3x2 (GitHub run 40213473443, LibreLane 3.0.14). Submitting it is the owner's step."
+     "why": "A clean GDS and the Tiny Tapeout pre-flight exist at 3x2 (GitHub run 40431523830 on main, LibreLane 3.0.14). Submitting it is the owner's step."
     },
     {
      "rung": "Fabricated",
@@ -329,7 +329,7 @@
     {
      "rung": "Synthesized",
      "state": "measured",
-     "why": "70,679 µm² flat (<code>MODES=1 bash syn/area_sky130.sh</code>, Yosys 0.33): 62% of the 3x2 die, never tried in layout."
+     "why": "71,134 µm² flat (<code>MODES=1 bash syn/area_sky130.sh</code>, Yosys 0.33, main 3684851, 2026-10-27): 62% of the 3x2 die, never tried in layout."
     },
     {
      "rung": "Placed and routed",

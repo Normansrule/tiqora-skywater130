@@ -112,7 +112,7 @@ TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs
   <p>On <code>uo_out[7:0]</code>: TRIG0 and TRIG1, the deadline outputs; EVT (events queued) and OVF (one was lost); HALT and ILLEGAL; a heartbeat; and UART TX on <code>uo_out[4]</code>. Any of them can be turned into a GPIO output instead. <a href="atlas.html">The pinout and every block</a>.</p>
  </div></div>
  <div class=qa><h3>What exists today?</h3><div>
-  <p>SystemVerilog RTL, a C toolchain set-up and libraries, a bootloader, testbenches, a Basys 3 FPGA build and Tiny Tapeout packaging. <b>No chip and no board run.</b> The layout is clean at 3x2: the Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443). <a href="physical.html">Physical design status</a>.</p>
+  <p>SystemVerilog RTL, a C toolchain set-up and libraries, a bootloader, testbenches, a Basys 3 FPGA build and Tiny Tapeout packaging. <b>No chip and no board run.</b> The layout is clean at 3x2: the Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass on main (GitHub run 40431523830). <a href="physical.html">Physical design status</a>.</p>
  </div></div>
  <div class=qa><h3>What is proven or measured?</h3><div>
   <p><span class="ev measured">measured</span> 495 RTL checks in 18 suites, 6 cocotb tests, the official RISC-V tests 37/37, gate-level simulation of the sky130 netlist, synthesized cell area, and a 3x2 layout routed with 0 DRC, LVS and antenna errors. <span class="ev fail">missed</span> 50 MHz setup timing at the slowest corner by 1.52 ns: rated about 46 MHz there. <span class="ev todo">not yet</span> formal proofs, a shuttle, silicon. <a href="evidence.html">The evidence ladder</a>.</p>

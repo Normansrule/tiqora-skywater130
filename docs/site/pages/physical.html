@@ -1,6 +1,6 @@
 <!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and its routed timing.", "data": ["atlas", "routed"], "scripts": ["die", "layout"]} -->
 <h1>Physical design</h1>
-<div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). A local run of the same configuration routes with 0 DRC, 0 LVS and 0 antenna errors and meets timing at the typical corner; it misses setup at the slowest corner by 0.75 ns <span class="ev measured">measured</span>. No chip exists yet.</div>
+<div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass on main (GitHub run 40431523830, LibreLane 3.0.14, commit 3684851). A local run of the same configuration routes with 0 DRC, 0 LVS and 0 antenna errors and meets timing at the typical corner; it misses setup at the slowest corner by 1.52 ns <span class="ev measured">measured</span>. No chip exists yet.</div>
 
 <h2>Three different areas</h2>
 <p>They are easy to mix up, and the numbers below use each in exactly one sense.</p>
