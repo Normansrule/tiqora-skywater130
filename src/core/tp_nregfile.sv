@@ -43,7 +43,7 @@ module tp_nregfile (
     input  wire  logic [3:0] wa,
     input  wire  logic [3:0] wd
 );
-    logic [31:0] r [1:15];
+    (* mem2reg *) logic [31:0] r [1:15];
 
     always_ff @(posedge clk) begin
         for (int i = 1; i < 16; i++)

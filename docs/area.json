@@ -1,106 +1,106 @@
 {
-  "tile": "2x2",
+  "tile": "3x2",
   "tile_um": [
-    334.88,
+    508.76,
     225.76
   ],
-  "total_cell_area_um2": 51999.9,
-  "utilization_of_core_area": 0.7256,
-  "instances": 5523,
-  "fill_instances": 6794,
+  "total_cell_area_um2": 52776.9,
+  "utilization_of_core_area": 0.482,
+  "instances": 5953,
+  "fill_instances": 13033,
   "blocks": {
-    "Register file (15 x 32 bits)": 11285.8,
-    "CPU core (nibble-serial RV32E)": 10157.2,
-    "QSPI memory controller": 6226.0,
-    "Deadline comparators": 5312.6,
-    "Timebase + rate trim": 4539.4,
-    "Timing unit control": 4383.0,
-    "UART": 2706.3,
-    "Event queue": 2528.7,
-    "GPIO registers": 1402.6,
-    "Bus": 1300.0,
-    "Boot ROM (UART bootloader)": 1009.7,
+    "Register file (15 x 32 bits)": 11294.6,
+    "CPU core (nibble-serial RV32E)": 10398.7,
+    "QSPI memory controller": 6478.7,
+    "Deadline comparators": 5549.1,
+    "Timing unit control": 4376.7,
+    "Timebase + rate trim": 4367.9,
+    "UART": 2683.8,
+    "Event queue": 2652.5,
+    "GPIO registers": 1498.9,
+    "Bus": 1332.5,
+    "Boot ROM (UART bootloader)": 987.2,
     "Capture channels": 890.9,
-    "Glue": 257.7
+    "Glue": 265.3
   },
   "regions_um": {
     "Register file (15 x 32 bits)": [
       2.76,
       2.72,
-      92.24,
-      168.64
+      206.85,
+      113.29
     ],
     "CPU core (nibble-serial RV32E)": [
-      95.0,
-      2.72,
-      83.01,
-      168.64
+      2.76,
+      116.01,
+      206.85,
+      104.31
     ],
     "QSPI memory controller": [
-      2.76,
-      171.36,
-      175.25,
-      48.96
+      209.61,
+      2.72,
+      61.78,
+      217.6
     ],
     "Deadline comparators": [
-      178.01,
+      271.39,
       2.72,
-      106.66,
-      68.65
-    ],
-    "Timebase + rate trim": [
-      178.01,
-      71.37,
-      106.66,
-      58.66
+      136.29,
+      84.48
     ],
     "Timing unit control": [
-      284.67,
-      2.72,
-      47.45,
-      127.31
+      271.39,
+      87.2,
+      136.29,
+      66.63
+    ],
+    "Timebase + rate trim": [
+      271.39,
+      153.82,
+      136.29,
+      66.5
     ],
     "UART": [
-      178.01,
-      130.03,
-      79.91,
-      46.68
+      407.68,
+      2.72,
+      98.32,
+      56.64
     ],
     "Event queue": [
-      178.01,
-      176.71,
-      79.91,
-      43.61
+      407.68,
+      59.36,
+      98.32,
+      55.98
     ],
     "GPIO registers": [
-      257.92,
-      130.03,
-      38.51,
-      50.2
+      407.68,
+      115.34,
+      52.05,
+      59.75
     ],
     "Bus": [
-      296.43,
-      130.03,
-      35.69,
-      50.2
+      459.73,
+      115.34,
+      46.27,
+      59.75
     ],
     "Boot ROM (UART bootloader)": [
-      257.92,
-      180.23,
-      34.71,
-      40.09
+      407.68,
+      175.09,
+      45.29,
+      45.23
     ],
     "Capture channels": [
-      292.63,
-      180.23,
-      30.63,
-      40.09
+      452.97,
+      175.09,
+      40.87,
+      45.23
     ],
     "Glue": [
-      323.26,
-      180.23,
-      8.86,
-      40.09
+      493.83,
+      175.09,
+      12.17,
+      45.23
     ]
   }
 }

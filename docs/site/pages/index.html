@@ -1,11 +1,11 @@
-<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 2x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "deadline", "site", "board"], "scripts": ["die", "labs", "board"]} -->
+<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 3x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "deadline", "site", "board"], "scripts": ["die", "labs", "board"]} -->
 <section class="reveal bleed" id=reveal aria-labelledby=hero-h>
  <div class=reveal-stage>
   <div class=reveal-copy>
    <p class=eyebrow>A RISC-V microcontroller for Tiny Tapeout</p>
    <h1 id=hero-h>Tiqora</h1>
    <p class=tagline>Time, as an operand.</p>
-  <p class=lede>A 32-bit RV32E processor that adds four bits per clock, plus a timing unit that stamps pin edges and fires output pulses on the exact clock tick software asked for. It is built for SkyWater sky130 through Tiny Tapeout and fits, as synthesized cells, in 67% of a 2x2 block of tiles. Its layout does not yet fit.</p>
+  <p class=lede>A 32-bit RV32E processor that adds four bits per clock, plus a timing unit that stamps pin edges and fires output pulses on the exact clock tick software asked for. It is built for SkyWater sky130 through Tiny Tapeout and fits, as synthesized cells, in 44% of a 3x2 block of tiles. Its layout passes the Tiny Tapeout checks at that size.</p>
   <div class=row>
    <a class=btn href="tours.html">Watch it run</a>
    <a class="btn ghost" href="atlas.html">Open the chip atlas</a>
@@ -14,7 +14,7 @@
   <p class=small>Every waveform on this site was recorded from the RTL in simulation. Every number carries how it was obtained: <span class=evset><span class="ev measured">measured</span> <span class="ev estimate">estimate</span> <span class="ev fail">failed</span> <span class="ev todo">not yet</span></span></p>
  </div>
   <div class=reveal-chip aria-hidden=true><div class=chip3d><i class=sheen></i></div><i class=shadow></i></div>
-  <p class=reveal-cap>{{die:cells}} real sky130 cells, packed by a script into one Tiny Tapeout 2x2 tile. Keep scrolling to fall into it. <span class="ev illustrative">illustrative</span></p>
+  <p class=reveal-cap>{{die:cells}} real sky130 cells, packed by a script into one Tiny Tapeout 3x2 tile. Keep scrolling to fall into it. <span class="ev illustrative">illustrative</span></p>
  </div>
 </section>
 <script>TQDie.reveal(document.getElementById("reveal"), DATA("die"));</script>
@@ -37,13 +37,13 @@
  <div class=zoom-steps>
   <div data-stage><div>
    <h2 id=zoom-h>The size of a grain of salt</h2>
-   <p>The amber outline is all of Tiqora: a Tiny Tapeout 2x2 tile, <span class=num>{{die:tile}}</span> µm. Beside it, to scale, is a grain of table salt about 300 µm across: about the same size. <span class="ev illustrative">illustrative</span></p>
+   <p>The amber outline is all of Tiqora: a Tiny Tapeout 3x2 tile, <span class=num>{{die:tile}}</span> µm. Beside it, to scale, is a grain of table salt about 300 µm across. <span class="ev illustrative">illustrative</span></p>
    <p class=small>Scroll, and the view falls into it.</p>
   </div></div>
   <div data-stage><div>
    <h2>{{die:cells}} cells in {{die:blocks}} blocks</h2>
    <p>Synthesized with each block kept whole, Tiqora is <span class=num>{{die:cells}}</span> standard cells of <span class=num>{{die:kinds}}</span> kinds. The largest block is the {{die:big}}. Each block is outlined in its colour from the <a href=atlas.html>atlas</a>:{{die:cats}}. <span class="ev measured">measured</span> <span class=small>{{die:synth}}</span></p>
-   <p>A script packs them here row by row, one block at a time. That shows how big each block is, not where it will sit: the real layout does not fit at 2x2 yet. <span class="ev illustrative">illustrative</span></p>
+   <p>A script packs them here row by row, one block at a time. That shows how big each block is, not where it sits: the real layout spreads every block over the whole core. <span class="ev illustrative">illustrative</span></p>
   </div></div>
   <div data-stage><div>
    <h2>Rows of real cells</h2>
@@ -65,7 +65,7 @@ TQDie.mount(document.getElementById("zoom"), DATA("die"), {
 <section aria-labelledby=num-h>
  <h2 id=num-h class=sr>In numbers</h2>
  <div class=stats>
-  <div class=stat><b>{{die:tile_r}}<small>µm</small></b><span>all of it: one Tiny Tapeout 2x2 tile, the size the shuttle sets.</span></div>
+  <div class=stat><b>{{die:tile_r}}<small>µm</small></b><span>all of it: one Tiny Tapeout 3x2 tile, the size the shuttle sets.</span></div>
   <div class=stat><b>{{die:cells}}</b><span>standard cells, synthesized with each block kept whole. <span class="ev measured">measured</span></span></div>
   <div class=stat><b>0<small>ticks late</small></b><span>TRIG0 rises on exactly the tick software armed. <span class="ev recorded">recorded</span> <a href="tours.html#seq=deadline">the deadline tour</a></span></div>
   <div class=stat><b>8<small>clocks</small></b><span>for every 32-bit add: one 4-bit adder, eight nibbles. <span class="ev recorded">recorded</span> <a href="tours.html#seq=nibble-add">the add, nibble by nibble</a></span></div>
@@ -112,10 +112,10 @@ TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs
   <p>On <code>uo_out[7:0]</code>: TRIG0 and TRIG1, the deadline outputs; EVT (events queued) and OVF (one was lost); HALT and ILLEGAL; a heartbeat; and UART TX on <code>uo_out[4]</code>. Any of them can be turned into a GPIO output instead. <a href="atlas.html">The pinout and every block</a>.</p>
  </div></div>
  <div class=qa><h3>What exists today?</h3><div>
-  <p>SystemVerilog RTL, a C toolchain set-up and libraries, a bootloader, testbenches, a Basys 3 FPGA build and Tiny Tapeout packaging. <b>No chip and no board run.</b> The layout fails placement at 2x2 (<code>DPL-0036</code>), so the tile size is still an open decision. <a href="physical.html">Physical design status</a>.</p>
+  <p>SystemVerilog RTL, a C toolchain set-up and libraries, a bootloader, testbenches, a Basys 3 FPGA build and Tiny Tapeout packaging. <b>No chip and no board run.</b> The layout is clean at 3x2: the Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443). <a href="physical.html">Physical design status</a>.</p>
  </div></div>
  <div class=qa><h3>What is proven or measured?</h3><div>
-  <p><span class="ev measured">measured</span> 470 RTL checks in 16 suites, 6 cocotb tests, the official RISC-V tests 37/37, gate-level simulation of the sky130 netlist, and synthesized cell area. <span class="ev estimate">estimate</span> logic timing before layout. <span class="ev fail">failed</span> place and route at 2x2. <span class="ev todo">not yet</span> formal proofs, signoff timing, a shuttle, silicon. <a href="evidence.html">The evidence ladder</a>.</p>
+  <p><span class="ev measured">measured</span> 495 RTL checks in 18 suites, 6 cocotb tests, the official RISC-V tests 37/37, gate-level simulation of the sky130 netlist, synthesized cell area, and a 3x2 layout routed with 0 DRC, LVS and antenna errors. <span class="ev fail">missed</span> 50 MHz setup timing at the slowest corner by 1.52 ns: rated about 46 MHz there. <span class="ev todo">not yet</span> formal proofs, a shuttle, silicon. <a href="evidence.html">The evidence ladder</a>.</p>
  </div></div>
  <div class=qa><h3>What can I try?</h3><div>
   <p>Every tour on this site is regenerated by one command, and so is every check behind it:</p>

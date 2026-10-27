@@ -1,7 +1,7 @@
 {
- "source": "tt_block_2x2_pg.def",
+ "source": "tt_block_3x2_pg.def",
  "die_um": [
-  334.88,
+  508.76,
   225.76
  ],
  "pins": [

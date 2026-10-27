@@ -7,6 +7,11 @@
 //   expect the checksum byte and 'K'
 //   expect the program, now running from RAM, to print "Hi Tiqora\n"
 //
+// Before that, the same route loads test/reenter.hex (sw/mkreenter.py): a
+// program that fills the bootloader's registers with hostile values and
+// jumps back to 0x4000_0000 with no reset. The hello-world load above then
+// goes through that re-entered bootloader, so it also proves warm entry.
+//
 // The UART divider is overridden to 64 clocks per bit so this runs in
 // seconds; on silicon it is 434 (115,200 baud at 50 MHz). Each received byte
 // costs the bootloader about 150 clocks (eight nibble-serial instructions and
@@ -74,6 +79,41 @@ module tb_boot;
     endtask
 
     reg  [31:0] image [0:127];
+
+    // Warm-entry evidence: the core ran from RAM, and rst_n rose only once.
+    reg     ran_from_ram = 1'b0;
+    integer resets = 0;
+    always @(posedge rst_n) resets = resets + 1;
+    always @(posedge clk) if (rst_n && dut.u_soc.g_cpu.u_core.pc[31:28] == 4'h1) ran_from_ram = 1'b1;
+
+    // Read a hex program into `image`; returns its length in words.
+    task load_hex(input [8*16:1] fname, output integer n);
+        integer j;
+        begin
+            for (j = 0; j < 128; j = j + 1) image[j] = 32'hxxxx_xxxx;
+            $readmemh(fname, image);
+            n = 0;
+            while (n < 128 && image[n] !== 32'hxxxx_xxxx) n = n + 1;
+        end
+    endtask
+
+    // Send `image` as the bootloader expects it; returns the byte sum.
+    task send_image(input integer n, output integer s);
+        integer j, m;
+        reg [31:0] v;
+        begin
+            for (m = 0; m < 4; m = m + 1) host_send((4 * n) >> (8 * m));
+            s = 0;
+            for (j = 0; j < n; j = j + 1) begin
+                v = image[j];
+                for (m = 0; m < 4; m = m + 1) begin
+                    host_send(v[8*m +: 8]);
+                    s = s + v[8*m +: 8];
+                end
+            end
+        end
+    endtask
+
     integer     nwords, i, k, sum;
     reg  [7:0]  b, got_sum, got_k;
     reg  [8*16:1] banner, text;
@@ -82,31 +122,32 @@ module tb_boot;
     initial begin
         $dumpfile("tb_boot.vcd");
         $dumpvars(0, tb_boot);
-        for (i = 0; i < 128; i = i + 1) image[i] = 32'hxxxx_xxxx;
-        $readmemh("hello.hex", image);
-        nwords = 0;
-        while (nwords < 128 && image[nwords] !== 32'hxxxx_xxxx) nwords = nwords + 1;
-
         $display("\n=== Tiqora UART bootloader ===");
-        $display("  program: hello.hex, %0d bytes, sent at %0d clocks per bit", 4 * nwords, DIV);
         repeat (10) @(posedge clk);
         rst_n = 1'b1;
 
+        // ---- first load: reenter.hex, which jumps back into the boot ROM ----
+        load_hex("reenter.hex", nwords);
+        $display("  first program: reenter.hex, %0d bytes, sent at %0d clocks per bit", 4 * nwords, DIV);
         banner = 0;
         for (k = 0; k < 3; k = k + 1) begin host_recv(DIV, b); banner = {banner[8*15:1], b}; end
-        chk(banner[24:1] == "TP>", "boot ROM announces itself with TP>");
+        chk(banner[24:1] == "TP>", "after reset: boot ROM announces itself with TP>");
+        send_image(nwords, sum);
+        host_recv(DIV, got_sum);
+        host_recv(DIV, got_k);
+        chk(got_sum == sum[7:0] && got_k == "K", "first program loaded: checksum and K");
+
+        // ---- second load, through the re-entered bootloader ----
+        load_hex("hello.hex", nwords);
+        $display("  second program: hello.hex, %0d bytes, after a jump to 0x4000_0000 with no reset", 4 * nwords);
+        banner = 0;
+        for (k = 0; k < 3; k = k + 1) begin host_recv(DIV, b); banner = {banner[8*15:1], b}; end
+        chk(banner[24:1] == "TP>", "re-entered by a jump: TP> again, with dirty registers");
         chk(dut.u_soc.g_cpu.u_core.pc[31:28] == 4'h4, "the core is executing from the boot ROM");
 
+        chk(ran_from_ram && resets == 1, "re-entry came from the RAM program, with no second reset");
         // length, little endian, then the bytes
-        for (k = 0; k < 4; k = k + 1) host_send((4 * nwords) >> (8 * k));
-        sum = 0;
-        for (i = 0; i < nwords; i = i + 1) begin
-            w = image[i];
-            for (k = 0; k < 4; k = k + 1) begin
-                host_send(w[8*k +: 8]);
-                sum = sum + w[8*k +: 8];
-            end
-        end
+        send_image(nwords, sum);
 
         chk(dut.u_soc.u_periph.u_uart.rx_overrun === 1'b0, "no byte overran the bootloader while loading");
         host_recv(DIV, got_sum);

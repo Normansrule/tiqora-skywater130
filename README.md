@@ -1,6 +1,6 @@
 # Tiqora — a RISC-V microcontroller the size of a grain of salt
 
-**RV32E + 11 Xpulse timing instructions · Tiny Tapeout 2 × 2 tiles · SkyWater sky130 · Apache 2.0 · maintained by [@Normansrule](https://github.com/Normansrule)**
+**RV32E + 11 Xpulse timing instructions · Tiny Tapeout 3 × 2 tiles · SkyWater sky130 · Apache 2.0 · maintained by [@Normansrule](https://github.com/Normansrule)**
 
 ### [▶ Open the project website: normansrule.github.io/tiqora-skywater130](https://normansrule.github.io/tiqora-skywater130/)
 
@@ -15,7 +15,7 @@ with flash and RAM models on its pins, rendered by `docs/tools/readme_media.py`.
 > **Tiqora was called TinyPulse until October 2026.** Old links redirect; the C API, opcodes,
 > register map and bootloader protocol are unchanged, and `#include "tinypulse.h"` still works.
 
-**A complete 32-bit microcontroller for four Tiny Tapeout tiles (a 2 × 2 block, 0.076 mm² of die, 280 €).**
+**A complete 32-bit microcontroller for six Tiny Tapeout tiles (a 3 × 2 block, 0.115 mm² of die, 420 €).**
 It runs RISC-V code from a 16 MB flash chip, or straight from a USB (Universal Serial Bus)
 serial link with no programmer, has 16 MB of RAM (random-access memory), 8 inputs, 8 outputs,
 a UART (universal asynchronous receiver-transmitter, a serial port) for `printf`, and something no
@@ -24,8 +24,8 @@ edges in hardware and fires output pulses on the exact clock tick it was told to
 relative to the supplied clock; oscillator error and pad delay are separate matters).
 
 **It exists as tested RTL (register-transfer level: the hardware description a chip is built
-from), not yet as a chip.** Its cells fit the 2 × 2 tile; its layout does not yet: place and
-route stops with `DPL-0036`. Nothing has run on silicon or on a real FPGA (field-programmable
+from), and as a layout, not yet as a chip.** At 3 × 2 tiles the Tiny Tapeout GDS, pre-flight and
+gate-level workflows pass (GitHub run 40213473443). Nothing has run on silicon or on a real FPGA (field-programmable
 gate array) board.
 
 It's for people who need a pin to move on an exact clock tick (lab triggers, test benches,
@@ -53,7 +53,7 @@ curious how small a whole computer can get.
 | [**Overview**](https://normansrule.github.io/tiqora-skywater130/index.html) | fire a deadline of your own; scroll from a grain of salt down to one flip-flop; what goes in, what happens inside, what comes out, what is proven |
 | [**Tours**](https://normansrule.github.io/tiqora-skywater130/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
 | [**Chip atlas**](https://normansrule.github.io/tiqora-skywater130/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
-| [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the die, and why the layout does not fit yet |
+| [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the 3 × 2 die, and what the layout run showed |
 | [**Evidence**](https://normansrule.github.io/tiqora-skywater130/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
 
 Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.
@@ -82,10 +82,10 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.65 ns worst path at the slow corner against 20 ns (estimate before layout, `make timing`, v20); routed timing needs a layout |
-| **Area** | 50,880 µm² of standard cells, 67% of the 2 × 2 die (measured, `make area`, Yosys 0.33, v20; before placement) |
-| **Cost** | 2 × 2 Tiny Tapeout tiles = 280 € |
-| **Verification** | 470 checks in 16 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (all v20) |
+| **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25); routed: +6.87 ns typical, −1.52 ns at the worst slow corner (measured, local LibreLane 3.0.14, 2026-10-27) |
+| **Area** | 50,965 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, verify-audits 2026-10-26, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
+| **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile, the price this README has always used) |
+| **Verification** | 495 checks in 18 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, verify-audits 2026-10-26) |
 
 **Contents:** [Status](#status) · [Quick start](#quick-start) · [What it looks like](#what-it-looks-like) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Design](#design) · [Repository](#repository) · [Maintainer](#maintainer)
 
@@ -95,11 +95,11 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 
 | Stage | State | Evidence |
 |---|---|---|
-| RTL tested | ✅ done | 470 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; v20) |
+| RTL tested | ✅ done | 495 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; verify-audits 2026-10-26) |
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
-| Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
-| Placed and routed | ❌ failed | LibreLane 3.0.14 stops in detailed placement, `DPL-0036`, at 2 × 2, locally and in the `gds` workflow; a larger tile or less logic is the owner's decision |
-| Timing checked | ⬜ not reached | needs a layout; the 12.65 ns figure above is an estimate before wires |
+| Synthesized | ✅ done | 50,965 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
+| Placed and routed | ✅ done | 3 × 2, placement density 50: the `gds` and `precheck` workflows pass (GitHub run 40213473443, LibreLane 3.0.14, 7bee2a9); gate-level cocotb on that netlist passes (`gl_test`, same run) |
+| Timing checked | ⚠️ misses at the slow corner | setup slack +6.87 ns at the typical corner (nom_tt_025C_1v80), −0.98 ns at nominal slow (nom_ss_100C_1v60) and −1.52 ns at the worst slow corner (max_ss_100C_1v60, 51 paths); hold met at every corner (worst +0.10 ns, fast corner) (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-27; the same run: routing DRC 0, Magic DRC 0, LVS 0, antenna 0, core utilisation 61%). At 20 ns (50 MHz) the chip meets timing at typical silicon and needs about 21.5 ns (≈46 MHz, an estimate from the slack; the maintainer accepted this slow-corner rating rather than more timing work, 2026-10-27) at the slowest corner. The `gds` workflow does not fail on timing |
 | Submitted, fabricated, measured | ⬜ not yet | no chip exists |
 | FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
@@ -111,26 +111,26 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 
 | Milestone | Progress | Step | State | Evidence or next step |
 |---|---|---|---|---|
-| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 470 checks in 16 suites, plus 6 cocotb tests; measured (v20, 2026-10-18, `make -C test sim`) |
-|  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (v20, 2026-10-18, `make -C test act`) |
+| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 495 checks in 18 suites, plus 6 cocotb tests; measured (verify-audits, 2026-10-26, `make -C test sim`) |
+|  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (main, 2026-10-25, `make -C test act`) |
 |  |  | whole Basys 3 design in simulation | ✅ | 26 checks across 4 programs; measured (v20, 2026-10-18, `make -C fpga/basys3 sim`) |
 | **CPU / GPU / TPU modes** | `██████░░░░` 3/5 | Python model, directed, random and mutant tests | ✅ | 230 checks, seeds 1 to 6; 8 of 8 mutants caught; measured (v20 modes, 2026-10-18, `make -C test modes SEED=1`) |
 |  |  | Tiny Tapeout tile unchanged with the modes off | ✅ | gate netlist byte-identical, 6047 cells; measured (v20 modes, 2026-10-18, `bash syn/tile_identity.sh v20`) |
 |  |  | CPU, GPU, TPU, CPU program at the Basys 3 pins (simulated) | ✅ | 9 checks; 25 printed lines match sw/modes_model.py; measured (v20 modes, 2026-10-18, `make -C fpga/basys3 sim-modes`) |
 |  |  | the same program on a real Basys 3 | ⬜ | next: make bit && make prog in fpga/basys3, then read the USB serial port |
-|  |  | full sky130 chip with the modes | ⬜ | next: 70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh) does not fit 2x2; needs a larger die |
+|  |  | full sky130 chip with the modes | ⬜ | next: 70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh), 62% of the 3x2 die; never tried in layout |
 | **Basys 3 board** | `██████░░░░` 3/5 | bitstream from the open flow | ✅ | Yosys + nextpnr-xilinx + prjxray bitstream; measured (v20, 2026-10-18, `make -C fpga/basys3 bit-open`) |
 |  |  | gate netlist of the bitstream at the pins | ✅ | 4/4; measured (v20, 2026-10-18, `make -C fpga/basys3 netlist`) |
 |  |  | CPU, GPU, TPU demo on the bitstream's gate netlist | ✅ | 4/4; every serial character matches sw/modes_model.py; measured (v20 modes, Yosys 0.70, 2026-10-18, `make -C fpga/basys3 netlist-modes`) |
 |  |  | Vivado bitstream | ⬜ | next: make bit in fpga/basys3 on a machine with Vivado |
 |  |  | running on a real board | ⬜ | next: make prog in fpga/basys3, then check the LEDs and the serial port |
-| **Tiny Tapeout GDS and pre-flight** | `███░░░░░░░` 1/3 | cell area after synthesis, before placement | ✅ | 50,880 µm², 1191 flip-flops: 67% of 2x2; measured (v20, Yosys 0.33, 2026-10-18, `make -C test area`) |
-|  |  | place and route at 2x2 | ⛔ | next: LibreLane 3.0.14 stops at detailed placement (DPL-0036); a larger tile or less logic is the owner's call |
-|  |  | Tiny Tapeout pre-flight | ⬜ | next: runs after a clean GDS |
-| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.65 ns at ss_100C_1v60 (6.23 ns typical), budget 20 ns; measured (v20, Yosys 0.33, 2026-10-18, `make -C test timing`) |
-|  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (v20, 2026-10-18, `make -C test gl`) |
-|  |  | signoff timing after routing | ⬜ | next: comes with a clean GDS |
-| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: after a clean GDS and pre-flight |
+| **Tiny Tapeout GDS and pre-flight** | `██████████` 3/3 | cell area after synthesis, before placement | ✅ | 50,965 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed; measured (verify-audits, Yosys 0.33, 2026-10-26, `make -C test area`) |
+|  |  | place and route at 3x2 | ✅ | clean GDS at 3x2, placement density 50; cocotb passes on the routed netlist; measured (PR #4 7bee2a9, LibreLane 3.0.14, `GitHub run 40213473443: gds and gl_test`) |
+|  |  | Tiny Tapeout pre-flight | ✅ | pass; measured (PR #4 7bee2a9, `GitHub run 40213473443: precheck`) |
+| **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.57 ns at ss_100C_1v60 (6.17 ns typical), budget 20 ns, before wire delay; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
+|  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main, 2026-10-25, `make -C test gl`) |
+|  |  | signoff timing after routing | 🔄 | setup +6.87 ns typical, -0.98 ns nom_ss, -1.52 ns max_ss (51 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0; measured (verify-audits with the event-loss fix, src/config.json, LibreLane 3.0.14, 2026-10-27, `local LibreLane run (librelane src/config.json)`) |
+| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 1.52 ns (rated about 46 MHz there) |
 |  |  | first chip tested | ⬜ | next: after the shuttle returns |
 
 ✅ done · 🔄 in progress · ⬜ not started · ⛔ blocked. Only measured results count as done.
@@ -165,7 +165,7 @@ and the capture queue under [Instruction set](#instruction-set) and [Try it](#tr
 
 **From the board to the silicon.** The chip would arrive in a QFN package on a carrier board that
 plugs into the demo board; inside, every project on the shuttle shares one die behind a
-multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
+multiplexer, and Tiqora is one 3 × 2 block of tiles on it:
 
 ![From the demo board to Tiqora's tiles on the die](docs/images/board_to_silicon.svg)
 
@@ -173,7 +173,7 @@ multiplexer, and Tiqora is one 2 × 2 block of tiles on it:
 the real 334.88 × 225.76 µm die outline. This is a treemap of measured numbers, not a
 placement: there is no routed layout yet.
 
-![Treemap of each block's synthesized cell area inside the 2x2 die outline](docs/images/explorer/area_treemap.svg)
+![Treemap of each block's synthesized cell area inside the 3x2 die outline](docs/images/explorer/area_treemap.svg)
 
 **An illustration, not a placement.** Every real sky130 cell of the synthesized design, drawn
 with its real geometry but packed into rows block by block by a simple script
@@ -208,10 +208,10 @@ hatching is local interconnect. Every other row is mirrored so neighbours share 
 ## Pinout
 
 **Every pin, where it really is.** All 43 pins of the tile sit on metal 4 along its top edge, at
-the exact positions from Tiny Tapeout's own 2 × 2 template, above the design's real cells. The
+the exact positions from Tiny Tapeout's own 3 × 2 template, above the design's real cells. The
 band names each one with its function; the pulses show which way signals flow:
 
-![All 43 pins of the 2x2 tile at their real positions](docs/images/pin_map.svg)
+![All 43 pins of the 3x2 tile at their real positions](docs/images/pin_map.svg)
 
 **What each pin connects to.** The complete system — the QSPI memory Pmod, the demo board's
 RP2350 as clock, reset and USB-serial bridge, plus sensors in and triggers out:
@@ -301,12 +301,12 @@ Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent imple
 | Capture channels (8) | 891 |
 
 <sub>Per-block numbers come from the hierarchical netlist (52,000 µm² total). The flattened netlist
-the flow actually builds is 49,186 µm², because synthesis optimizes across block boundaries.
-That is about 68% of the tile's placeable area; <code>src/config.json</code> sets the placement
-target density to 72% accordingly. Reproduce with <code>cd test && make area</code>.</sub>
+the flow actually builds is smaller, because synthesis optimizes across block boundaries: 50,965 µm²
+with Yosys 0.33 (<code>make area</code>) and 48,763 µm² in LibreLane 3.0.14's own synthesis, 44% of the
+3 × 2 die. <code>src/config.json</code> sets the placement density to 50. Reproduce with <code>cd test && make area</code>.</sub>
 
 The previous version of this chip had a conventional 32-bit core and measured 69,866 µm² —
-it needed 4 × 2 tiles (560 €). The rewrite halved the price and added the UART and GPIO.
+it needed 4 × 2 tiles (560 €). The rewrite added the UART and GPIO and fits 3 × 2 (420 €).
 
 ## Memory map
 
@@ -315,8 +315,13 @@ it needed 4 × 2 tiles (560 €). The rewrite halved the price and added the UAR
 | `0x0000_0000` | 16 MB | QSPI flash (CS0) — code and constants, executes in place |
 | `0x1000_0000` | 8 MB | QSPI RAM A (CS1) |
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
+| `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach (offsets in `src/tp_pkg.sv`, `SR_*`) |
 | `0x3000_0000` | — | GPIO and UART registers |
 | `0x4000_0000` | 172 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+
+Only address bits 31:28 (which device) and 23:0 (where in it) are decoded (`src/bus/tp_bus.sv`),
+so each device repeats every 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again. The
+bootloader takes the length it is sent as given, so `sw/tpload.py` refuses images over 8 MB.
 
 **From reset to the first instruction.** The chip wakes its own flash and RAMs whatever state
 they were left in, then reads the first word:
@@ -623,7 +628,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | Test | What it proves | Checks |
 |---|---|---:|
 | `make isa` | every RV32E base instruction, vs. Python-computed results | 51 |
-| `make unit` | timing unit blocks, rotating register file, UART, GPIO | 48 |
+| `make unit` | timing unit blocks, rotating register file, UART, GPIO | 50 |
 | `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover | 18 |
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
@@ -631,6 +636,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make boot` | UART bootloader: a program sent over serial lands in RAM and runs | 11 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
+| `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
@@ -639,9 +645,10 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
-| `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
-| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
-| `make timing` | critical-path estimate from real sky130 cell delays | 12.65 ns / 20 ns, slow corner, estimate before layout (v20) |
+| `make shared` | the timing unit and its reference model are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 7 files |
+| `make syncref` | the timing unit against a Python reference model, every output on every clock, 60,000 random clocks in each of three builds, and no pin event lost without overflow (two bugs it found are fixed, [docs/TESTING.md](docs/TESTING.md)) | 4 |
+| Tiny Tapeout pre-flight | CI's own project checker (TinyTapeout/tt-gds-action/precheck) on the routed 3x2 layout | passes (verify-audits, CI run 40278476822) |
+| `make timing` | critical-path estimate from real sky130 cell delays | 12.57 ns / 20 ns, slow corner, estimate before wires (main 2026-10-25) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |
 | `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |

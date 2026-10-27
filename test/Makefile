@@ -19,6 +19,8 @@
 #                   switch latency, deadline edge across switches. SEED=n
 #   make c          a Clang-compiled C program, from flash and over the UART bootloader
 #                   (needs: pip install ziglang pyelftools)
+#   make mcu        the chip used as a microcontroller: a C program from flash talks
+#                   to a host over the UART, reads and drives pins, times edges
 #   make run PROG=../sw/examples/hello.c
 #                   compile any C file and run it on the simulated chip, output live
 #   make act        the official RISC-V architecture tests, all 37 RV32E (~10 min)
@@ -67,14 +69,20 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c bridge printf spi readme latency adjust modes tour shared docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
 lint: modes-lint
 	verilator --lint-only -Wall --timing $(RTL) --top-module tt_um_normansrule_tiqora
+
+# Zero tool warnings: Verilator -Wall and Yosys synthesis must both be silent.
+warnings: lint
+	cd .. && yosys -s syn/synth_check.ys > /tmp/tp_yosys_warn.log 2>&1 || { tail -20 /tmp/tp_yosys_warn.log; exit 1; }
+	@if grep -i "warning" /tmp/tp_yosys_warn.log; then echo "FAIL  Yosys printed warnings"; exit 1; fi
+	@echo "Verilator and Yosys: 0 warnings"
 
 # The CPU / GPU / TPU build: the same RTL plus src/accel, with TIQORA_MODES
 # defined. The Tiny Tapeout tile never defines it (syn/tile_identity.sh).
@@ -88,7 +96,7 @@ modes:
 	python3 ../sw/modes_model.py
 	python3 ../sw/mkmodes.py $(SEED)
 	@sh iv.sh -g2012 -DTIQORA_MODES -o tb_modes.vvp -s tb_modes $(MODES_RTL) qspi_model.sv tb_modes.sv
-	vvp -n tb_modes.vvp
+	sh vv.sh -n tb_modes.vvp
 
 area:
 	cd .. && bash syn/area_sky130.sh $(LIB)
@@ -96,33 +104,34 @@ area:
 prog:
 	python3 ../sw/mkprog.py prog.hex
 	python3 ../sw/mkhello.py hello.hex >/dev/null
+	python3 ../sw/mkreenter.py reenter.hex >/dev/null
 	python3 ../sw/mkisa.py  isa.hex
 	python3 ../sw/mkwrap.py wrap.hex
 	python3 ../sw/mkxpulse.py xpulse.hex
 
 unit:
 	@sh iv.sh -g2012 -o tb_unit.vvp -s tb_unit $(RTL) tb_unit.sv
-	vvp tb_unit.vvp
+	sh vv.sh tb_unit.vvp
 
 soc: prog
 	@sh iv.sh -g2012 -o tb_soc.vvp -s tb_soc $(RTL) qspi_model.sv tb_soc.sv
-	vvp tb_soc.vvp
+	sh vv.sh tb_soc.vvp
 
 isa: prog
 	@sh iv.sh -g2012 -o tb_isa.vvp -s tb_isa $(RTL) qspi_model.sv tb_isa.sv
-	vvp tb_isa.vvp
+	sh vv.sh tb_isa.vvp
 
 stress:
 	@sh iv.sh -g2012 -o tb_stress.vvp -s tb_stress $(RTL) tb_stress.sv
-	vvp tb_stress.vvp
+	sh vv.sh tb_stress.vvp
 
 wrap: prog
 	@sh iv.sh -g2012 -o tb_wrap.vvp -s tb_wrap $(RTL) qspi_model.sv tb_wrap.sv
-	vvp tb_wrap.vvp
+	sh vv.sh tb_wrap.vvp
 
 xpulse: prog
 	@sh iv.sh -g2012 -o tb_xpulse.vvp -s tb_xpulse $(RTL) qspi_model.sv tb_xpulse.sv
-	vvp tb_xpulse.vvp
+	sh vv.sh tb_xpulse.vvp
 
 clean-sim:
 	rm -rf .zig-cache-test .zig-cache-act run_* tb_run_* readme_*
@@ -137,11 +146,11 @@ endif
 
 boot: prog
 	@sh iv.sh -g2012 -o tb_boot.vvp -s tb_boot $(RTL) qspi_model.sv tb_boot.sv
-	vvp tb_boot.vvp
+	sh vv.sh tb_boot.vvp
 
 wake: prog
 	@sh iv.sh -g2012 -o tb_wake.vvp -s tb_wake $(RTL) qspi_model.sv tb_wake.sv
-	vvp tb_wake.vvp
+	sh vv.sh tb_wake.vvp
 
 # ---- C programs, compiled with the Clang inside `pip install ziglang` ----
 # Checked before any C build: which python3 is running, and whether it has the
@@ -176,9 +185,16 @@ c_ram.elf: pytools $(C_SRCS) ../sw/link_ram.ld ../sw/tiqora.h ../sw/tp_io.h
 	$(ZOBJ) -O binary $< $*.bin
 	python3 -c "import sys;d=open('$*.bin','rb').read();d+=b'\0'*((-len(d))%4);print('\n'.join('%08x'%int.from_bytes(d[i:i+4],'little') for i in range(0,len(d),4)))" > $@
 
+MCU_SRCS = ../sw/crt0.S ../sw/lib/rt.c ../sw/examples/mcu_e2e.c
+mcu_flash.elf: pytools $(MCU_SRCS) ../sw/link.ld ../sw/tiqora.h ../sw/tp_io.h
+	$(ZCC) $(CFLAGS_C) -T ../sw/link.ld -Wl,--gc-sections -o $@ $(MCU_SRCS)
+mcu: mcu_flash.hex
+	@sh iv.sh -g2012 -o tb_mcu.vvp -s tb_mcu $(RTL) qspi_model.sv tb_mcu.sv
+	sh vv.sh tb_mcu.vvp
+
 c: c_flash.hex c_ram.hex
 	@sh iv.sh -g2012 -o tb_c.vvp -s tb_c $(RTL) qspi_model.sv tb_c.sv
-	vvp tb_c.vvp
+	sh vv.sh tb_c.vvp
 
 bridge:
 	python3 ../sw/demoboard/test_tpboot.py
@@ -187,11 +203,11 @@ bridge:
 # for the real flow's resizer. No wire delay: the routed report in CI is final.
 LIB ?= $(HOME)/pdk/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
 timing:
-	cd .. && { grep '^read_verilog' syn/synth_check.ys; \
+	cd .. && python3 syn/dont_use.py $(LIB) /tmp/tp_timing.lib && { grep '^read_verilog' syn/synth_check.ys; \
 	  echo 'hierarchy -check -top tt_um_normansrule_tiqora'; \
 	  echo 'synth -top tt_um_normansrule_tiqora -flatten'; \
-	  echo 'dfflibmap -liberty $(LIB)'; \
-	  echo 'abc -D 20000 -liberty $(LIB) -script +strash;dch;map,-D,20000;topo;buffer,-p;upsize,-D,20000;dnsize,-D,20000;stime,-p'; \
+	  echo 'dfflibmap -liberty /tmp/tp_timing.lib'; \
+	  echo 'abc -D 20000 -liberty /tmp/tp_timing.lib -script +strash;dch;map,-D,20000;topo;buffer,-p;upsize,-D,20000;dnsize,-D,20000;stime,-p'; \
 	} > /tmp/tp_timing.ys && yosys -q -l /tmp/tp_timing.log -s /tmp/tp_timing.ys >/dev/null && \
 	  grep -E 'Delay =' /tmp/tp_timing.log | sed -E 's/.*Delay = *([0-9.]+) ps.*/worst register-to-register path: \1 ps (budget 20000 ps at 50 MHz, before wire delay)/' && \
 	  grep -E 'Start-point' /tmp/tp_timing.log | sed 's/^ABC: /  /'
@@ -302,8 +318,15 @@ tour:
 	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
 	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
 
-# The timing unit (src/sync/*.sv) is shared, byte for byte, between Tiqora and
+# The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
 # editing one copy without updating both manifests fails here.
 shared:
-	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: 5 files match the manifest"
+	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: $$(wc -l < docs/shared_timing.sha256) files match the manifest"
+
+# The timing unit against a Python reference model (sync_model.py), every
+# output compared on every clock: 60,000 random clocks of pins, Xpulse
+# instructions and register accesses, in three configurations (Tiqora,
+# Tiqora-Serial, and a small stress build that overflows its queue often).
+syncref:
+	python3 sync_model.py --suite

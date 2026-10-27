@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""layout_preview.py — draw Tiqora's real standard cells in a 2x2 tile.
+"""layout_preview.py — draw Tiqora's real standard cells in a 3x2 tile.
 
 What this is: every cell Yosys maps the design onto (about 5,000 instances of
 real sky130_fd_sc_hd cells, the same library the fab uses), each drawn with
-its real GDS geometry, placed in standard-cell rows inside the 334.88 x
-225.76 um outline of a Tiny Tapeout 2x2 tile. Cells are grouped by the block
+its real GDS geometry, placed in standard-cell rows inside the 508.76 x
+225.76 um outline of a Tiny Tapeout 3x2 tile. Cells are grouped by the block
 they belong to, and the leftover space is filled with filler and decap cells
 the way a finished layout is.
 
@@ -28,7 +28,7 @@ import klayout.db as db
 import klayout.lay as lay
 
 TOP = "tt_um_normansrule_tiqora"
-TILE_W, TILE_H = 334.88, 225.76            # Tiny Tapeout 2x2
+TILE_W, TILE_H = 508.76, 225.76            # Tiny Tapeout 3x2 (tt_block_3x2_pg.def)
 SITE_W, ROW_H = 0.46, 2.72                 # sky130 unithd site
 MARGIN_X, MARGIN_Y = 6 * SITE_W, ROW_H     # LEFT/RIGHT_MARGIN_MULT 6, TOP/BOTTOM 1
 
@@ -270,7 +270,7 @@ def main():
     except ImportError:
         print("PIL not installed: skipping the labelled overlay")
 
-    json.dump({"tile": "2x2", "tile_um": [TILE_W, TILE_H],
+    json.dump({"tile": "3x2", "tile_um": [TILE_W, TILE_H],
                "total_cell_area_um2": round(total, 1),
                "utilization_of_core_area": round(util, 4),
                "instances": len(placements), "fill_instances": len(fills),
