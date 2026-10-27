@@ -1,4 +1,4 @@
-<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and its routed timing.", "data": ["atlas"], "scripts": []} -->
+<!-- {"title": "Physical design", "description": "Tiqora's layout at 3x2: measured cell area per block against the die, the Tiny Tapeout checks it passes, and its routed timing.", "data": ["atlas", "routed"], "scripts": ["die", "layout"]} -->
 <h1>Physical design</h1>
 <div class="note"><b>Tiqora has a clean layout at 3x2, the size <code>info.yaml</code> submits.</b> The Tiny Tapeout <code>gds</code>, pre-flight and gate-level workflows pass (GitHub run 40213473443, LibreLane 3.0.14). A local run of the same configuration routes with 0 DRC, 0 LVS and 0 antenna errors and meets timing at the typical corner; it misses setup at the slowest corner by 0.75 ns <span class="ev measured">measured</span>. No chip exists yet.</div>
 
@@ -28,6 +28,32 @@
 <tr><td>slow, worst wires (max_ss_100C_1v60)</td><td>−1.52 ns (51 paths)</td><td>+0.85 ns</td></tr>
 <tr><td>fast (nom_ff_n40C_1v95)</td><td>+8.53 ns</td><td>+0.10 ns</td></tr></table>
 <p>The worst path runs from the program counter through the boot ROM to the read-data register. At 50 MHz the chip meets timing on typical silicon; at the slowest corner it needs about 21.5 ns, roughly 46 MHz (an estimate from the slack), which the maintainer accepted as its slow-corner rating. The same run still reports slow-corner slew warnings on about 1,520 pins; the resizer does not clear them after the final routing.</p>
+<h2 id=routed-h>The routed layout</h2>
+<p>Every cell where the placer put it and every wire the router drew: {{routed:signal}} cells that do the work, {{routed:phys}} more that only fill the rows (taps, fill and decoupling), and {{routed:segments}} wire segments, {{routed:wire_mm}} mm of metal, on the {{routed:die}} µm die. Each metal layer gets its own colour, and where layers cross, the colours add.</p>
+<div class=routed-x id=routed>
+ <div class=routed-bar role=group aria-label="What to show">
+  <span class=routed-group>
+   <button type=button data-layer=met1 aria-pressed=true><i class=sw-met1></i>metal 1</button>
+   <button type=button data-layer=met2 aria-pressed=true><i class=sw-met2></i>metal 2</button>
+   <button type=button data-layer=met3 aria-pressed=true><i class=sw-met3></i>metal 3</button>
+   <button type=button data-layer=met4 aria-pressed=true><i class=sw-met4></i>metal 4</button>
+  </span>
+  <span class=routed-group>
+   <button type=button data-class=0 aria-pressed=true><i class=sw-ff></i>flip-flops</button>
+   <button type=button data-class=1 aria-pressed=true><i class=sw-logic></i>logic</button>
+   <button type=button data-class=2 aria-pressed=true><i class=sw-buf></i>buffers</button>
+   <button type=button data-class=4 aria-pressed=true><i class=sw-phys></i>fill</button>
+  </span>
+  <button type=button class=routed-clock data-clock aria-pressed=false>Send a clock edge</button>
+  <span class=routed-readout aria-live=polite></span>
+ </div>
+ <noscript><img src="{{img:docs/images/routed.jpg}}" alt="The routed layout: every placed cell and routed wire, each metal layer in its own colour."></noscript>
+ <canvas class=routed tabindex=0 role=img aria-label="The routed layout: {{routed:signal}} cells and {{routed:segments}} wire segments. Scroll or use plus and minus to zoom, drag or use the arrow keys to pan."></canvas>
+ <p class=routed-hint>Scroll or pinch to zoom, drag to pan. With the keyboard: + and − zoom, arrows pan, 0 fits the die.</p>
+</div>
+<p>The clock button lights the clock tree the way an edge travels: from the <code>clk</code> pin through {{routed:levels}} levels of clock buffers ({{routed:nets}} nets) to the {{routed:clocked}} flip-flops, which flash when it arrives. Clock-tree buffers are drawn amber.</p>
+<p class=small>From a local {{routed:flow}} run on {{routed:pdk}}, placement density {{routed:density}}%{{routed:note}}, read from the DEF after detailed routing and fill by <code>docs/tools/routed_map.py</code>. Wire segments per layer: {{routed:layers}}. The layout GitHub builds from the same source may differ in detail.</p>
+<script>TQLayout.explore(document.getElementById("routed"), DATA("routed"));</script>
 <p class=small>The images in <code>docs/images/layout_blocks.png</code> and <code>layout_zoom.png</code> are illustrations, not a placed design, and are not used on this page.</p>
 <script>
 (function () {

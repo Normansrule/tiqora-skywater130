@@ -15,7 +15,8 @@
  "die_source": "docs/tile_template.json (tt_block_3x2_pg.def)",
  "footer": "Tiqora is a RISC-V microcontroller for a Tiny Tapeout 3x2 tile on SkyWater sky130. Nothing on these pages has run on real silicon or a real FPGA board; every number says how it was obtained.",
  "data": {
-  "die": "docs/site/data/die.json"
+  "die": "docs/site/data/die.json",
+  "routed": "docs/site/data/routed.json"
  },
  "pages": [
   {
