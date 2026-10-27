@@ -17,6 +17,16 @@
   "//": "Users have reported that values up to 80 worked well for them.",
   "PL_TARGET_DENSITY_PCT": 50,
 
+  "//": "GRT_ADJUSTMENT - share of routing tracks global routing holds back (LibreLane default 0.3). At 0.3 Tiqora's 3x2 global route ends with 58 overflows and detailed routing grinds on its last 3 to 17 shorts for hours; at 0.15 global routing has 0 overflows and detailed routing finishes with 0 violations (local LibreLane 3.0.14, 2026-10-26: DRC 0, LVS 0, antenna 0).",
+  "GRT_ADJUSTMENT": 0.15,
+
+  "//": "Tiqora at 3x2, timing repair (local LibreLane 3.0.14, 2026-10-26). CTS_SINK_CLUSTERING_SIZE 10 keeps each clock leaf within the fanout limit of 10 (83 fanout warnings -> 2). The post-global-route repair steps and the larger setup margins make the resizer work on near-critical paths: worst slow-corner setup slack -1.10 ns -> -0.75 ns, typical +6.45 ns. Routing stays clean (DRC 0, LVS 0, antenna 0).",
+  "CTS_SINK_CLUSTERING_SIZE": 10,
+  "RUN_POST_GRT_DESIGN_REPAIR": 1,
+  "RUN_POST_GRT_RESIZER_TIMING": 1,
+  "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
+  "GRT_RESIZER_SETUP_SLACK_MARGIN": 0.5,
+
   "//": "SYNTH_EXCLUDED_CELL_FILE - cells synthesis may not use. synth_exclude.cells is the PDK default minus its ban on drive-strength-1 cells (see the file).",
   "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement at 2x2 uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25).",
   "SYNTH_EXCLUDED_CELL_FILE": "dir::synth_exclude.cells",

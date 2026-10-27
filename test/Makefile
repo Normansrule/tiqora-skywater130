@@ -69,14 +69,20 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
 lint: modes-lint
 	verilator --lint-only -Wall --timing $(RTL) --top-module tt_um_normansrule_tiqora
+
+# Zero tool warnings: Verilator -Wall and Yosys synthesis must both be silent.
+warnings: lint
+	cd .. && yosys -s syn/synth_check.ys > /tmp/tp_yosys_warn.log 2>&1 || { tail -20 /tmp/tp_yosys_warn.log; exit 1; }
+	@if grep -i "warning" /tmp/tp_yosys_warn.log; then echo "FAIL  Yosys printed warnings"; exit 1; fi
+	@echo "Verilator and Yosys: 0 warnings"
 
 # The CPU / GPU / TPU build: the same RTL plus src/accel, with TIQORA_MODES
 # defined. The Tiny Tapeout tile never defines it (syn/tile_identity.sh).
@@ -314,8 +320,15 @@ tour:
 	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
 	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
 
-# The timing unit (src/sync/*.sv) is shared, byte for byte, between Tiqora and
+# The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
 # editing one copy without updating both manifests fails here.
 shared:
-	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: 5 files match the manifest"
+	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: $$(wc -l < docs/shared_timing.sha256) files match the manifest"
+
+# The timing unit against a Python reference model (sync_model.py), every
+# output compared on every clock: 60,000 random clocks of pins, Xpulse
+# instructions and register accesses, in three configurations (Tiqora,
+# Tiqora-Serial, and a small stress build that overflows its queue often).
+syncref:
+	python3 sync_model.py --suite

@@ -50,7 +50,7 @@ module tb_unit;
     // =================================================================
     // Event queue
     // =================================================================
-    reg         fq_rst = 1'b1, fq_push = 1'b0, fq_pop = 1'b0;
+    reg         fq_rst = 1'b1, fq_push = 1'b0, fq_pop = 1'b0, fq_lost = 1'b0;
     reg  [31:0] fq_wdata = 32'd0;
     wire [31:0] fq_rdata;
     wire        fq_empty, fq_full, fq_ovf;
@@ -58,7 +58,7 @@ module tb_unit;
 
     sync_event_fifo #(.DEPTH(2), .PTRW(1)) u_fq (
         .clk(clk), .rst(fq_rst), .push(fq_push), .wdata(fq_wdata),
-        .pop(fq_pop), .rdata(fq_rdata), .empty(fq_empty), .full(fq_full),
+        .pop(fq_pop), .lost(fq_lost), .rdata(fq_rdata), .empty(fq_empty), .full(fq_full),
         .count(fq_count), .overflow(fq_ovf)
     );
 
@@ -248,6 +248,13 @@ module tb_unit;
         @(negedge clk); fq_pop = 1'b0;
         #1;
         chk(fq_empty === 1'b1, "queue drains to empty");
+
+        @(negedge clk); fq_rst = 1'b1;
+        @(negedge clk); fq_rst = 1'b0;
+        @(negedge clk); fq_lost = 1'b1;
+        @(negedge clk); fq_lost = 1'b0;
+        chk(fq_ovf === 1'b1 && fq_empty === 1'b1,
+            "an event dropped on the way in sets overflow, even with the queue empty");
 
         // -------------------------------------------------------------
         section("sync_capture");

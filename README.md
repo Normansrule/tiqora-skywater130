@@ -82,10 +82,10 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25); routed timing: see the status table |
-| **Area** | 50,880 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 2026-10-25, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
+| **Logic timing** | 12.57 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 2026-10-25); routed: +6.87 ns typical, −1.52 ns at the worst slow corner (measured, local LibreLane 3.0.14, 2026-10-27) |
+| **Area** | 50,965 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, verify-audits 2026-10-26, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile, the price this README has always used) |
-| **Verification** | 490 checks in 17 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 2026-10-25) |
+| **Verification** | 495 checks in 18 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, verify-audits 2026-10-26) |
 
 **Contents:** [Status](#status) · [Quick start](#quick-start) · [What it looks like](#what-it-looks-like) · [How small?](#how-small) · [Pinout](#pinout) · [Inside](#inside) · [Memory map](#memory-map) · [Instruction set](#instruction-set) · [Try it today, on the simulated chip](#try-it-today-on-the-simulated-chip) · [Run it on an FPGA today: Digilent Basys 3](#run-it-on-an-fpga-today-digilent-basys-3) · [Using it](#using-it) · [Verification](#verification) · [Design](#design) · [Repository](#repository) · [Maintainer](#maintainer)
 
@@ -95,11 +95,11 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 
 | Stage | State | Evidence |
 |---|---|---|
-| RTL tested | ✅ done | 490 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; main 2026-10-25) |
+| RTL tested | ✅ done | 495 checks, 6 cocotb tests, official RISC-V tests 37/37, recorded tour 15/15 (`make -C test sim`, `make -C test act`; verify-audits 2026-10-26) |
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
-| Synthesized | ✅ done | 50,880 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
+| Synthesized | ✅ done | 50,965 µm², 1,191 flip-flops (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`) |
 | Placed and routed | ✅ done | 3 × 2, placement density 50: the `gds` and `precheck` workflows pass (GitHub run 40213473443, LibreLane 3.0.14, 7bee2a9); gate-level cocotb on that netlist passes (`gl_test`, same run) |
-| Timing checked | ⏳ not read yet | the `gds` workflow passes without checking timing, and its timing reports (the GDS_logs artifact of GitHub run 40213473443) cannot be downloaded from the environment that wrote this; pre-wire estimate 12.57 ns at the slow corner against 20 ns. Tiqora-Serial's 1 × 2 layout misses setup at the slow corner by 1.30 ns, so this needs reading before a submission |
+| Timing checked | ⚠️ misses at the slow corner | setup slack +6.87 ns at the typical corner (nom_tt_025C_1v80), −0.98 ns at nominal slow (nom_ss_100C_1v60) and −1.52 ns at the worst slow corner (max_ss_100C_1v60, 51 paths); hold met at every corner (worst +0.10 ns, fast corner) (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-27; the same run: routing DRC 0, Magic DRC 0, LVS 0, antenna 0, core utilisation 61%). At 20 ns (50 MHz) the chip meets timing at typical silicon and needs about 21.5 ns (≈46 MHz, an estimate from the slack; the maintainer accepted this slow-corner rating rather than more timing work, 2026-10-27) at the slowest corner. The `gds` workflow does not fail on timing |
 | Submitted, fabricated, measured | ⬜ not yet | no chip exists |
 | FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
@@ -111,7 +111,7 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 
 | Milestone | Progress | Step | State | Evidence or next step |
 |---|---|---|---|---|
-| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 490 checks in 17 suites, plus 6 cocotb tests; measured (main, 2026-10-25, `make -C test sim`) |
+| **FPGA simulation** | `██████████` 3/3 | core and SoC RTL suites | ✅ | 495 checks in 18 suites, plus 6 cocotb tests; measured (verify-audits, 2026-10-26, `make -C test sim`) |
 |  |  | official RISC-V tests (RV32E) | ✅ | 37/37; measured (main, 2026-10-25, `make -C test act`) |
 |  |  | whole Basys 3 design in simulation | ✅ | 26 checks across 4 programs; measured (v20, 2026-10-18, `make -C fpga/basys3 sim`) |
 | **CPU / GPU / TPU modes** | `██████░░░░` 3/5 | Python model, directed, random and mutant tests | ✅ | 230 checks, seeds 1 to 6; 8 of 8 mutants caught; measured (v20 modes, 2026-10-18, `make -C test modes SEED=1`) |
@@ -124,13 +124,13 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 |  |  | CPU, GPU, TPU demo on the bitstream's gate netlist | ✅ | 4/4; every serial character matches sw/modes_model.py; measured (v20 modes, Yosys 0.70, 2026-10-18, `make -C fpga/basys3 netlist-modes`) |
 |  |  | Vivado bitstream | ⬜ | next: make bit in fpga/basys3 on a machine with Vivado |
 |  |  | running on a real board | ⬜ | next: make prog in fpga/basys3, then check the LEDs and the serial port |
-| **Tiny Tapeout GDS and pre-flight** | `██████████` 3/3 | cell area after synthesis, before placement | ✅ | 50,880 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed; measured (main, Yosys 0.33, 2026-10-25, `make -C test area`) |
+| **Tiny Tapeout GDS and pre-flight** | `██████████` 3/3 | cell area after synthesis, before placement | ✅ | 50,965 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed; measured (verify-audits, Yosys 0.33, 2026-10-26, `make -C test area`) |
 |  |  | place and route at 3x2 | ✅ | clean GDS at 3x2, placement density 50; cocotb passes on the routed netlist; measured (PR #4 7bee2a9, LibreLane 3.0.14, `GitHub run 40213473443: gds and gl_test`) |
 |  |  | Tiny Tapeout pre-flight | ✅ | pass; measured (PR #4 7bee2a9, `GitHub run 40213473443: precheck`) |
 | **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.57 ns at ss_100C_1v60 (6.17 ns typical), budget 20 ns, before wire delay; measured (main, Yosys 0.33, 2026-10-25, `make -C test timing`) |
 |  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main, 2026-10-25, `make -C test gl`) |
-|  |  | signoff timing after routing | ⬜ | next: read the per-corner slacks from the GDS_logs artifact of GitHub run 40213473443 (the gds workflow does not fail on timing) |
-| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, routed timing still to be read |
+|  |  | signoff timing after routing | 🔄 | setup +6.87 ns typical, -0.98 ns nom_ss, -1.52 ns max_ss (51 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0; measured (verify-audits with the event-loss fix, src/config.json, LibreLane 3.0.14, 2026-10-27, `local LibreLane run (librelane src/config.json)`) |
+| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 1.52 ns (rated about 46 MHz there) |
 |  |  | first chip tested | ⬜ | next: after the shuttle returns |
 
 ✅ done · 🔄 in progress · ⬜ not started · ⛔ blocked. Only measured results count as done.
@@ -176,8 +176,7 @@ placement: there is no routed layout yet.
 ![Treemap of each block's synthesized cell area inside the 3x2 die outline](docs/images/explorer/area_treemap.svg)
 
 **The real layout, routed.** Every cell where the placer put it and every wire the router drew,
-from a local LibreLane 3.0.14 run of the 3x2 configuration (with the global-routing adjustment
-lowered to 0.15, because the default stalled locally; GitHub's run routes at the default):
+from a local LibreLane 3.0.14 run of `src/config.json` at 3x2 (routed with 0 violations):
 `docs/tools/routed_map.py` reads the run's DEF into `docs/site/data/routed.json` and
 `docs/tools/routed_render.py` draws it. Only the colours are chosen: each metal layer has its own,
 and where layers cross they add.
@@ -317,7 +316,7 @@ Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent imple
 | Capture channels (8) | 891 |
 
 <sub>Per-block numbers come from the hierarchical netlist (52,000 µm² total). The flattened netlist
-the flow actually builds is smaller, because synthesis optimizes across block boundaries: 50,880 µm²
+the flow actually builds is smaller, because synthesis optimizes across block boundaries: 50,965 µm²
 with Yosys 0.33 (<code>make area</code>) and 48,763 µm² in LibreLane 3.0.14's own synthesis, 44% of the
 3 × 2 die. <code>src/config.json</code> sets the placement density to 50. Reproduce with <code>cd test && make area</code>.</sub>
 
@@ -644,7 +643,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | Test | What it proves | Checks |
 |---|---|---:|
 | `make isa` | every RV32E base instruction, vs. Python-computed results | 51 |
-| `make unit` | timing unit blocks, rotating register file, UART, GPIO | 48 |
+| `make unit` | timing unit blocks, rotating register file, UART, GPIO | 50 |
 | `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover | 18 |
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
@@ -661,8 +660,9 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
-| `make shared` | the timing unit is byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 5 files |
-| Tiny Tapeout pre-flight | CI's own project checker (`tt_tool.py`) | not yet: needs a placed and routed layout |
+| `make shared` | the timing unit and its reference model are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 7 files |
+| `make syncref` | the timing unit against a Python reference model, every output on every clock, 60,000 random clocks in each of three builds, and no pin event lost without overflow (two bugs it found are fixed, [docs/TESTING.md](docs/TESTING.md)) | 4 |
+| Tiny Tapeout pre-flight | CI's own project checker (TinyTapeout/tt-gds-action/precheck) on the routed 3x2 layout | passes (verify-audits, CI run 40278476822) |
 | `make timing` | critical-path estimate from real sky130 cell delays | 12.57 ns / 20 ns, slow corner, estimate before wires (main 2026-10-25) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (v20) |

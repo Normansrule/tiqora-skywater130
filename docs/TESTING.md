@@ -19,16 +19,17 @@ point elsewhere with `PDK_ROOT=` or `LIB=`.
 
 ```bash
 cd ~/tiqora-skywater130/test
-make sim        # all seventeen self-checking suites, 490 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
+make sim        # all eighteen self-checking suites, 495 checks (230 of them the CPU/GPU/TPU modes), plus the docs and shared-file checks
 make            # the cocotb tests, from the pins only (6 tests)
 make lint       # Verilator -Wall, no waivers
+make warnings   # lint, plus Yosys synthesis with zero warnings (needs Yosys; not in CI)
 ```
 
 Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` stops with an error at the first bench that reports a failure (`test/vv.sh` turns the verdict into an exit status; before 2026-10-25 a failing bench still let `make` succeed). `make sim` covers:
 
 | Bench | Checks | What it proves |
 |---|---:|---|
-| unit | 49 | timing-unit blocks, rotating register file (including 4,000 random clocks against a model, every phase), UART, GPIO |
+| unit | 50 | timing-unit blocks, rotating register file (including 4,000 random clocks against a model, every phase), UART, GPIO |
 | soc | 12 | boots, arms a deadline, the trigger lands on the exact tick |
 | isa | 51 | every RV32E base instruction vs Python-computed results |
 | stress | 18 | 8 simultaneous captures, queue overflow, 2³² rollover |
@@ -44,7 +45,27 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
 | latency | 1 | software resumes 10–17 clocks after a `TWAIT` deadline, on all 8 rotation phases |
 | adjust | 3 | a time step neither skips nor repeats a deadline |
-| shared | 5 files | the timing unit matches Tiqora-Serial's, by SHA-256 manifest |
+| shared | 7 files | the timing unit and its reference model match Tiqora-Serial's, by SHA-256 manifest |
+| syncref | 4 | the timing unit against a Python reference model (`test/sync_model.py`), every output on every clock, 60,000 random clocks in each of three builds (Tiqora, Tiqora-Serial and a small stress build), and no pin event lost without overflow |
+
+**Two event-loss bugs the reference model found, fixed 2026-10-26.** The
+timing unit promises that every pin event is either queued or counted by the
+sticky overflow flag. The model found two ways it broke that promise, and the
+fourth `make syncref` check now holds it:
+
+* **A backlog replaced.** Edges on several channels in one clock are queued
+  one per clock, lowest channel first, from a backlog. A new edge before that
+  backlog drains replaces it. The events still waiting are dropped, and that
+  now raises overflow (`backlog_lost` in `src/sync/sync_unit.sv`). Both chips.
+* **A TMARK collision.** The queue takes one word per clock. When a `TMARK`
+  and a pin event arrive in the same clock, the mark takes the slot; the pin
+  event now stays in the backlog and is queued a clock later with its own
+  timestamp, instead of being dropped. Tiqora only (Tiqora-Serial ties its
+  Xpulse port off).
+
+The fix costs 52 cells, 85 µm² on Tiqora (`make area`, 50,880 to 50,965 µm²).
+Five mutants of it are each caught by `make syncref`, the overflow input by
+`make unit`, and the backlog case on Tiqora-Serial by its `tb_proto.sv`.
 
 ## Measuring speed
 
