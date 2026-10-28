@@ -9,7 +9,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "verify-audits, 2026-10-26",
+            "version": "main 3684851, 2026-10-27",
             "command": "make -C test sim",
             "result": "495 checks in 18 suites, plus 6 cocotb tests"
           }
@@ -19,7 +19,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main, 2026-10-25",
+            "version": "main 3684851, 2026-10-27",
             "command": "make -C test act",
             "result": "37/37"
           }
@@ -29,7 +29,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "v20, 2026-10-18",
+            "version": "main 3684851, 2026-10-27",
             "command": "make -C fpga/basys3 sim",
             "result": "26 checks across 4 programs"
           }
@@ -77,7 +77,7 @@
         {
           "step": "full sky130 chip with the modes",
           "state": "todo",
-          "next": "70,679 µm² of cells (MODES=1 bash syn/area_sky130.sh), 62% of the 3x2 die; never tried in layout"
+          "next": "71,134 µm² of cells (MODES=1 bash syn/area_sky130.sh, main 3684851, 2026-10-27), 62% of the 3x2 die; never tried in layout"
         }
       ]
     },
@@ -134,7 +134,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "verify-audits, Yosys 0.33, 2026-10-26",
+            "version": "main 3684851, Yosys 0.33, 2026-10-27",
             "command": "make -C test area",
             "result": "50,965 µm², 1191 flip-flops: 44% of 3x2, with the cells this design's flow excludes (src/synth_exclude.cells) removed"
           }
@@ -144,9 +144,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "PR #4 7bee2a9, LibreLane 3.0.14",
-            "command": "GitHub run 40213473443: gds and gl_test",
-            "result": "clean GDS at 3x2, placement density 50; cocotb passes on the routed netlist"
+            "version": "main 3684851, LibreLane 3.0.14",
+            "command": "GitHub run 40431523830: gds and gl_test",
+            "result": "GDS at 3x2, placement density 50: the flow reports DRC, LVS and antenna passed; cocotb passes on the routed netlist"
           }
         },
         {
@@ -154,8 +154,8 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "PR #4 7bee2a9",
-            "command": "GitHub run 40213473443: precheck",
+            "version": "main 3684851",
+            "command": "GitHub run 40431523830: precheck",
             "result": "pass"
           }
         }
@@ -169,9 +169,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main, Yosys 0.33, 2026-10-25",
+            "version": "main 3684851, Yosys 0.33, 2026-10-27",
             "command": "make -C test timing",
-            "result": "worst path 12.57 ns at ss_100C_1v60 (6.17 ns typical), budget 20 ns, before wire delay"
+            "result": "worst path 12.45 ns at ss_100C_1v60 (6.04 ns typical), budget 20 ns, before wire delay"
           }
         },
         {
@@ -179,7 +179,7 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main, 2026-10-25",
+            "version": "main 3684851, 2026-10-27",
             "command": "make -C test gl",
             "result": "5 pass, 1 skipped by design"
           }
@@ -189,11 +189,11 @@
           "state": "doing",
           "evidence": {
             "label": "measured",
-            "version": "verify-audits with the event-loss fix, src/config.json, LibreLane 3.0.14, 2026-10-27",
-            "command": "local LibreLane run (librelane src/config.json)",
-            "result": "setup +6.87 ns typical, -0.98 ns nom_ss, -1.52 ns max_ss (51 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0"
+            "version": "src/ as on main 3684851, 2026-10-28, LibreLane 3.0.14, open_pdks 8afc8346",
+            "command": "GitHub run 40624722131: gds, signoff timing per corner",
+            "result": "setup +7.22 ns typical, -1.73 ns nom_ss, -2.30 ns max_ss (29 paths); hold met (worst +0.105 ns); DRC 0, LVS 0, antenna 0"
           },
-          "next": "accepted 2026-10-26: rated about 46 MHz at the slowest corner; shorten the boot-ROM fetch path (pc to ROM to read data) only if 50 MHz there is needed"
+          "next": "about 45 MHz at the slowest corner by GitHub's run (the 46 MHz accepted on 2026-10-27 came from a local run); shorten the slowest path only if 50 MHz there is needed"
         }
       ]
     },
@@ -203,7 +203,7 @@
         {
           "step": "shuttle submission",
           "state": "todo",
-          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 1.52 ns (rated about 46 MHz there)"
+          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 2.30 ns (about 45 MHz there)"
         },
         {
           "step": "first chip tested",
