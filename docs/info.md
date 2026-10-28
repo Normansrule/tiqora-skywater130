@@ -49,7 +49,7 @@ Each row names the revision it applies to and how it was measured.
 | ✅ **Gate level (main 3684851, 2026-10-27)** | cocotb on a sky130 netlist: 5 pass, 1 skipped by design (`make gl`) |
 | ✅ **Area (main 3684851, 2026-10-27)** | 50,965 µm², 1,191 flip-flops, 44% of the 3 × 2 die (`make area`); logic timing 12.45 ns at the slow corner, an estimate before wires (`make timing`) |
 | ✅ **Layout (main 3684851)** | 3 × 2, density 50: `gds`, `precheck` and `gl_test` pass; the flow reports DRC, LVS and antenna passed (GitHub run 40431523830, LibreLane 3.0.14) |
-| ⚠️ **Routed timing** | +6.87 ns setup slack at the typical corner, −1.52 ns at the worst slow corner (51 paths); hold met everywhere (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-27: DRC 0, LVS 0, antenna 0) |
+| ⚠️ **Routed timing** | +7.22 ns setup slack at the typical corner, −2.30 ns at the worst slow corner (29 paths), so about 45 MHz there; hold met everywhere (GitHub run 40624722131, src/ as on main 3684851: DRC 0, LVS 0, antenna 0) |
 | ⬜ **FPGA board (not yet)** | open-tool bitstream built and checked at the pins in simulation; not built with Vivado, not run on a real Basys 3 |
 | ⬜ **Silicon (not yet)** | no chip exists; it needs a submission to a Tiny Tapeout shuttle |
 

@@ -189,11 +189,11 @@
           "state": "doing",
           "evidence": {
             "label": "measured",
-            "version": "verify-audits with the event-loss fix, src/config.json, LibreLane 3.0.14, 2026-10-27",
-            "command": "local LibreLane run (librelane src/config.json)",
-            "result": "setup +6.87 ns typical, -0.98 ns nom_ss, -1.52 ns max_ss (51 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0"
+            "version": "src/ as on main 3684851, 2026-10-28, LibreLane 3.0.14, open_pdks 8afc8346",
+            "command": "GitHub run 40624722131: gds, signoff timing per corner",
+            "result": "setup +7.22 ns typical, -1.73 ns nom_ss, -2.30 ns max_ss (29 paths); hold met (worst +0.105 ns); DRC 0, LVS 0, antenna 0"
           },
-          "next": "accepted 2026-10-27: rated about 46 MHz at the slowest corner; shorten the boot-ROM fetch path (pc to ROM to read data) only if 50 MHz there is needed"
+          "next": "about 45 MHz at the slowest corner by GitHub's run (the 46 MHz accepted on 2026-10-27 came from a local run); shorten the slowest path only if 50 MHz there is needed"
         }
       ]
     },
@@ -203,7 +203,7 @@
         {
           "step": "shuttle submission",
           "state": "todo",
-          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 1.52 ns (rated about 46 MHz there)"
+          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 2.30 ns (about 45 MHz there)"
         },
         {
           "step": "first chip tested",

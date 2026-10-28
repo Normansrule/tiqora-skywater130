@@ -14,8 +14,8 @@ project:
   description:  "Nibble-serial RV32E microcontroller: QSPI flash + RAM, UART, 8 GPIO in/out, and Xpulse instructions for 20 ns event timestamps and cycle-exact deadline triggers"
   language:     "SystemVerilog"
   clock_hz:     50000000            # 50 MHz: routed setup timing is met at the
-                                    # typical corner and missed by 1.52 ns at the
-                                    # slowest (about 46 MHz there; README Status).
+                                    # typical corner and missed by 2.30 ns at the
+                                    # slowest (about 45 MHz there; README Status).
                                     # 20 ns timestamp resolution.
 
   tiles:        "3x2"

@@ -82,7 +82,7 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
 | **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
-| **Logic timing** | 12.45 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 3684851, 2026-10-27); routed: +6.87 ns typical, −1.52 ns at the worst slow corner (measured, local LibreLane 3.0.14, 2026-10-27) |
+| **Logic timing** | 12.45 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 3684851, 2026-10-27); routed: +7.22 ns typical, −2.30 ns at the worst slow corner (measured, GitHub run 40624722131) |
 | **Area** | 50,965 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 3684851, 2026-10-27, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile, the price this README has always used) |
 | **Verification** | 495 checks in 18 suites and 6 cocotb tests on RTL; the official RISC-V tests 37/37; cocotb on a sky130 gate netlist (measured, main 3684851, 2026-10-27) |
@@ -99,7 +99,7 @@ Where the Tiny Tapeout tile stands on the way to silicon. Each rung needs the on
 | Formally checked | ⬜ not done | no formal proofs exist for this design |
 | Synthesized | ✅ done | 50,965 µm², 1,191 flip-flops, 6,099 cells (`make -C test area`); gate-level simulation 5 pass, 1 skipped by design (`make -C test gl`; main 3684851, Yosys 0.33, 2026-10-27) |
 | Placed and routed | ✅ done | 3 × 2, placement density 50: the `gds` and `precheck` workflows pass on `main` (GitHub run 40431523830, LibreLane 3.0.14, commit 3684851; the flow reports DRC, LVS and antenna passed); gate-level cocotb on that netlist passes (`gl_test`, same run) |
-| Timing checked | ⚠️ misses at the slow corner | setup slack +6.87 ns at the typical corner (nom_tt_025C_1v80), −0.98 ns at nominal slow (nom_ss_100C_1v60) and −1.52 ns at the worst slow corner (max_ss_100C_1v60, 51 paths); hold met at every corner (worst +0.10 ns, fast corner) (measured, local LibreLane 3.0.14 run of `src/config.json`, 2026-10-27; the same run: routing DRC 0, Magic DRC 0, LVS 0, antenna 0, core utilisation 61%). At 20 ns (50 MHz) the chip meets timing at typical silicon and needs about 21.5 ns (≈46 MHz, an estimate from the slack; the maintainer accepted this slow-corner rating rather than more timing work, 2026-10-27) at the slowest corner. The `gds` workflow does not fail on timing |
+| Timing checked | ⚠️ misses at the slow corner | setup slack +7.22 ns at the typical corner (nom_tt_025C_1v80), −1.73 ns at nominal slow (nom_ss_100C_1v60) and −2.30 ns at the worst slow corner (max_ss_100C_1v60, 29 paths); hold met at every corner (worst +0.105 ns, fast corner); routing DRC 0, Magic DRC 0, LVS 0, antenna 0, core utilisation 61% (GitHub run 40624722131, 2026-10-28, LibreLane 3.0.14, open_pdks 8afc8346, src/ as on main 3684851). At 20 ns (50 MHz) the chip meets timing on typical silicon and needs about 22.3 ns (≈45 MHz, an estimate from the slack) at the slowest corner. The run also reports max-slew warnings on 2,083 pins and max-capacitance warnings on 13 nets at that corner. On 2026-10-27 the maintainer accepted a slow-corner rating of about 46 MHz, which came from a local run; GitHub's own run puts it at about 45 MHz. The `gds` workflow does not fail on timing |
 | Submitted, fabricated, measured | ⬜ not yet | no chip exists |
 | FPGA board | ⬜ not yet | the Basys 3 design passes in simulation and its open-flow bitstream passes at the pins in gate-level simulation; nothing has run on a board |
 
@@ -129,8 +129,8 @@ Where Tiqora stands on the way to silicon. Every ✅ and 🔄 below names the ve
 |  |  | Tiny Tapeout pre-flight | ✅ | pass; measured (main 3684851, `GitHub run 40431523830: precheck`) |
 | **sky130 timing** | `███████░░░` 2/3 | logic timing before wires, 50 MHz | ✅ | worst path 12.45 ns at ss_100C_1v60 (6.04 ns typical), budget 20 ns, before wire delay; measured (main 3684851, Yosys 0.33, 2026-10-27, `make -C test timing`) |
 |  |  | gate-level simulation on a sky130 netlist | ✅ | 5 pass, 1 skipped by design; measured (main 3684851, 2026-10-27, `make -C test gl`) |
-|  |  | signoff timing after routing | 🔄 | setup +6.87 ns typical, -0.98 ns nom_ss, -1.52 ns max_ss (51 paths); hold met (worst +0.10 ns); DRC 0, LVS 0, antenna 0; measured (verify-audits with the event-loss fix, src/config.json, LibreLane 3.0.14, 2026-10-27, `local LibreLane run (librelane src/config.json)`) |
-| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 1.52 ns (rated about 46 MHz there) |
+|  |  | signoff timing after routing | 🔄 | setup +7.22 ns typical, -1.73 ns nom_ss, -2.30 ns max_ss (29 paths); hold met (worst +0.105 ns); DRC 0, LVS 0, antenna 0; measured (src/ as on main 3684851, 2026-10-28, LibreLane 3.0.14, open_pdks 8afc8346, `GitHub run 40624722131: gds, signoff timing per corner`) |
+| **Silicon** | `░░░░░░░░░░` 0/2 | shuttle submission | ⬜ | next: the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 2.30 ns (about 45 MHz there) |
 |  |  | first chip tested | ⬜ | next: after the shuttle returns |
 
 ✅ done · 🔄 in progress · ⬜ not started · ⛔ blocked. Only measured results count as done.
