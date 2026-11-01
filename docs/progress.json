@@ -169,9 +169,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "main 3684851, Yosys 0.33, 2026-10-27",
+            "version": "branch timing-speed dc155dd, Yosys 0.33, 2026-11-01",
             "command": "make -C test timing",
-            "result": "worst path 12.45 ns at ss_100C_1v60 (6.04 ns typical), budget 20 ns, before wire delay"
+            "result": "worst path 10.94 ns at ss_100C_1v60 (4.80 ns typical), budget 20 ns, before wire delay (main 3684851: 12.45 ns / 6.04 ns)"
           }
         },
         {
@@ -186,14 +186,13 @@
         },
         {
           "step": "signoff timing after routing",
-          "state": "doing",
+          "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "src/ as on main 3684851, 2026-10-28, LibreLane 3.0.14, open_pdks 8afc8346",
-            "command": "GitHub run 40624722131: gds, signoff timing per corner",
-            "result": "setup +7.22 ns typical, -1.73 ns nom_ss, -2.30 ns max_ss (29 paths); hold met (worst +0.105 ns); DRC 0, LVS 0, antenna 0"
-          },
-          "next": "accepted 2026-11-01: rated about 45 MHz at the slowest corner; a faster clock needs the slowest paths shortened"
+            "version": "branch timing-speed dc155dd, 2026-11-01, LibreLane 3.0.14, open_pdks 8afc8346",
+            "command": "GitHub run 41346620996: gds, signoff timing per corner",
+            "result": "setup +8.96 ns typical, +0.85 ns nom_ss, +0.37 ns max_ss (0 violations); hold met (worst +0.107 ns); DRC 0, LVS 0, antenna 0; precheck and gl_test pass"
+          }
         }
       ]
     },
@@ -203,7 +202,7 @@
         {
           "step": "shuttle submission",
           "state": "todo",
-          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing misses the slowest corner by 2.30 ns (about 45 MHz there)"
+          "next": "the owner's step; a clean GDS and pre-flight exist at 3x2, and routed timing meets 50 MHz at every corner"
         },
         {
           "step": "first chip tested",
