@@ -58,7 +58,7 @@ module tb_tour;
             dut.u_soc.g_cpu.u_core.imem_req, dut.u_soc.g_cpu.u_core.imem_rvalid,
             dut.u_soc.g_cpu.u_core.imem_rdata, dut.u_soc.g_cpu.u_core.dmem_addr,
             dut.u_soc.g_cpu.u_core.dmem_req, dut.u_soc.u_qspi.state, dut.u_soc.u_qspi.waking,
-            dut.u_soc.u_qspi.wstep, dut.u_soc.u_sync.now, dut.u_soc.u_sync.u_cmp.deadline[0],
+            dut.u_soc.u_qspi.wstep, dut.u_soc.u_sync.now, (dut.u_soc.u_sync.u_cmp.deadline_m1[0] + 32'd1),
             dut.u_soc.u_sync.u_cmp.armed[0], dut.u_soc.u_sync.fifo_count[1], dut.u_soc.u_sync.fifo_count[0],
             dut.u_soc.u_sync.fifo_ovf, dut.u_soc.g_cpu.u_core.t_valid, dut.u_soc.g_cpu.u_core.t_rdata);
     end
@@ -72,7 +72,7 @@ module tb_tour;
     reg [31:0] deadline;
     always @(negedge clk) if (rst_n && !hang_phase) begin
         if (uo_out[0] && trig_rise < 0) begin
-            trig_rise = cycle; deadline = dut.u_soc.u_sync.u_cmp.deadline[0];
+            trig_rise = cycle; deadline = (dut.u_soc.u_sync.u_cmp.deadline_m1[0] + 32'd1);
             chk(dut.u_soc.u_sync.now == deadline, "TRIG0 pin rises on exactly the deadline tick");
             twait_at_deadline = (dut.u_soc.g_cpu.u_core.state == 3'd3);
         end
