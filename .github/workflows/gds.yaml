@@ -48,6 +48,31 @@ jobs:
           print("::endgroup::", file=sys.stderr)
           PY
 
+      # The slowest paths at the slowest corner, from the flow's own signoff STA reports,
+      # so speed work starts from GitHub's routed numbers rather than a local run.
+      - name: Slowest paths at the slowest corner
+        if: always()
+        shell: bash
+        run: |
+          set -uo pipefail
+          shopt -s nullglob
+          dirs=(runs/wokwi/*-openroad-stapostpnr)
+          if [ ${#dirs[@]} -eq 0 ]; then echo "no post-PnR STA directory"; ls runs/wokwi | tail -20; exit 0; fi
+          d="${dirs[-1]}"
+          echo "STA directory: $d"; ls "$d" | head -40
+          for c in max_ss_100C_1v60 nom_tt_025C_1v80; do
+            for f in "$d/$c/max.rpt" "$d/$c"/*max*.rpt; do
+              [ -f "$f" ] || continue
+              echo "::group::$f (startpoint / endpoint / slack, first 60 paths)"
+              grep -E '^(Startpoint|Endpoint|[[:space:]]*-?[0-9.]+[[:space:]]+slack)' "$f" | head -180
+              echo "::endgroup::"
+              echo "::group::$f (first two full paths)"
+              awk '/^Startpoint/{n++} n>=1 && n<=2' "$f" | head -400
+              echo "::endgroup::"
+              break
+            done
+          done
+
   precheck:
     needs: gds
     runs-on: ubuntu-24.04
