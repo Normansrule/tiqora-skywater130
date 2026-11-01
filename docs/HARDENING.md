@@ -13,10 +13,10 @@ Order matters. Do not skip to step 4.
 
 | Quantity | Value | Where it came from |
 |---|---|---|
-| Flip-flops | **1,373** flattened, 1,369 by module | `yosys -s syn/synth_check.ys`, exact |
-| Generic cells before technology mapping | 10,317 | same run |
+| Flip-flops | **1,191** flattened | `yosys -s syn/synth_check.ys`, exact (main 3684851, Yosys 0.33, 2026-10-27) |
+| Generic cells before technology mapping | 7,416 | same run |
 | Latches inferred | **0** | the `select -assert-none t:$dlatch` in that script |
-| Self-checking simulation assertions | 207, all passing | `cd test && make sim` |
+| Self-checking simulation assertions | 495 in 18 suites, all passing | `cd test && make sim` (main 3684851, 2026-10-27) |
 | Verilator `-Wall` | clean | `cd test && make lint` |
 
 If your synthesis run disagrees with the flip-flop count by more than a few,
@@ -61,7 +61,7 @@ design, it will simulate perfectly and then fail to harden.
 ```bash
 cd test
 make lint         # Verilator -Wall, must be clean
-make sim          # 226 checks across twelve suites
+make sim          # 495 checks across eighteen suites, plus the recorded tour
 make area         # real sky130 area: cells, flip-flops, fit per tile size
 cd ..
 ```
@@ -164,7 +164,7 @@ floorplan log. What you want:
 - The core utilisation percentage. Above roughly 60–70% on a tile, detailed
   routing starts failing.
 
-Compare the flip-flop count against the 1,373 this repository measured. It
+Compare the flip-flop count against the 1,191 this repository measured. It
 should match closely; a large difference means a configuration difference.
 
 **Timing** — `reports/signoff/*sta*.rpt` or the `openroad` STA logs. Look
@@ -244,8 +244,8 @@ Useful KLayout operations:
 ### Measuring the area yourself
 
 In KLayout, **Tools → Measure** gives you the bounding box. Compare against
-the tile pitch: sky130 tiles are about 161 µm by 112 µm for 1x1, and a 2x2
-is roughly 334 µm by 226 µm. If your design's bounding box is comfortably
+the tile pitch: sky130 tiles are about 161 µm by 112 µm for 1x1, a 2x2
+is roughly 335 µm by 226 µm, and Tiqora's 3x2 is 508.76 µm by 225.76 µm. If your design's bounding box is comfortably
 inside, consider whether a smaller tile count would have fit — each step
 down is real money.
 
@@ -280,7 +280,7 @@ skipped.
 ## Step 7 — before you submit
 
 - [ ] `make lint` clean
-- [ ] `make sim` — 226 checks passing
+- [ ] `make sim` — 495 checks passing, plus the recorded tour (15)
 - [ ] `make area` — area and flip-flop count as expected
 - [ ] Hardening completes with no DRC and no LVS violations
 - [ ] Setup worst negative slack positive at the clock in `info.yaml`
