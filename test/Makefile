@@ -69,7 +69,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: equiv warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -319,6 +319,14 @@ tour:
 	python3 ../sw/mktour.py tour.hex > /dev/null
 	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
 	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
+
+# Formal proofs (Yosys SAT, k-induction) that the timing unit's speed rewrites change
+# nothing: the timebase's carry look-ahead and the comparator's stored deadline - 1
+# against the plain versions they replaced, every input sequence from reset.
+# Needs a native Yosys, so it is not part of `sim` (CI's test job has none).
+equiv:
+	cd .. && yosys -q -s syn/timebase_equiv.ys > /dev/null && echo "timebase look-ahead: proven equivalent"
+	cd .. && yosys -q -s syn/compare_equiv.ys > /dev/null && echo "comparator deadline - 1: proven equivalent"
 
 # The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;

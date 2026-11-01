@@ -31,6 +31,9 @@
   "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement at 2x2 uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25).",
   "SYNTH_EXCLUDED_CELL_FILE": "dir::synth_exclude.cells",
 
+  "//": "PNR_EXCLUDED_CELL_FILE - cells placement, CTS and the resizer may not use: the PDK's drc_exclude.cells plus the clkdlybuf4s* delay cells, which the resizer otherwise uses as ordinary buffers (see the file).",
+  "PNR_EXCLUDED_CELL_FILE": "dir::pnr_exclude.cells",
+
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
   "CLOCK_PERIOD": 20,

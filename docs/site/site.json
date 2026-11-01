@@ -293,9 +293,9 @@
     },
     {
      "rung": "Timing checked",
-     "state": "fail",
-     "word": "missed at the slow corner",
-     "why": "Routed: setup slack +7.22 ns at the typical corner, -1.73 ns at nominal slow and -2.30 ns at the worst slow corner (29 paths); hold met at every corner (GitHub run 40624722131, src/ as on main 3684851, LibreLane 3.0.14; DRC 0, LVS 0, antenna 0). At 50 MHz it meets timing on typical silicon; the slowest corner needs about 22.3 ns, about 45 MHz (an estimate from the slack). Accepted as the slow-corner rating on 2026-11-01."
+     "state": "measured",
+     "word": "met at every corner",
+     "why": "Routed: setup slack +8.96 ns at the typical corner, +0.85 ns at nominal slow and +0.37 ns at the worst slow corner; hold met at every corner (GitHub run 41346620996, branch timing-speed dc155dd, LibreLane 3.0.14; DRC 0, LVS 0, antenna 0). 50 MHz is met at every corner: about 51 MHz at the slowest and 90 MHz typical (estimates from the slack). Main 3684851 missed the slowest corner by 2.30 ns (about 45 MHz, run 40624722131)."
     },
     {
      "rung": "Submitted to a shuttle",
