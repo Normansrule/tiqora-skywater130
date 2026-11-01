@@ -193,7 +193,7 @@
             "command": "GitHub run 40624722131: gds, signoff timing per corner",
             "result": "setup +7.22 ns typical, -1.73 ns nom_ss, -2.30 ns max_ss (29 paths); hold met (worst +0.105 ns); DRC 0, LVS 0, antenna 0"
           },
-          "next": "about 45 MHz at the slowest corner by GitHub's run (the 46 MHz accepted on 2026-10-27 came from a local run); shorten the slowest path only if 50 MHz there is needed"
+          "next": "accepted 2026-11-01: rated about 45 MHz at the slowest corner; a faster clock needs the slowest paths shortened"
         }
       ]
     },
