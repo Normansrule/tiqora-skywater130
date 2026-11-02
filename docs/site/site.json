@@ -295,7 +295,7 @@
      "rung": "Timing checked",
      "state": "measured",
      "word": "met at every corner",
-     "why": "Routed: setup slack +8.96 ns at the typical corner, +0.85 ns at nominal slow and +0.37 ns at the worst slow corner; hold met at every corner (GitHub run 41346620996, branch timing-speed dc155dd, LibreLane 3.0.14; DRC 0, LVS 0, antenna 0). 50 MHz is met at every corner: about 51 MHz at the slowest and 90 MHz typical (estimates from the slack). Main 3684851 missed the slowest corner by 2.30 ns (about 45 MHz, run 40624722131)."
+     "why": "Routed: setup slack +8.40 ns at the typical corner, +1.97 ns at nominal slow and +1.57 ns at the worst slow corner; hold met at every corner (GitHub run 41474828936, branch timing-speed-2 6966205, LibreLane 3.0.14; DRC 0, LVS 0, antenna 0). 50 MHz is met at every corner: about 54 MHz at the slowest (estimate from the slack); at the typical corner the logic alone allows about 114 MHz (estimate). Main 3684851 missed the slowest corner by 2.30 ns (about 45 MHz, run 40624722131)."
     },
     {
      "rung": "Submitted to a shuttle",

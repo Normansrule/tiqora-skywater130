@@ -49,7 +49,7 @@ Each row names the revision it applies to and how it was measured.
 | ✅ **Gate level (main 3684851, 2026-10-27)** | cocotb on a sky130 netlist: 5 pass, 1 skipped by design (`make gl`) |
 | ✅ **Area (main 3684851, 2026-10-27)** | 50,965 µm², 1,191 flip-flops, 44% of the 3 × 2 die (`make area`); logic timing 12.45 ns at the slow corner, an estimate before wires (`make timing`) |
 | ✅ **Layout (main 3684851)** | 3 × 2, density 50: `gds`, `precheck` and `gl_test` pass; the flow reports DRC, LVS and antenna passed (GitHub run 40431523830, LibreLane 3.0.14) |
-| ✅ **Routed timing** | +8.96 ns setup slack at the typical corner, +0.37 ns at the worst slow corner: 50 MHz met at every corner (about 51 MHz at the slowest and 90 MHz typical, estimates from the slack); hold met everywhere (GitHub run 41346620996, branch timing-speed dc155dd: DRC 0, LVS 0, antenna 0). Before the speed work: −2.30 ns at the slowest corner, about 45 MHz (GitHub run 40624722131, main 3684851) |
+| ✅ **Routed timing** | +8.40 ns setup slack at the typical corner, +1.57 ns at the worst slow corner: 50 MHz met at every corner (about 54 MHz at the slowest, estimate from the slack; the typical-corner logic alone allows about 114 MHz, estimate); hold met everywhere (GitHub run 41474828936, branch timing-speed-2 6966205: DRC 0, LVS 0, antenna 0). Before the speed work: −2.30 ns at the slowest corner, about 45 MHz (GitHub run 40624722131, main 3684851) |
 | ⬜ **FPGA board (not yet)** | open-tool bitstream built and checked at the pins in simulation; not built with Vivado, not run on a real Basys 3 |
 | ⬜ **Silicon (not yet)** | no chip exists; it needs a submission to a Tiny Tapeout shuttle |
 
