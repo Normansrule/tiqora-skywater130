@@ -294,6 +294,14 @@ register-file write, clock by clock.
 
 <sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=nibble-add). With reduced motion on, it is a still of the whole window.</sub>
 
+The adder itself, drawn as logic and lit by the same recording: the operands' nibbles, the XOR
+gates that turn B into its complement for a subtract, the carry-in multiplexer, the carry
+flip-flop and the write into the destination, for that add and then for 0x0000000F − 0x00000010.
+
+![Recorded from the RTL: the core's 4-bit adder drawn as logic, lit clock by clock, through add x11, x9, x10 and then a subtract whose borrow runs through all eight nibbles](docs/images/schematic_adder.svg)
+
+<sub>Recorded from `make -C test tour`, checked against the RTL's equations and Python's own arithmetic, and drawn by `docs/tools/adder_schematic.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/#ad-h). With reduced motion on, it is a still of the add's last nibble.</sub>
+
 That sounds slow until you remember that instructions arrive over a 4-bit QSPI bus, at least
 16 clocks per word. An 8-clock execute isn't the bottleneck. The same idea lets TinyQV (Michael
 Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent implementation.

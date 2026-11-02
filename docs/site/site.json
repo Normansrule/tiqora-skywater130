@@ -17,7 +17,8 @@
  "data": {
   "die": "docs/site/data/die.json",
   "routed": "docs/site/data/routed.json",
-  "schematic": "docs/site/data/schematic.json"
+  "schematic": "docs/site/data/schematic.json",
+  "adder": "docs/site/data/adder.json"
  },
  "pages": [
   {

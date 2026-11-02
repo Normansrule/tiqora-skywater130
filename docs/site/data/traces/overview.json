@@ -426,7 +426,7 @@
    "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
    "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
    "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
-   "test/tb_tour.sv": "1aa8a93ea07f813cb897ec885f89327b28b45f60453dc6c876e00bcc828334e1"
+   "test/tb_tour.sv": "4680ea060dbddc6a24a32070bcf7dcb1c6d8b3e5da72e5a0efd6340336067301"
   },
   "testbench": "test/tb_tour.sv"
  },

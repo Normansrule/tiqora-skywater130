@@ -88,6 +88,26 @@ module tb_tour;
         if (ptail > 0) ptail = ptail - 1;
     end
 
+    // ---------------------------------------------------------------- adder probe
+    // docs/tools/adder_schematic.py draws the core's 4-bit adder from these:
+    // one line per clock while an add or sub (OP, funct3 0) is in its pass,
+    // the eight clocks in which the result is computed a nibble at a time.
+    integer afd = 0;
+    reg [8*256:1] aprobefile;
+    initial if ($value$plusargs("APROBE=%s", aprobefile)) begin
+        afd = $fopen(aprobefile, "w");
+        $fwrite(afd, "cycle phase ir sub rs1_n rs2_n a_n b_n bx_n cin carry_q cout sum_n rf_we rf_wd\n");
+    end
+    always @(negedge clk) if (afd != 0 && rst_n && dut.u_soc.g_cpu.u_core.in_pass &&
+                              dut.u_soc.g_cpu.u_core.ir[6:0] == 7'h33 && dut.u_soc.g_cpu.u_core.ir[14:12] == 3'd0 &&
+                              dut.u_soc.g_cpu.u_core.ir[25] == 1'b0)
+        $fwrite(afd, "%0d %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", cycle,
+            dut.u_soc.g_cpu.u_core.phase, dut.u_soc.g_cpu.u_core.ir, dut.u_soc.g_cpu.u_core.sub,
+            dut.u_soc.g_cpu.u_core.rs1_n, dut.u_soc.g_cpu.u_core.rs2_n, dut.u_soc.g_cpu.u_core.a_n,
+            dut.u_soc.g_cpu.u_core.b_n, dut.u_soc.g_cpu.u_core.bx_n, dut.u_soc.g_cpu.u_core.cin,
+            dut.u_soc.g_cpu.u_core.carry_q, dut.u_soc.g_cpu.u_core.cout, dut.u_soc.g_cpu.u_core.sum_n,
+            dut.u_soc.g_cpu.u_core.rf_we, dut.u_soc.g_cpu.u_core.rf_wd);
+
     // ---------------------------------------------------------------- monitors
     integer trig_rise = -1, trig_width = 0, twait_at_deadline = -1, twait_exit = -1;
     integer ill_rise = -1, halt_rise = -1, ovf_rise = -1, max_count = 0;

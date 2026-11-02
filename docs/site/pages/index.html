@@ -1,4 +1,4 @@
-<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 3x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "routed", "deadline", "site", "board", "schematic"], "scripts": ["die", "layout", "labs", "board", "schematic"]} -->
+<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 3x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "routed", "deadline", "site", "board", "schematic", "adder"], "scripts": ["die", "layout", "labs", "board", "schematic"]} -->
 <section class="reveal bleed" id=reveal aria-labelledby=hero-h>
  <div class=reveal-stage>
   <div class=reveal-copy>
@@ -87,6 +87,13 @@ TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs
  {{static:schematic}}
 </section>
 <script>TQSchem.mount(document.getElementById("schem"), DATA("schematic"));</script>
+
+<section aria-labelledby=ad-h>
+ <h2 id=ad-h>Thirty-two bits through a four-bit adder</h2>
+ <p>Tiqora's core has one adder, four bits wide. Every register in the file turns by one nibble each clock, so at phase <em>k</em> both operands present nibble <em>k</em> on the same four wires; the adder sums them, the result nibble is written into the destination as it passes, and the carry waits in a flip-flop for the next clock. Eight clocks make a 32-bit add. A subtract is the same adder: B goes through four XOR gates to become its complement, and the carry starts at 1 instead of 0.</p>
+ {{static:adder}}
+</section>
+<script>TQSchem.mount(document.getElementById("adder"), DATA("adder"));</script>
 
 <section aria-labelledby=board-h>
  <h2 id=board-h>On a Basys 3, simulated</h2>
