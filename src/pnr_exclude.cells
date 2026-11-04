@@ -8,8 +8,15 @@
 # on the slowest path. Banning them makes it buffer with buf_* instead. Hold
 # repair keeps the dlygate4sd* cells it is meant to use.
 #
+# buf_1 and clkbuf_1 are banned for the same reason: the resizer built its
+# fan-out trees from them, and with six to ten loads each one is slow (slews
+# of 0.7 to 1.0 ns, about 0.9 ns per stage at the slowest corner). The
+# slowest path in GitHub run 41474828936 spent about 6 ns of its 20 ns in
+# such chains. Synthesis may still use them; only repair is steered to
+# buf_2 and larger.
+#
 # Regenerate: git -C open_pdks show 8afc8346:sky130/openlane/sky130_fd_sc_hd/drc_exclude.cells,
-#             then append the clkdlybuf4s* lines below.
+#             then append the clkdlybuf4s* and buf_1/clkbuf_1 lines below.
 sky130_fd_sc_hd__a2111oi_0
 sky130_fd_sc_hd__a21boi_0
 sky130_fd_sc_hd__and2_0
@@ -69,3 +76,5 @@ sky130_fd_sc_hd__clkdlybuf4s25_1
 sky130_fd_sc_hd__clkdlybuf4s25_2
 sky130_fd_sc_hd__clkdlybuf4s50_1
 sky130_fd_sc_hd__clkdlybuf4s50_2
+sky130_fd_sc_hd__buf_1
+sky130_fd_sc_hd__clkbuf_1

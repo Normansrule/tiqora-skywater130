@@ -123,15 +123,7 @@ module qspi_ctrl #(
     logic [3:0]  dummy_cnt;
     logic        cur_dev, cur_we;
     logic [2:0]  desel_cnt;
-    // The stream position is kept as the word address last read (seq_last)
-    // and the + 4 is added on the way out of the register. Adding it on the
-    // way in put a 22-bit carry chain behind the core's fetch-address select,
-    // the slowest path in the chip (GitHub run 41474828936); from the
-    // register it is settled long before the address it is compared with.
-    // seq_last + 4 equals the old register at every clock (make equiv).
-    logic [23:0] seq_last;           // word address of the last streamed read
     logic [23:0] next_seq_addr;      // address the stream is positioned at
-    assign next_seq_addr = seq_last + 24'd4;
     logic        stream_open;        // flash chip select is low and streaming
     logic [1:0]  wr_start;
     logic [2:0]  wr_bytes;
@@ -208,7 +200,7 @@ module qspi_ctrl #(
             dummy_cnt     <= 4'd0;
             cur_dev       <= 1'b0;
             cur_we        <= 1'b0;
-            seq_last      <= 24'hFFFFFB;   // + 4 = FFFFFF: matches no aligned address
+            next_seq_addr <= 24'hFFFFFF;
             stream_open   <= 1'b0;
             desel_cnt     <= 3'd0;
             rvalid        <= 1'b0;
@@ -313,7 +305,7 @@ module qspi_ctrl #(
                                 rvalid        <= 1'b1;
                                 state         <= Q_IDLE;
                                 stream_open   <= 1'b1;
-                                seq_last      <= {addr[23:2], 2'b00};
+                                next_seq_addr <= {addr[23:2], 2'b00} + 24'd4;
                             end else begin
                                 state <= Q_END;
                             end
@@ -330,7 +322,7 @@ module qspi_ctrl #(
                     if (!cur_dev && !cur_we) begin
                         // leave the flash stream open and remember where it is
                         stream_open   <= 1'b1;
-                        seq_last      <= {addr[23:2], 2'b00};
+                        next_seq_addr <= {addr[23:2], 2'b00} + 24'd4;
                     end else begin
                         cs_flash_n  <= 1'b1;
                         cs_ram_n    <= 1'b1;
