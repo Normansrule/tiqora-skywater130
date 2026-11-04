@@ -1,4 +1,4 @@
-<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 3x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "routed", "deadline", "site", "board"], "scripts": ["die", "layout", "labs", "board"]} -->
+<!-- {"title": "Overview", "description": "Tiqora, a nibble-serial RISC-V microcontroller with hardware timing instructions for a Tiny Tapeout 3x2 tile: what it is, what goes in and out, and what is proven.", "data": ["tours", "die", "routed", "deadline", "site", "board", "schematic", "adder"], "scripts": ["die", "layout", "labs", "board", "schematic", "pace"]} -->
 <section class="reveal bleed" id=reveal aria-labelledby=hero-h>
  <div class=reveal-stage>
   <div class=reveal-copy>
@@ -19,6 +19,28 @@
 </section>
 <script>TQLayout.hero(document.getElementById("reveal"), DATA("routed"));</script>
 
+
+<section aria-labelledby=num-h>
+ <h2 id=num-h class=sr>In numbers</h2>
+ <div class=stats>
+  <div class=stat><b>{{die:tile_r}}<small>µm</small></b><span>all of it: one Tiny Tapeout 3x2 tile, the size the shuttle sets.</span></div>
+  <div class=stat><b>{{die:cells}}</b><span>standard cells, synthesized with each block kept whole. <span class="ev measured">measured</span></span></div>
+  <div class=stat><b>0<small>ticks late</small></b><span>TRIG0 rises on exactly the tick software armed. <span class="ev recorded">recorded</span> <a href="tours.html#seq=deadline">the deadline tour</a></span></div>
+  <div class=stat><b>8<small>clocks</small></b><span>for every 32-bit add: one 4-bit adder, eight nibbles. <span class="ev recorded">recorded</span> <a href="tours.html#seq=nibble-add">the add, nibble by nibble</a></span></div>
+ </div>
+</section>
+
+<section class="layers bleed dark-band" id=layers aria-labelledby=layers-h>
+ <div class=layers-stick>
+  <div class=chapter>
+   <p class=eyebrow>Inside the tile</p>
+   <h2 id=layers-h>Built up in layers</h2>
+   <p class=lede>Cells in the silicon, and four layers of metal above them, each running across the one below. Here is the routed chip, taken apart layer by layer.</p>
+  </div>
+  {{static:stack}}
+ </div>
+</section>
+<script>TQLayout.stack(document.getElementById("layers"), DATA("routed"));</script>
 
 <section class="zoom bleed" id=zoom aria-labelledby=zoom-h>
  <div class=zoom-stage>
@@ -62,28 +84,57 @@ TQDie.mount(document.getElementById("zoom"), DATA("die"), {
 });
 </script>
 
-<section aria-labelledby=num-h>
- <h2 id=num-h class=sr>In numbers</h2>
- <div class=stats>
-  <div class=stat><b>{{die:tile_r}}<small>µm</small></b><span>all of it: one Tiny Tapeout 3x2 tile, the size the shuttle sets.</span></div>
-  <div class=stat><b>{{die:cells}}</b><span>standard cells, synthesized with each block kept whole. <span class="ev measured">measured</span></span></div>
-  <div class=stat><b>0<small>ticks late</small></b><span>TRIG0 rises on exactly the tick software armed. <span class="ev recorded">recorded</span> <a href="tours.html#seq=deadline">the deadline tour</a></span></div>
-  <div class=stat><b>8<small>clocks</small></b><span>for every 32-bit add: one 4-bit adder, eight nibbles. <span class="ev recorded">recorded</span> <a href="tours.html#seq=nibble-add">the add, nibble by nibble</a></span></div>
+<section class=cv aria-labelledby=io-h>
+ <div class=chapter>
+  <p class=eyebrow>The system</p>
+  <h2 id=io-h>What goes in, and what comes out</h2>
+  <p class=lede>Code and data stream in four bits at a time from a memory Pmod. Pin edges come in to be timestamped. Pulses, flags and serial bytes go out.</p>
  </div>
+ <figure class=hero-art aria-label="Data flow through Tiqora">{{static:flow}}</figure>
 </section>
 
-<section aria-labelledby=dl-h>
- <h2 id=dl-h>Fire a deadline</h2>
- <p>Software arms a channel with a tick number and moves on. When the timebase reaches that tick, the pin rises on exactly that clock, with no software in the path. Pick how far ahead to arm it.</p>
+<section class=cv aria-labelledby=dl-h>
+ <div class=chapter>
+  <p class=eyebrow>Time, as an operand</p>
+  <h2 id=dl-h>Fire a pin on the exact tick</h2>
+  <p class=lede>Software arms a channel with a tick number and moves on. When the timebase reaches that tick, the pin rises on exactly that clock, with no software in the path. Pick how far ahead to arm it.</p>
+ </div>
  <div class=deadline id=deadline><p class=small>The lab needs JavaScript. <a href="tours.html#seq=deadline">The recorded deadline tour</a> shows the same moment, cycle by cycle.</p></div>
 </section>
 <script>
 TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs: DATA("site").clock_ns, resume: [10, 17], recordedHref: "tours.html#seq=deadline" });
 </script>
 
-<section aria-labelledby=board-h>
- <h2 id=board-h>On a Basys 3, simulated</h2>
- <p>The same RTL on a Digilent Basys 3, with the flash and RAMs emulated in block RAM and the board's USB port as Tiqora's serial port. Press play, or drag through the run: button presses are timestamped to the 20 ns tick, LED 0 blinks from the timebase, and a typed key comes back.</p>
+<section class="cv sub" aria-labelledby=sc-h>
+ <h2 id=sc-h>How the pin knows: the logic, lit by the recording</h2>
+ <p>This is the whole of one deadline channel. Software leaves one number behind, the deadline minus one. Every clock, a subtractor takes it away from the timebase; the moment the answer stops being negative, an AND gate with the <em>armed</em> flip-flop lets <em>fire</em> through, and a small counter holds the pin high for the pulse width: eight clocks, unless software sets another. Firing one clock early is deliberate: the pin comes out of a register, so it changes on the next edge, which is exactly the deadline.</p>
+ {{static:schematic}}
+ <div class=figure-pair>
+  <figure><img src="{{img:docs/images/deterministic_timing.svg}}" width=1100 height=400 alt="Trigger pulses landing on every deadline tick, above a qualitative illustration of interrupt jitter" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Upper row checked at the pin by <code>make soc</code>; the lower row is an illustration, not a measurement.</span></figcaption></figure>
+ </div>
+</section>
+<script>TQSchem.mount(document.getElementById("schem"), DATA("schematic"));</script>
+
+<section class=cv aria-labelledby=ad-h>
+ <div class=chapter>
+  <p class=eyebrow>Small by design</p>
+  <h2 id=ad-h>Thirty-two bits through a four-bit adder</h2>
+  <p class=lede>Tiqora reads its registers four bits at a time, so one 4-bit adder does every 32-bit add in eight clocks, and its register file takes about half the area of a conventional one (11,322 against 21,837 µm², measured with Yosys on sky130).</p>
+ </div>
+ <div class=figure-pair>
+  <figure><img src="{{img:docs/images/regfile_rotation.svg}}" width=1000 height=470 alt="The rotating register file: every register shifts by one nibble each clock, and the read port only ever sees one 4-bit slot" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Area numbers in it are measured with Yosys against the sky130 library; drawn by <code>docs/tools/animations.py</code></span></figcaption></figure>
+ </div>
+ <p>Tiqora's core has one adder, four bits wide. Every register in the file turns by one nibble each clock, so at phase <em>k</em> both operands present nibble <em>k</em> on the same four wires; the adder sums them, the result nibble is written into the destination as it passes, and the carry waits in a flip-flop for the next clock. Eight clocks make a 32-bit add. A subtract is the same adder: B goes through four XOR gates to become its complement, and the carry starts at 1 instead of 0.</p>
+ {{static:adder}}
+</section>
+<script>TQSchem.mount(document.getElementById("adder"), DATA("adder"));</script>
+
+<section class=cv aria-labelledby=board-h>
+ <div class=chapter>
+  <p class=eyebrow>Run it</p>
+  <h2 id=board-h>On a Basys 3, simulated</h2>
+  <p class=lede>The same RTL on a Digilent Basys 3, with the flash and RAMs emulated in block RAM and the board's USB port as Tiqora's serial port. Press play, or drag through the run: button presses are timestamped to the 20 ns tick, LED 0 blinks from the timebase, and a typed key comes back.</p>
+ </div>
  <div class=board-live><div class=scroll id=board tabindex=0 role=region aria-label="The simulated board; scrolls sideways on narrow screens">
   <img src="{{img:docs/images/explorer/fpga.png}}" width=880 height=560 alt="The simulated Basys 3 at the end of the demo run: the terminal lists each button press with its tick" style="display:block;max-width:100%;height:auto">
  </div></div>
@@ -91,15 +142,51 @@ TQLabs.deadline(document.getElementById("deadline"), DATA("deadline"), { clockNs
 </section>
 <script>TQBoard.mount(document.getElementById("board"), DATA("board"));</script>
 
-<section aria-labelledby=io-h>
- <h2 id=io-h>What goes in and what comes out</h2>
- <figure class=hero-art aria-label="Data flow through Tiqora">{{static:flow}}</figure>
+<section class=cv aria-labelledby=reels-h>
+ <div class=chapter>
+  <p class=eyebrow>Recorded, not drawn</p>
+  <h2 id=reels-h>Watch it run</h2>
+  <p class=lede>The whole tour program, from reset to HALT, replayed from the simulation: a cursor sweeps the recording from caption to caption. Each tour below steps through one moment of it, clock by clock.</p>
+ </div>
+ {{static:motion_feature}}
+ <h3 id=tours>Six recorded tours</h3>
+ <p>Each one is a window of one simulation of the real top module, <code>tt_um_normansrule_tiqora</code>, with flash and RAM models on its pins. Play the 10 to 25 second summary, or step through every change.</p>
+ <ol class=tourgrid id=tourcards></ol>
 </section>
+<script>
+(function () {
+  const b = document.getElementById("reel-pause"), box = document.getElementById("reels");
+  b.addEventListener("click", () => {
+    const on = b.getAttribute("aria-pressed") !== "true";
+    b.setAttribute("aria-pressed", on);
+    b.textContent = on ? "Play the animations" : "Pause the animations";
+    box.toggleAttribute("data-paused", on);
+  });
+})();
+</script>
+<script>
+(function () {
+  const box = document.getElementById("tourcards");
+  DATA("tours").forEach(f => {
+    const li = document.createElement("li");
+    li.innerHTML = "<a></a><p></p><span class=small></span>";
+    li.querySelector("a").href = "tours.html#seq=" + f.id;
+    li.querySelector("a").textContent = f.title;
+    li.querySelector("p").textContent = f.summary;
+    li.querySelector(".small").textContent = (f.cycles[1] - f.cycles[0] + 1).toLocaleString("en-US") + " cycles, " + f.captions + " captions";
+    box.append(li);
+  });
+})();
+</script>
+<noscript><p>The tour list needs JavaScript; the tours are also in <code>docs/site/data/traces/</code> as JSON.</p></noscript>
 
-<section aria-labelledby=q>
- <h2 id=q>Seven questions</h2>
+<section class=cv aria-labelledby=q>
+ <div class=chapter>
+  <p class=eyebrow>The details</p>
+  <h2 id=q>Seven questions</h2>
+ </div>
  <div class=qa><h3>What is Tiqora?</h3><div>
-  <p>A complete microcontroller for one Tiny Tapeout design slot of 2 × 2 tiles: an RV32E core (the 32-bit RISC-V base with 16 registers, here x1 to x15 plus x0), a QSPI memory controller, a UART, GPIO and a timing unit, behind the 24 Tiny Tapeout pins. It runs C compiled with Clang. The core is <em>nibble-serial</em>: one 4-bit adder does every 32-bit add in eight clocks, which is what makes the processor small.</p>
+  <p>A complete microcontroller for one Tiny Tapeout design slot of 3 × 2 tiles: an RV32E core (the 32-bit RISC-V base with 16 registers, here x1 to x15 plus x0), a QSPI memory controller, a UART, GPIO and a timing unit, behind the 24 Tiny Tapeout pins. It runs C compiled with Clang. The core is <em>nibble-serial</em>: one 4-bit adder does every 32-bit add in eight clocks, which is what makes the processor small.</p>
   <p>Eleven <b>Xpulse</b> instructions on RISC-V's custom-0 opcode read the timebase, arm deadlines, wait for them and pop timestamped events. Example: <code>tarm x1, x0</code> then <code>twait x1</code> makes TRIG0 rise on tick x1 exactly, with no software in the path. <a href="tours.html#seq=deadline">See it happen</a>.</p>
  </div></div>
  <div class=qa><h3>What enters?</h3><div>
@@ -128,48 +215,3 @@ make -C test sim                 <span class=c># every suite</span></pre>
   <p>Or change the operands of the recorded add in the <a href="tours.html#seq=nibble-add">nibble lab</a> and watch the eight phases recompute.</p>
  </div></div>
 </section>
-
-<section aria-labelledby=reels-h>
- <h2 id=reels-h>Watch it run</h2>
- <p>Every recorded tour, playing on its own: a cursor sweeps each window from caption to caption and uncovers the waveform the simulation wrote. Nothing here is computed in the browser.</p>
- {{static:motion}}
- <h3>Three drawings that move</h3>
- <p>These explain an idea rather than replay a recording, so they are marked <span class="ev illustrative">illustrative</span>. They follow your system's reduced-motion setting, not the pause button.</p>
- <div class=reels>
-  <figure class=reel><img src="{{img:docs/images/regfile_rotation.svg}}" width=1000 height=470 alt="The rotating register file: every register shifts by one nibble each clock, and the read port only ever sees one 4-bit slot" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Area numbers in it are measured with Yosys against the sky130 library; drawn by <code>docs/tools/animations.py</code></span></figcaption></figure>
-  <figure class=reel><img src="{{img:docs/images/nibble_add.svg}}" width=1200 height=420 alt="0x1234ABCD plus 0x0FED5432 through one 4-bit adder, one nibble per clock, the carry held in a flip-flop" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><a href="tours.html#seq=nibble-add">The same add, recorded from the RTL</a></figcaption></figure>
-  <figure class=reel><img src="{{img:docs/images/deterministic_timing.svg}}" width=1100 height=400 alt="Trigger pulses landing on every deadline tick, above a qualitative illustration of interrupt jitter" style="display:block;width:100%;height:auto;border-radius:12px"><figcaption><span class=small>Upper row checked at the pin by <code>make soc</code>; the lower row is an illustration, not a measurement.</span></figcaption></figure>
- </div>
-</section>
-<script>
-(function () {
-  const b = document.getElementById("reel-pause"), box = document.getElementById("reels");
-  b.addEventListener("click", () => {
-    const on = b.getAttribute("aria-pressed") !== "true";
-    b.setAttribute("aria-pressed", on);
-    b.textContent = on ? "Play the animations" : "Pause the animations";
-    box.toggleAttribute("data-paused", on);
-  });
-})();
-</script>
-
-<section aria-labelledby=tours>
- <h2 id=tours>Six recorded tours, and the whole run</h2>
- <p>Each one is a window of one simulation of the real top module, <code>tt_um_normansrule_tiqora</code>, with flash and RAM models on its pins. Play the 10 to 25 second summary, or step through every change.</p>
- <ol class=tourlist id=tourcards></ol>
-</section>
-<script>
-(function () {
-  const box = document.getElementById("tourcards");
-  DATA("tours").forEach(f => {
-    const li = document.createElement("li");
-    li.innerHTML = "<a></a><p></p><span class=small></span>";
-    li.querySelector("a").href = "tours.html#seq=" + f.id;
-    li.querySelector("a").textContent = f.title;
-    li.querySelector("p").textContent = f.summary;
-    li.querySelector(".small").textContent = (f.cycles[1] - f.cycles[0] + 1).toLocaleString("en-US") + " cycles, " + f.captions + " captions";
-    box.append(li);
-  });
-})();
-</script>
-<noscript><p>The tour list needs JavaScript; the tours are also in <code>docs/site/data/traces/</code> as JSON.</p></noscript>

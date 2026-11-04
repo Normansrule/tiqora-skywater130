@@ -64,6 +64,50 @@ module tb_tour;
     end
     always @(posedge clk) if (rst_n) cycle <= cycle + 1;
 
+    // ---------------------------------------------------------------- schematic probe
+    // docs/tools/schematic.py draws deadline channel 0's logic from these
+    // values: every wire it lights is read here, inside sync_compare, on the
+    // same falling edge as the trace above. One line per clock while the
+    // channel is being armed, is armed, or is counting its pulse out, and
+    // for three clocks after, so the drawing can show the pin falling.
+    integer pfd = 0, ptail = 0;
+    reg [8*256:1] probefile;
+    initial if ($value$plusargs("PROBE=%s", probefile)) begin
+        pfd = $fopen(probefile, "w");
+        $fwrite(pfd, "cycle now arm_we arm_sel arm_time arm_m1 dm1 reached fire armed pcnt pw pulse_we trig pin\n");
+    end
+    always @(negedge clk) if (pfd != 0 && rst_n) begin
+        if (dut.u_soc.u_sync.u_cmp.arm_we || dut.u_soc.u_sync.u_cmp.armed[0] ||
+            dut.u_soc.u_sync.u_cmp.pulse_cnt[0] != 0 || dut.u_soc.u_sync.u_cmp.g_cmp[0].fire) ptail = 4;
+        if (ptail > 0) $fwrite(pfd, "%0d %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", cycle,
+            dut.u_soc.u_sync.now, dut.u_soc.u_sync.u_cmp.arm_we, dut.u_soc.u_sync.u_cmp.arm_sel,
+            dut.u_soc.u_sync.u_cmp.arm_time, dut.u_soc.u_sync.u_cmp.arm_time_m1, dut.u_soc.u_sync.u_cmp.deadline_m1[0],
+            dut.u_soc.u_sync.u_cmp.g_cmp[0].reached, dut.u_soc.u_sync.u_cmp.g_cmp[0].fire,
+            dut.u_soc.u_sync.u_cmp.armed[0], dut.u_soc.u_sync.u_cmp.pulse_cnt[0], dut.u_soc.u_sync.u_cmp.pw,
+            dut.u_soc.u_sync.u_cmp.pulse_we, dut.u_soc.u_sync.u_cmp.trig[0], uo_out[0]);
+        if (ptail > 0) ptail = ptail - 1;
+    end
+
+    // ---------------------------------------------------------------- adder probe
+    // docs/tools/adder_schematic.py draws the core's 4-bit adder from these:
+    // one line per clock while an add or sub (OP, funct3 0) is in its pass,
+    // the eight clocks in which the result is computed a nibble at a time.
+    integer afd = 0;
+    reg [8*256:1] aprobefile;
+    initial if ($value$plusargs("APROBE=%s", aprobefile)) begin
+        afd = $fopen(aprobefile, "w");
+        $fwrite(afd, "cycle phase ir sub rs1_n rs2_n a_n b_n bx_n cin carry_q cout sum_n rf_we rf_wd\n");
+    end
+    always @(negedge clk) if (afd != 0 && rst_n && dut.u_soc.g_cpu.u_core.in_pass &&
+                              dut.u_soc.g_cpu.u_core.ir[6:0] == 7'h33 && dut.u_soc.g_cpu.u_core.ir[14:12] == 3'd0 &&
+                              dut.u_soc.g_cpu.u_core.ir[25] == 1'b0)
+        $fwrite(afd, "%0d %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n", cycle,
+            dut.u_soc.g_cpu.u_core.phase, dut.u_soc.g_cpu.u_core.ir, dut.u_soc.g_cpu.u_core.sub,
+            dut.u_soc.g_cpu.u_core.rs1_n, dut.u_soc.g_cpu.u_core.rs2_n, dut.u_soc.g_cpu.u_core.a_n,
+            dut.u_soc.g_cpu.u_core.b_n, dut.u_soc.g_cpu.u_core.bx_n, dut.u_soc.g_cpu.u_core.cin,
+            dut.u_soc.g_cpu.u_core.carry_q, dut.u_soc.g_cpu.u_core.cout, dut.u_soc.g_cpu.u_core.sum_n,
+            dut.u_soc.g_cpu.u_core.rf_we, dut.u_soc.g_cpu.u_core.rf_wd);
+
     // ---------------------------------------------------------------- monitors
     integer trig_rise = -1, trig_width = 0, twait_at_deadline = -1, twait_exit = -1;
     integer ill_rise = -1, halt_rise = -1, ovf_rise = -1, max_count = 0;

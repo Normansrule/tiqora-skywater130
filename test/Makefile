@@ -270,12 +270,18 @@ docs:
 	cd .. && python3 docs/tools/motion.py --check
 	cd .. && python3 docs/tools/routed_map.py --check
 	cd .. && python3 docs/tools/routed_map.py --mutants
+	cd .. && python3 docs/tools/schematic.py --check
+	cd .. && python3 docs/tools/schematic.py --mutants
+	cd .. && python3 docs/tools/adder_schematic.py --check
+	cd .. && python3 docs/tools/adder_schematic.py --mutants
 
 # the explorer site: atlas against the RTL (needs Yosys), tours against a fresh
 # simulation, then the site itself
 explorer:
 	@if command -v yosys > /dev/null; then cd .. && python3 docs/tools/atlas.py --check; else echo "explorer: yosys not found, atlas check skipped"; fi
 	cd .. && python3 docs/tools/traces.py --check
+	cd .. && python3 docs/tools/schematic.py --check-sim
+	cd .. && python3 docs/tools/adder_schematic.py --check-sim
 	cd .. && python3 docs/tools/check_site.py
 
 # The README's "minimal program", compiled VERBATIM from README.md, run on the
@@ -318,7 +324,7 @@ adjust:
 tour:
 	python3 ../sw/mktour.py tour.hex > /dev/null
 	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
-	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
+	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +PROBE=schematic_probe.txt +APROBE=adder_probe.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
 
 # Formal proofs (Yosys SAT, k-induction) that the timing unit's speed rewrites change
 # nothing: the timebase's carry look-ahead and the comparator's stored deadline - 1
