@@ -65,8 +65,8 @@ jobs:
             echo "::group::$c: startpoint / endpoint / slack, first 60 paths"
             awk '/^Startpoint|^Endpoint|slack \(/{print; if (/slack \(/ && ++n >= 60) exit}' "$f"
             echo "::endgroup::"
-            echo "::group::$c: the worst path in full"
-            awk '/^Startpoint/{n++} n==1' "$f"
+            echo "::group::$c: in full, the worst path from each of the first 4 startpoints"
+            awk '/^Startpoint/{sp=$2; show=!(sp in seen) && k<4; if (show) {seen[sp]=1; k++}} show' "$f"
             echo "::endgroup::"
           done
           exit 0
