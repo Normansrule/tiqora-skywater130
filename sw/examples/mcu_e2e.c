@@ -19,9 +19,6 @@
 #include "../tiqora.h"
 #include "../tp_io.h"
 
-#ifndef BAUD_DIV
-#define BAUD_DIV 434                 // simulation builds pass 8
-#endif
 
 static uint32_t buf[256];            // .bss: lives in RAM A
 

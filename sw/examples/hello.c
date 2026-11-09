@@ -4,9 +4,6 @@
 #include "../tiqora.h"
 #include "../tp_io.h"
 
-#ifndef BAUD_DIV
-#define BAUD_DIV 434                 // make run passes 8 to keep simulation fast
-#endif
 
 int main(void) {
     UART_DIV = BAUD_DIV;

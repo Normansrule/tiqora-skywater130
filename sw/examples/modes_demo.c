@@ -17,9 +17,6 @@
 #include "../tiqora_modes.h"
 #include "../tp_io.h"
 
-#ifndef BAUD_DIV
-#define BAUD_DIV 434
-#endif
 
 static const uint32_t img_a[4] = {0x10204080u, 0xFF00FF00u, 0x7F7F7F7Fu, 0x01020304u};
 static const uint32_t img_b[4] = {0x30604020u, 0x01FF0101u, 0x80808080u, 0xFFFEFDFCu};

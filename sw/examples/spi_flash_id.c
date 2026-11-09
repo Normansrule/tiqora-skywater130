@@ -5,9 +5,6 @@
 #include "../tp_io.h"
 #include "../tp_spi.h"
 #include "../tp_printf.h"
-#ifndef BAUD_DIV
-#define BAUD_DIV 434
-#endif
 int main(void) {
     UART_DIV = BAUD_DIV;
     GPIO_SEL = 0x10;                 // only UART TX keeps its function

@@ -111,5 +111,8 @@ LED 0 toggling every 40,000 ticks), and nothing has run on a real board.
 
 Verified here: Verilator lint of the whole FPGA design, the three board-level simulations above,
 Yosys synthesis for Artix-7, and the Tcl scripts' flow (run with stand-ins for Vivado's
-commands). Not yet run: Vivado itself and a real board — the first `make bit` and `make prog` are
+commands). `make bit-open` (no Vivado: Yosys, nextpnr-xilinx, prjxray) builds a bitstream and
+fails unless nextpnr checked the 50 MHz clock at 50 MHz; nextpnr ignores the XDC's
+`create_generated_clock`, so the open flow adds `create_clock -period 20` on the `clk50` net.
+Not yet run: Vivado itself and a real board — the first `make bit` and `make prog` are
 the real test. Report what they print.

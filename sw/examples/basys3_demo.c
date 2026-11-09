@@ -12,14 +12,11 @@
 #include "../tp_io.h"
 #include "../tp_printf.h"
 
-#ifndef BAUD_DIV
-#define BAUD_DIV 434                     // 115200 baud at 50 MHz
-#endif
 #ifndef HALF_SECOND
-#define HALF_SECOND 25000000u            // timebase ticks (50 MHz)
+#define HALF_SECOND (TP_TICKS_PER_SECOND / 2)
 #endif
 #ifndef DEBOUNCE
-#define DEBOUNCE 500000u                 // 10 ms
+#define DEBOUNCE (TP_TICKS_PER_SECOND / 100)   // 10 ms
 #endif
 
 static const char *const names[8] = {"", "", "", "", "BTNL", "BTNR", "BTNU", ""};

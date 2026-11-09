@@ -107,6 +107,8 @@ FASM_PYTHON ?= python3
 UNISIMS    ?= XilinxUnisimLibrary/verilog/src
 YSHARE      = $(shell $(YOSYS)-config --datdir)
 PART        = xc7a35tcpg236-1
+CLK50_NS    = 20.000
+CLK50_MHZ   = $(shell python3 -c 'print("%.2f" % (1000/$(CLK50_NS)))')
 ABS         = $(abspath $(RTL) $(FPGA))
 
 bit-open: flash.mem
@@ -114,11 +116,15 @@ bit-open: flash.mem
 	{ echo 'read_verilog -sv -DSYNTHESIS $(DEFS) $(ABS)'; cat open/map.ys; echo 'tee -o utilization.txt stat'; echo 'write_json basys3.json'; } > build/open/bit.ys
 	cp flash.mem build/open/flash.mem
 	cd build/open && $(YOSYS) -q -l synth.log bit.ys > /dev/null
-	$(NEXTPNR) --chipdb $(CHIPDB) --xdc basys3.xdc --json build/open/basys3.json --fasm build/open/basys3.fasm --seed 1 -l build/open/pnr.log
+	@# nextpnr-xilinx ignores create_generated_clock (Vivado's clk50 line in
+	@# basys3.xdc), so the open flow gets clk50 as a plain 20 ns clock on its net.
+	{ cat basys3.xdc; echo 'create_clock -period $(CLK50_NS) -name clk50 [get_nets clk50]'; } > build/open/open.xdc
+	$(NEXTPNR) --chipdb $(CHIPDB) --xdc build/open/open.xdc --json build/open/basys3.json --fasm build/open/basys3.fasm --seed 1 -l build/open/pnr.log
 	$(FASM_PYTHON) $(PRJXRAY)/utils/fasm2frames.py --db-root $(PRJXRAY_DB) --part $(PART) --sparse build/open/basys3.fasm build/open/basys3.frames
 	$(PRJXRAY)/build/tools/xc7frames2bit --part_file $(PRJXRAY_DB)/$(PART)/part.yaml --part_name $(PART) \
 	    --frm_file build/open/basys3.frames --output_file build/open/tiqora_basys3.bit
-	@grep "Max frequency" build/open/pnr.log | tail -1
+	@grep "Max frequency for clock *'clk50'" build/open/pnr.log | tail -1 | tee build/open/fmax.txt
+	@grep -q "PASS at $(CLK50_MHZ) MHz" build/open/fmax.txt || { echo "FAIL  clk50 was not checked at $(CLK50_MHZ) MHz"; exit 1; }
 	@echo "build/open/tiqora_basys3.bit: open-source flow, not Vivado sign-off"
 
 # The same synthesis as bit-open, but with the C self-test in flash; the
