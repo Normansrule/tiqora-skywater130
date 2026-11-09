@@ -69,7 +69,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: formal formal-mutants warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -323,6 +323,17 @@ tour:
 # The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
 # editing one copy without updating both manifests fails here.
+# Formal proofs of the shared timing unit (syn/formal/): an armed deadline is
+# never missed, a pin never rises without a cause, a pulse is exactly PW wide,
+# and in free run the pin rises on exactly the programmed tick across the 2^32
+# wrap. Unbounded (k-induction), with Yosys + yosys-smtbmc + z3.
+formal:
+	cd .. && sh syn/formal/run.sh
+
+# Break the timing unit eight ways; every break must make `make formal` fail.
+formal-mutants:
+	cd .. && python3 syn/formal/mutants.py
+
 shared:
 	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: $$(wc -l < docs/shared_timing.sha256) files match the manifest"
 
