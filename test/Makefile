@@ -69,7 +69,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: gcc warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -246,6 +246,23 @@ gl:
 	python3 -c "s=open('/tmp/tp_gl.v').read();m='module tt_um_normansrule_tiqora(';s=s.replace(m,m+'VPWR, VGND, ',1);i=s.index(');',s.index(m));open('gate_level_netlist.v','w').write(s[:i+2]+'\n  input VPWR;\n  input VGND;'+s[i+2:])"
 	rm -rf sim_build/gl results.xml
 	$(MAKE) GATES=yes PDK_ROOT=$(PDK_ROOT) COMPILE_ARGS="-g2012 -DGL_TEST -DFUNCTIONAL -DSIM -DUNIT_DELAY=#1" results.xml
+
+# The same C self-test built with a stock GNU toolchain (sw/Makefile finds the
+# prefix) instead of Zig's Clang: it must pass rv32e_check.py and print exactly
+# what the Zig build prints, on the same RTL.
+GNU_CROSS ?= $(firstword $(foreach p,riscv32-unknown-elf- riscv64-unknown-elf- riscv-none-elf-,$(if $(shell command -v $(p)gcc 2>/dev/null),$(p))))
+GNU_ARCH  ?= -march=rv32e -mabi=ilp32e
+gcc:
+	@test -n "$(GNU_CROSS)" || { echo "FAIL  no GNU RISC-V compiler on PATH (install gcc-riscv64-unknown-elf)"; exit 1; }
+	@$(GNU_CROSS)gcc --version | head -1
+	@$(MAKE) -s run PROG=../sw/examples/c_selftest.c RUNTAG=zig > gcc_zig.txt 2>&1 || { cat gcc_zig.txt; exit 1; }
+	@$(MAKE) -s run PROG=../sw/examples/c_selftest.c RUNTAG=gnu ZCC="$(GNU_CROSS)gcc $(GNU_ARCH) -nostdlib" ZOBJ=$(GNU_CROSS)objcopy > gcc_gnu.txt 2>&1 || { cat gcc_gnu.txt; exit 1; }
+	@python3 -c "import sys; \
+	  body=lambda f: [l for l in open(f).read().split('--- Tiqora (simulated RTL',1)[-1].split('\n')[1:] if not l.startswith(('---','tb_run'))]; \
+	  z,g=body('gcc_zig.txt'),body('gcc_gnu.txt'); ok=len(z)>3 and z==g; \
+	  print('  %s  GNU build passes rv32e_check' % ('ok  ' if 'all runnable on Tiqora' in open('gcc_gnu.txt').read() else 'FAIL')); \
+	  print('  %s  GNU and Zig builds print the same %d lines' % ('ok  ' if ok else 'FAIL', len(z))); \
+	  bad=(not ok)+('all runnable on Tiqora' not in open('gcc_gnu.txt').read()); print('2 checks, %d failures' % bad); sys.exit(1 if bad else 0)"
 
 # tp_printf, checked character for character against Python's % operator
 printf:

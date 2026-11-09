@@ -14,7 +14,12 @@ OBJCOPY  = python3 -m ziglang objcopy
 OBJDUMP  = true
 ARCH     = -mabi=ilp32e
 else
-CROSS   ?= riscv32-unknown-elf-
+# The first GNU RISC-V prefix on PATH. Any of them builds RV32E with the -march
+# below; Ubuntu and Debian package riscv64-unknown-elf-, xPack ships riscv-none-elf-.
+CROSS   ?= $(firstword $(foreach p,riscv32-unknown-elf- riscv64-unknown-elf- riscv-none-elf-,$(if $(shell command -v $(p)gcc 2>/dev/null),$(p))))
+ifeq ($(CROSS),)
+$(error no GNU RISC-V compiler found (riscv32-unknown-elf-gcc, riscv64-unknown-elf-gcc or riscv-none-elf-gcc); install one, set CROSS=..., or use TOOLCHAIN=zig)
+endif
 CC       = $(CROSS)gcc
 OBJCOPY  = $(CROSS)objcopy
 OBJDUMP  = $(CROSS)objdump

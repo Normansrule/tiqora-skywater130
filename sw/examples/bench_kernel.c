@@ -5,9 +5,6 @@
 #include <stdint.h>
 #include "../tiqora.h"
 #include "../tp_io.h"
-#ifndef BAUD_DIV
-#define BAUD_DIV 434
-#endif
 static uint8_t data[64];
 static uint32_t crc32(const uint8_t *p, int n) {
     uint32_t c = 0xFFFFFFFFu;

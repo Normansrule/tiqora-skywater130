@@ -9,10 +9,26 @@
 #define GPIO_SEL     TP_PERIPH[2]   // 1 = pin shows its built-in function
 #define UART_DATA    TP_PERIPH[3]
 #define UART_STAT    TP_PERIPH[4]   // bit 0 TX_BUSY, 1 RX_VALID, 2 RX_OVERRUN
-#define UART_DIV     TP_PERIPH[5]   // clocks per bit; 434 = 115,200 baud at 50 MHz
+#define UART_DIV     TP_PERIPH[5]   // clocks per bit: BAUD_DIV below
 #define GPIO_SET     TP_PERIPH[6]
 #define GPIO_CLR     TP_PERIPH[7]
 #define GPIO_XOR     TP_PERIPH[8]
+
+// The chip's clock, the one number the software has to know. The timebase
+// ticks once per clock (TP_TICKS_PER_SECOND) and the UART divides it down.
+// 50 MHz is the Tiny Tapeout and Basys 3 clock; sw/demoboard/tpboot.py runs
+// the chip at 9,600 x 434 = 4,166,400 Hz, so build for it with
+// -DTP_CLK_HZ=4166400 -DTP_BAUD=9600 (the divider stays 434).
+#ifndef TP_CLK_HZ
+#define TP_CLK_HZ            50000000u
+#endif
+#ifndef TP_BAUD
+#define TP_BAUD              115200u
+#endif
+#define TP_TICKS_PER_SECOND  TP_CLK_HZ
+#ifndef BAUD_DIV                    // simulation builds pass -DBAUD_DIV=8
+#define BAUD_DIV             ((TP_CLK_HZ + TP_BAUD / 2) / TP_BAUD)   // 434 at 50 MHz
+#endif
 
 // Output pins by built-in function, for GPIO_SEL (1 = built-in function, 0 = GPIO).
 #define PIN_TRIG0      (1u << 0)

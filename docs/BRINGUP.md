@@ -73,7 +73,8 @@ counter wrap-around (`python3 sw/demoboard/test_tpboot.py`); the board-specific 
 calls and pin numbers, which come from the SDK's own pin map — can only be confirmed on a board.
 
 Trade-off: at 4.17 MHz your program runs 12× slower than at 50 MHz, and any timing constants
-in it scale the same way.
+in it scale the same way. Write them from `TP_TICKS_PER_SECOND` (in `sw/tp_io.h`) and build with
+`-DTP_CLK_HZ=4166400 -DTP_BAUD=9600`: a second stays a second, and `BAUD_DIV` stays 434.
 
 ### b. Full speed, with a USB-UART adapter
 

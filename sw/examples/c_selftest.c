@@ -9,9 +9,6 @@
 #include "../tiqora.h"
 #include "../tp_io.h"
 
-#ifndef BAUD_DIV
-#define BAUD_DIV 434                 // simulation builds pass 8
-#endif
 
 int32_t  counter = 41;               // .data: must arrive as 41
 uint32_t zeroed[4];                  // .bss:  must arrive as zero

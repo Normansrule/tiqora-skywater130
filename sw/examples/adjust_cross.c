@@ -11,9 +11,6 @@
 #include "../tiqora.h"
 #include "../tp_io.h"
 #include "../tp_printf.h"
-#ifndef BAUD_DIV
-#define BAUD_DIV 434
-#endif
 int main(void) {
     UART_DIV = BAUD_DIV;
     // A: forward step past an armed deadline
