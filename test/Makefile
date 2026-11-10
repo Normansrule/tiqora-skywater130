@@ -320,20 +320,21 @@ tour:
 	@iverilog -g2012 -o tb_tour.vvp -s tb_tour $(RTL) qspi_model.sv tb_tour.sv > tb_tour.log 2>&1 || { grep -v sorry tb_tour.log; exit 1; }
 	vvp -n tb_tour.vvp +TRACE=tour_trace.txt +ECALL=$$(python3 ../sw/mktour.py --ecall) > tour_out.txt; s=$$?; cat tour_out.txt; [ $$s -eq 0 ] && grep -q "TOUR TRACE PASSED" tour_out.txt
 
-# The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
-# Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
-# editing one copy without updating both manifests fails here.
-# Formal proofs of the shared timing unit (syn/formal/): an armed deadline is
-# never missed, a pin never rises without a cause, a pulse is exactly PW wide,
-# and in free run the pin rises on exactly the programmed tick across the 2^32
-# wrap. Unbounded (k-induction), with Yosys + yosys-smtbmc + z3.
+# Formal proofs (syn/formal/): an armed deadline is never missed, a pin never
+# rises without a cause, a pulse is exactly PW wide, in free run the pin rises on
+# exactly the programmed tick across the 2^32 wrap, the event queue keeps every
+# event in order or flags overflow, and the rotating register file returns what
+# was written. Unbounded (k-induction), with Yosys + yosys-smtbmc + z3.
 formal:
 	cd .. && sh syn/formal/run.sh
 
-# Break the timing unit eight ways; every break must make `make formal` fail.
+# Break the timing unit, event queue and register file 14 ways; every break must make `make formal` fail.
 formal-mutants:
 	cd .. && python3 syn/formal/mutants.py
 
+# The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
+# Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
+# editing one copy without updating both manifests fails here.
 shared:
 	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: $$(wc -l < docs/shared_timing.sha256) files match the manifest"
 

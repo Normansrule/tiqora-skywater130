@@ -95,12 +95,12 @@ instruction, ending in `37 of 37 official RV32E tests pass`.
 ## Formal proofs of the timing unit
 
 ```bash
-make formal          # prove sync_timebase and sync_compare for every input sequence, about 30 s
-make formal-mutants  # break the RTL 8 ways and confirm each proof fails
+make formal          # prove the timing unit, event queue and register file for every input sequence, about 40 s
+make formal-mutants  # break the RTL 14 ways and confirm each proof fails
 ```
 
 `make formal` needs Yosys and z3 (`apt install yosys z3`). It splices the properties in
-`syn/formal/*.svh` into scratch copies of `src/sync/`, so the shared RTL is never edited.
+`syn/formal/*.svh` into scratch copies of `src/sync/` and `src/core/`, so the RTL is never edited.
 Each proof is a bounded check of 8 clocks from reset, then 4-step induction, which covers
 every reachable state rather than only the cases a testbench happens to drive. What is
 proven:
@@ -108,7 +108,11 @@ proven:
 - the timebase counts by exactly one per clock, and a time adjustment lands exactly;
 - a comparator channel fires only when it is armed and its deadline is reached, then disarms;
 - every output pulse has a cause and lasts exactly the programmed width;
-- in free-running time, a deadline armed at least 2 ticks ahead fires on that exact tick.
+- in free-running time, a deadline armed at least 2 ticks ahead fires on that exact tick;
+- the event queue behaves exactly like a reference queue: events come out whole and in arrival
+  order, and the overflow flag is set exactly when an event was dropped;
+- the rotating register file returns a nibble written at phase k at phase k on every later lap,
+  until it is overwritten, and register 0 always reads zero.
 
 ## The software side
 
