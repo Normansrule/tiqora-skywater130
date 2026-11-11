@@ -322,13 +322,14 @@ tour:
 
 # Formal proofs (syn/formal/): an armed deadline is never missed, a pin never
 # rises without a cause, a pulse is exactly PW wide, in free run the pin rises on
-# exactly the programmed tick across the 2^32 wrap, the event queue keeps every
+# exactly the programmed tick across the 2^32 wrap, a pin edge is captured a
+# constant 3 clocks later, the event queue keeps every
 # event in order or flags overflow, and the rotating register file returns what
 # was written. Unbounded (k-induction), with Yosys + yosys-smtbmc + z3.
 formal:
 	cd .. && sh syn/formal/run.sh
 
-# Break the timing unit, event queue and register file 14 ways; every break must make `make formal` fail.
+# Break the timing unit, capture, event queue and register file 19 ways; every break must make `make formal` fail.
 formal-mutants:
 	cd .. && python3 syn/formal/mutants.py
 
