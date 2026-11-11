@@ -274,6 +274,8 @@ docs:
 	cd .. && python3 docs/tools/schematic.py --mutants
 	cd .. && python3 docs/tools/cards.py --check
 	cd .. && python3 docs/tools/cards.py --mutants
+	cd .. && python3 docs/tools/site_lint.py
+	cd .. && python3 docs/tools/site_lint.py --mutants
 	cd .. && python3 docs/tools/adder_schematic.py --check
 	cd .. && python3 docs/tools/adder_schematic.py --mutants
 
