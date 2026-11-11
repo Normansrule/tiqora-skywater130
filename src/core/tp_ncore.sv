@@ -178,64 +178,96 @@ module tp_ncore #(
     assign is_shift = is_alu && (f3 == 3'b001 || f3 == 3'b101);
     assign is_slt   = is_alu && (f3 == 3'b010 || f3 == 3'b011);
 
-    // Which register specifiers the instruction actually uses. RV32E has
-    // x0..x15, so a specifier with bit 4 set is illegal.
-    logic uses_rd, uses_rs1, uses_rs2;
+    // Legality is decided once, on the fetched word, and held in legal_q
+    // beside ir. Decoding it from ir every clock put the whole opcode / funct
+    // compare tree in front of the register-file write enables and the
+    // 32-bit mar/mdr/state updates: the slowest path in the chip after the
+    // fetch-select fix (GitHub run 43081019916, 13 gate levels plus two
+    // fan-out trees). ir only changes where legal_q is loaded, and mode only
+    // changes on MSET's XP clock, never in the FETCH clock that loads ir,
+    // so legal_q always equals the decode of ir; make equiv proves it.
+    function automatic logic insn_legal(input logic [31:0] w
 `ifdef TIQORA_MODES
-    assign uses_rd  = is_lui || is_auipc || is_jal || is_jalr || is_ld || is_alu ||
-                      (is_xp && (f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
-                                 f3 == tp_pkg::TF3_STAT || f3 == tp_pkg::TF3_MARK)) ||
-                      acc_writes;
-    assign uses_rs1 = is_jalr || is_br || is_ld || is_st || is_alu ||
-                      (is_xp && !(f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
-                                  f3 == tp_pkg::TF3_STAT)) ||
-                      is_gpu || (is_tpu && (f3 == tp_pkg::UF3_MAC || f3 == tp_pkg::UF3_SET));
-    assign uses_rs2 = is_br || is_st || is_op || (is_xp && f3 == tp_pkg::TF3_ARM) ||
-                      is_gpu || (is_tpu && f3 == tp_pkg::UF3_MAC);
-`else
-    assign uses_rd  = is_lui || is_auipc || is_jal || is_jalr || is_ld || is_alu ||
-                      (is_xp && (f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
-                                 f3 == tp_pkg::TF3_STAT || f3 == tp_pkg::TF3_MARK));
-    assign uses_rs1 = is_jalr || is_br || is_ld || is_st || is_alu ||
-                      (is_xp && !(f3 == tp_pkg::TF3_TIME || f3 == tp_pkg::TF3_POP ||
-                                  f3 == tp_pkg::TF3_STAT));
-    assign uses_rs2 = is_br || is_st || is_op || (is_xp && f3 == tp_pkg::TF3_ARM);
+                                        , input logic [1:0] md
 `endif
-
-    logic legal;
-    always_comb begin
-        unique case (1'b1)
-            is_lui, is_auipc, is_jal, is_fence: legal = 1'b1;
-            is_jalr: legal = (f3 == 3'b000);
-            is_br:   legal = (f3 != 3'b010) && (f3 != 3'b011);
-            is_ld:   legal = (f3 == 3'b000) || (f3 == 3'b001) || (f3 == 3'b010) ||
-                             (f3 == 3'b100) || (f3 == 3'b101);
-            is_st:   legal = (f3 == 3'b000) || (f3 == 3'b001) || (f3 == 3'b010);
-            is_opi:  legal = (f3 == 3'b001) ? (f7 == 7'h00)
-                           : (f3 == 3'b101) ? (f7 == 7'h00 || f7 == 7'h20)
-                           : 1'b1;
-            is_op:   legal = (f7 == 7'h00) ||
-                             (f7 == 7'h20 && (f3 == 3'b000 || f3 == 3'b101));
-            is_sys:  legal = (f3 == 3'b000);          // ECALL / EBREAK
-            is_xp:   legal = (f3 != tp_pkg::TF3_CTL) ||
-                             (f7 == tp_pkg::TCTL_ADJ) || (f7 == tp_pkg::TCTL_RATE) ||
-                             (f7 == tp_pkg::TCTL_CFG) || (f7 == tp_pkg::TCTL_PW);
-            default: legal = 1'b0;
-        endcase
+                                        );
+        logic [6:0] o, g7;
+        logic       unused_w;        // rd and some rs bits are not read
+        logic [2:0] g3;
+        logic lui, auipc, jal, jalr, br, ld, st, opi, op, fence, sys, xp, alu;
+        logic u_rd, u_rs1, u_rs2, ok;
+`ifdef TIQORA_MODES
+        logic mx, gpu, tpu, accw;
+`endif
+        o  = w[6:0];
+        g3 = w[14:12];
+        unused_w = ^w;
+        g7 = w[31:25];
+        lui   = (o == tp_pkg::OPC_LUI);
+        auipc = (o == tp_pkg::OPC_AUIPC);
+        jal   = (o == tp_pkg::OPC_JAL);
+        jalr  = (o == tp_pkg::OPC_JALR);
+        br    = (o == tp_pkg::OPC_BRANCH);
+        ld    = (o == tp_pkg::OPC_LOAD);
+        st    = (o == tp_pkg::OPC_STORE);
+        opi   = (o == tp_pkg::OPC_OPIMM);
+        op    = (o == tp_pkg::OPC_OP);
+        fence = (o == tp_pkg::OPC_FENCE);
+        sys   = (o == tp_pkg::OPC_SYSTEM);
+        xp    = (o == tp_pkg::OPC_CUSTOM0);
+        alu   = op || opi;
+        // Which register specifiers the instruction actually uses. RV32E has
+        // x0..x15, so a specifier with bit 4 set is illegal.
+        u_rd  = lui || auipc || jal || jalr || ld || alu ||
+                (xp && (g3 == tp_pkg::TF3_TIME || g3 == tp_pkg::TF3_POP ||
+                        g3 == tp_pkg::TF3_STAT || g3 == tp_pkg::TF3_MARK));
+        u_rs1 = jalr || br || ld || st || alu ||
+                (xp && !(g3 == tp_pkg::TF3_TIME || g3 == tp_pkg::TF3_POP ||
+                         g3 == tp_pkg::TF3_STAT));
+        u_rs2 = br || st || op || (xp && g3 == tp_pkg::TF3_ARM);
+`ifdef TIQORA_MODES
+        mx   = (o == tp_pkg::OPC_CUSTOM1);
+        gpu  = (o == tp_pkg::OPC_CUSTOM2);
+        tpu  = (o == tp_pkg::OPC_CUSTOM3);
+        accw = mx || gpu || (tpu && (g3 == tp_pkg::UF3_RD || g3 == tp_pkg::UF3_RELU));
+        u_rd  = u_rd || accw;
+        u_rs1 = u_rs1 || gpu || (tpu && (g3 == tp_pkg::UF3_MAC || g3 == tp_pkg::UF3_SET));
+        u_rs2 = u_rs2 || gpu || (tpu && g3 == tp_pkg::UF3_MAC);
+`endif
+        if (lui || auipc || jal || fence) ok = 1'b1;
+        else if (jalr) ok = (g3 == 3'b000);
+        else if (br)   ok = (g3 != 3'b010) && (g3 != 3'b011);
+        else if (ld)   ok = (g3 == 3'b000) || (g3 == 3'b001) || (g3 == 3'b010) ||
+                            (g3 == 3'b100) || (g3 == 3'b101);
+        else if (st)   ok = (g3 == 3'b000) || (g3 == 3'b001) || (g3 == 3'b010);
+        else if (opi)  ok = (g3 == 3'b001) ? (g7 == 7'h00)
+                          : (g3 == 3'b101) ? (g7 == 7'h00 || g7 == 7'h20)
+                          : 1'b1;
+        else if (op)   ok = (g7 == 7'h00) ||
+                            (g7 == 7'h20 && (g3 == 3'b000 || g3 == 3'b101));
+        else if (sys)  ok = (g3 == 3'b000);          // ECALL / EBREAK
+        else if (xp)   ok = (g3 != tp_pkg::TF3_CTL) ||
+                            (g7 == tp_pkg::TCTL_ADJ) || (g7 == tp_pkg::TCTL_RATE) ||
+                            (g7 == tp_pkg::TCTL_CFG) || (g7 == tp_pkg::TCTL_PW);
+        else           ok = 1'b0;
 `ifdef TIQORA_MODES
         // MGET: every field but rd zero. MSET: rs1 zero, imm a defined mode.
         // GPU and TPU instructions only in their own mode.
-        if (is_mx)  legal = (f3 == tp_pkg::MF3_GET) ? (ir[31:15] == 17'd0)
-                          : (f3 == tp_pkg::MF3_SET) ? (ir[19:15] == 5'd0 &&
-                                                      ir[31:20] <= 12'd2)
-                          : 1'b0;
-        if (is_gpu) legal = (mode == tp_pkg::MODE_GPU) && (f7 == 7'h00);
-        if (is_tpu) legal = (mode == tp_pkg::MODE_TPU) && (f7 == 7'h00) &&
-                            (f3 <= tp_pkg::UF3_SET);
+        if (mx)  ok = (g3 == tp_pkg::MF3_GET) ? (w[31:15] == 17'd0)
+                    : (g3 == tp_pkg::MF3_SET) ? (w[19:15] == 5'd0 &&
+                                                w[31:20] <= 12'd2)
+                    : 1'b0;
+        if (gpu) ok = (md == tp_pkg::MODE_GPU) && (g7 == 7'h00);
+        if (tpu) ok = (md == tp_pkg::MODE_TPU) && (g7 == 7'h00) &&
+                      (g3 <= tp_pkg::UF3_SET);
 `endif
-        if ((uses_rd && ir[11]) || (uses_rs1 && ir[19]) || (uses_rs2 && ir[24]))
-            legal = 1'b0;
-    end
+        if ((u_rd && w[11]) || (u_rs1 && w[19]) || (u_rs2 && w[24]))
+            ok = 1'b0;
+        insn_legal = ok;
+    endfunction
+
+    logic legal, legal_q;
+    assign legal = legal_q;
 
     // Immediate, then the nibble of it that belongs to this phase.
     logic [31:0] imm;
@@ -504,6 +536,7 @@ module tp_ncore #(
             illegal_q <= 1'b0;
             redirect_q <= 1'b0;
             ir        <= 32'h0000_0013;           // NOP until the first fetch
+            legal_q   <= 1'b1;                    // ... which is legal
         end else begin
             // carries and the equality chain advance during every pass
             if (in_pass) begin
@@ -518,6 +551,11 @@ module tp_ncore #(
                     redirect_q <= 1'b0;
                 end else if (imem_rvalid) begin
                     ir     <= imem_rdata;
+`ifdef TIQORA_MODES
+                    legal_q <= insn_legal(imem_rdata, mode);
+`else
+                    legal_q <= insn_legal(imem_rdata);
+`endif
                     second <= 1'b0;
                     state  <= (phase == 3'd7) ? S_PASS : S_ALIGN;
                 end

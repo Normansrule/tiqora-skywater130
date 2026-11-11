@@ -329,6 +329,7 @@ equiv:
 	cd .. && yosys -q -s syn/compare_equiv.ys > /dev/null && echo "comparator deadline - 1: proven equivalent"
 	cd .. && yosys -q -s syn/unit_select_equiv.ys > /dev/null && echo "late operand select: proven equivalent"
 	cd .. && yosys -q -s syn/core_adv_equiv.ys > /dev/null && echo "core fetch-address select from a flip-flop: proven equivalent"
+	cd .. && yosys -q -s syn/core_legal_equiv.ys > /dev/null && echo "core legality decoded once at fetch: proven equivalent"
 
 # The timing unit (src/sync/*.sv) and its reference model are shared, byte for byte, between Tiqora and
 # Tiqora-Serial. docs/shared_timing.sha256 is identical in both repositories;
