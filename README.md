@@ -59,6 +59,12 @@ It's for people who need a pin to move on an exact clock tick (lab triggers, tes
 pulse trains, timestamping) and would rather write that in C than in Verilog, and for anyone
 curious how small a whole computer can get.
 
+### Your first five minutes
+
+1. **Fire a deadline of your own** on the [overview](https://normansrule.github.io/tiqora-skywater130/#dl-h): choose a tick and watch TRIG0 land on it, computed from the recorded tour.
+2. **Open the logic** [one level down](https://normansrule.github.io/tiqora-skywater130/#sc-h): step the deadline channel clock by clock, then choose any part of the drawing to light its wires and read its line of RTL.
+3. **Run the chip yourself** from a clone, no board needed: `cd test && make run PROG=../sw/examples/hello.c` (see [Try it today](#try-it-today-on-the-simulated-chip)).
+
 ### Explore it
 
 | | |
