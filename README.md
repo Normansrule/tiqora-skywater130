@@ -1,8 +1,12 @@
+<div align="center">
+
 # Tiqora — a RISC-V microcontroller the size of a grain of salt
 
 **RV32E + 11 Xpulse timing instructions · Tiny Tapeout 3 × 2 tiles · SkyWater sky130 · Apache 2.0 · maintained by [@Normansrule](https://github.com/Normansrule)**
 
-### [▶ Open the project website: normansrule.github.io/tiqora-skywater130](https://normansrule.github.io/tiqora-skywater130/)
+[**Open the website ▶**](https://normansrule.github.io/tiqora-skywater130/) · [**Quick start**](#quick-start) · [**Status**](#status) · [**How it works**](#inside)
+
+</div>
 
 Everything in this repository, explained and explorable in your browser: watch the chip run, fire a deadline of your own, open the chip atlas and check the evidence behind every number. No install, works on a phone.
 
@@ -11,6 +15,29 @@ Everything in this repository, explained and explorable in your browser: watch t
 <sub>Recorded, not drawn: one window of `make -C test tour`, a simulation of the submitted top module
 with flash and RAM models on its pins, rendered by `docs/tools/readme_media.py`.
 [Still image](docs/images/explorer/tour.png) for readers with motion turned off.</sub>
+
+<p align="center">
+<a href="docs/images/cards/time.svg"><img src="docs/images/cards/time.svg" width="49%" alt="Time as an operand: TRIG0 rises on exactly the tick it was armed for, with no software in the path."></a> <a href="docs/images/cards/core.svg"><img src="docs/images/cards/core.svg" width="49%" alt="Nibble-serial RV32E: One 4-bit adder does every 32-bit add in eight clocks. Register file: 11,322 µm², against 21,837 µm²."></a><br>
+<a href="docs/images/cards/die.svg"><img src="docs/images/cards/die.svg" width="49%" alt="Six tiles, 420 €: 50,965 µm² of standard cells, 44% of the 3 × 2 die, measured with Yosys 0.33 before placement."></a> <a href="docs/images/cards/evidence.svg"><img src="docs/images/cards/evidence.svg" width="49%" alt="Evidence on every number: Each result says measured, estimated, failed or not done, with the command and version behind it."></a>
+</p>
+
+<sub>Feature cards drawn by `docs/tools/cards.py` from the recorded deadline, the recorded add, the measured area and `docs/progress.json`; every number on them is quoted from this README, and `make -C test docs` fails if one drifts. They follow your light or dark setting.</sub>
+
+<details><summary><b>Key features, as text</b></summary>
+
+- **Time as an operand.** Eleven Xpulse instructions read the timebase, arm a deadline, wait
+  for it and pop timestamped pin edges. The trigger pin fires on the programmed tick with no
+  software in the path.
+- **Nibble-serial RV32E.** One 4-bit adder does every 32-bit add in eight clocks while the
+  register file rotates past it. That is what makes it small.
+- **Runs real C**, compiled with Clang, from QSPI (quad serial peripheral interface) flash or
+  loaded over USB serial with no flasher.
+- **Evidence on every number.** Each result in this README says whether it was measured (and
+  with which command and version), estimated, failed or not done yet.
+- **An explorer you can open offline**: recorded tours of the running chip, a lab where you fire
+  your own deadline, and a zoom from a grain of salt down to one flip-flop.
+
+</details>
 
 > **Tiqora was called TinyPulse until October 2026.** Old links redirect; the C API, opcodes,
 > register map and bootloader protocol are unchanged, and `#include "tinypulse.h"` still works.
@@ -31,20 +58,6 @@ gate array) board.
 It's for people who need a pin to move on an exact clock tick (lab triggers, test benches,
 pulse trains, timestamping) and would rather write that in C than in Verilog, and for anyone
 curious how small a whole computer can get.
-
-**Key features**
-
-- **Time as an operand.** Eleven Xpulse instructions read the timebase, arm a deadline, wait
-  for it and pop timestamped pin edges. The trigger pin fires on the programmed tick with no
-  software in the path.
-- **Nibble-serial RV32E.** One 4-bit adder does every 32-bit add in eight clocks while the
-  register file rotates past it. That is what makes it small.
-- **Runs real C**, compiled with Clang, from QSPI (quad serial peripheral interface) flash or
-  loaded over USB serial with no flasher.
-- **Evidence on every number.** Each result in this README says whether it was measured (and
-  with which command and version), estimated, failed or not done yet.
-- **An explorer you can open offline**: recorded tours of the running chip, a lab where you fire
-  your own deadline, and a zoom from a grain of salt down to one flip-flop.
 
 ### Explore it
 
@@ -478,6 +491,20 @@ pin comes out of a register: so the pin rises on the deadline itself.
 ![Recorded from the RTL: deadline channel 0 drawn as logic, lit clock by clock, from arming to the trigger pin rising on exactly the deadline tick](docs/images/schematic_deadline.svg)
 
 <sub>Probed inside `sync_compare` by `test/tb_tour.sv` during `make -C test tour`; `docs/tools/schematic.py` checks every clock against the RTL's equations before drawing it. [Step through it on the website](https://normansrule.github.io/tiqora-skywater130/#sc-h): play, pause, or use the arrow keys.</sub>
+
+**A deadline, step by step**, as the same recording tells it:
+
+<!-- steps:begin (generated by docs/tools/cards.py from docs/site/data/schematic.json; do not edit) -->
+
+| Step | Tick | What the recording shows |
+|---|---:|---|
+| **Arm** | 392 | Channel 0 is armed for tick 544 by TARM, or a write to CMP0: arm_time carries it and arm_we is high. The -1 makes 543, and the multiplexer steers it into the deadline register at this clock edge. reached is already 1, against the register's reset value, but armed is 0, so the AND gate holds fire low. |
+| **Count** | 393 | The register holds 543 and armed is 1. now - (deadline - 1) = -150: negative, so reached is 0. From here the same subtraction runs on every clock, and nothing outside the timing unit takes part. |
+| **Reached** | 543 | now = 543 = deadline - 1. The difference is 0, so reached rises, and with armed at 1 the AND gate raises fire. Nothing has moved yet: fire is a wire, and the clock edge has not come. |
+| **Fire** | 544 | The clock edge. The counter loads pw = 8 and armed clears. The counter is not zero, so TRIG0 on uo_out[0] goes high on this clock, when now = 544: the deadline exactly, 0 ticks late. |
+| **Pulse ends** | 552 | The counter reaches 0 and TRIG0 falls: a pulse of exactly 8 clocks. reached stays 1, since the deadline is now in the past, but armed is 0, so nothing fires again. |
+
+<!-- steps:end -->
 
 Point `PROG=` at any C file of your own.
 

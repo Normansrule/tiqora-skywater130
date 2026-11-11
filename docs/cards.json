@@ -1,0 +1,90 @@
+{
+  "note": "The README's feature cards, drawn by docs/tools/cards.py. Every number on a card must sit inside one of its cite strings, and each cite must appear word for word in README.md, where it carries its measurement.",
+  "cards": [
+    {
+      "id": "time",
+      "eyebrow": "Xpulse timing",
+      "evidence": "recorded",
+      "visual": "wave",
+      "title": "Time as an operand",
+      "lines": [
+        "TRIG0 rises on exactly the tick it was armed for,",
+        "with no software in the path."
+      ],
+      "cite": []
+    },
+    {
+      "id": "core",
+      "eyebrow": "The core",
+      "evidence": "measured",
+      "visual": "ring",
+      "title": "Nibble-serial RV32E",
+      "lines": [
+        "One 4-bit adder does every 32-bit add in eight clocks.",
+        "Register file: 11,322 µm², against 21,837 µm²."
+      ],
+      "cite": [
+        "4-bit adder",
+        "32-bit add",
+        "11,322 µm²",
+        "21,837 µm²"
+      ]
+    },
+    {
+      "id": "die",
+      "eyebrow": "Tiny Tapeout",
+      "evidence": "measured",
+      "visual": "die",
+      "tiles": [
+        3,
+        2
+      ],
+      "share": 44,
+      "title": "Six tiles, 420 €",
+      "lines": [
+        "50,965 µm² of standard cells, 44% of the 3 × 2 die,",
+        "measured with Yosys 0.33 before placement."
+      ],
+      "cite": [
+        "420 €",
+        "50,965 µm²",
+        "44% of the 3 × 2 die",
+        "Yosys 0.33"
+      ]
+    },
+    {
+      "id": "evidence",
+      "eyebrow": "Evidence",
+      "evidence": "measured",
+      "visual": "bars",
+      "title": "Evidence on every number",
+      "lines": [
+        "Each result says measured, estimated, failed or not done,",
+        "with the command and version behind it."
+      ],
+      "cite": []
+    }
+  ],
+  "steps": [
+    {
+      "name": "Arm",
+      "at": 0
+    },
+    {
+      "name": "Count",
+      "at": 1
+    },
+    {
+      "name": "Reached",
+      "at": 6
+    },
+    {
+      "name": "Fire",
+      "at": 7
+    },
+    {
+      "name": "Pulse ends",
+      "at": 15
+    }
+  ]
+}
