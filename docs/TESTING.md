@@ -95,8 +95,8 @@ instruction, ending in `37 of 37 official RV32E tests pass`.
 ## Formal proofs of the timing unit
 
 ```bash
-make formal          # prove the timing unit, event queue and register file for every input sequence, about 40 s
-make formal-mutants  # break the RTL 14 ways and confirm each proof fails
+make formal          # prove the timing unit, pin capture, event queue and register file for every input sequence, about 30 s
+make formal-mutants  # break the RTL 19 ways and confirm each proof fails
 ```
 
 `make formal` needs Yosys and z3 (`apt install yosys z3`). It splices the properties in
@@ -109,6 +109,9 @@ proven:
 - a comparator channel fires only when it is armed and its deadline is reached, then disarms;
 - every output pulse has a cause and lasts exactly the programmed width;
 - in free-running time, a deadline armed at least 2 ticks ahead fires on that exact tick;
+- a pin edge is reported exactly three clocks after the pin moved (constant latency, so it can be
+  calibrated out), only on an enabled channel and with the polarity asked for; with the optional
+  glitch filter (FILTW > 0), a glitch of FILTW samples or fewer never makes an event;
 - the event queue behaves exactly like a reference queue: events come out whole and in arrival
   order, and the overflow flag is set exactly when an event was dropped;
 - the rotating register file returns a nibble written at phase k at phase k on every later lap,
