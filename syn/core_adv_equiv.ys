@@ -1,0 +1,26 @@
+# core_adv_equiv.ys — prove the core's registered fetch-address select is exact.
+# syn/core_adv_ref.sv is tp_ncore before the change (module renamed tp_ncore_ref): it decoded
+# pc_advanced = second || !(state == S_ALIGN || state == S_PASS) every clock; the new core
+# keeps it in the flip-flop adv_q. equiv_make pairs every output, register and same-named
+# wire, pc_advanced included; equiv_simple and equiv_induct prove each pair equal at every
+# clock, for the tile build and the modes build. yosys -s syn/core_adv_equiv.ys exits non-zero if any pair is unproven.
+read_verilog -sv src/tp_pkg.sv src/core/tp_nregfile.sv src/core/tp_ncore.sv
+read_verilog -sv syn/core_adv_ref.sv
+hierarchy -check
+proc; flatten; memory; opt_clean
+equiv_make tp_ncore_ref tp_ncore equiv
+hierarchy -top equiv
+equiv_simple -seq 2
+equiv_induct -seq 2
+equiv_status -assert
+# the same proof for the modes build (TIQORA_MODES: accelerators and the mode register)
+design -reset
+read_verilog -sv -DTIQORA_MODES src/tp_pkg.sv src/core/tp_nregfile.sv src/core/tp_ncore.sv src/accel/tp_simd.sv src/accel/tp_mac.sv
+read_verilog -sv -DTIQORA_MODES syn/core_adv_ref.sv
+hierarchy -check
+proc; flatten; memory; opt_clean
+equiv_make tp_ncore_ref tp_ncore equiv
+hierarchy -top equiv
+equiv_simple -seq 2
+equiv_induct -seq 2
+equiv_status -assert

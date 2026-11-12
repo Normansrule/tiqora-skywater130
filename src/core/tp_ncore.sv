@@ -404,7 +404,22 @@ module tp_ncore #(
     // as the bus contract requires.
     logic prefetch_ok, pc_advanced;
     assign prefetch_ok = legal && !(is_ld || is_st || is_br || is_jal || is_jalr || is_sys);
-    assign pc_advanced = second || !(state == S_ALIGN || state == S_PASS);
+    // pc_advanced = second || !(state == S_ALIGN || state == S_PASS), held in
+    // its own flip-flop (adv_q) so the fetch-address select below comes
+    // straight from a register. Decoding it from the state register put a
+    // state compare and two fan-out trees in front of the flash controller's
+    // address adder: the slowest path in the chip (GitHub run 41474828936).
+    // adv_q is 0 exactly while the first pass of an instruction runs: it
+    // clears when FETCH takes an instruction and sets again when that pass
+    // ends (its last nibble always leaves ALIGN/PASS or starts the second
+    // pass). make equiv proves adv_q equals the decoded form at every clock.
+    logic adv_q;
+    always_ff @(posedge clk) begin
+        if (rst) adv_q <= 1'b1;
+        else     adv_q <= !(((state == S_FETCH) && !redirect_q && imem_rvalid) ||
+                            (!adv_q && !((state == S_PASS) && last)));
+    end
+    assign pc_advanced = adv_q;
 
     // A taken branch or jump spends its first FETCH clock copying the target
     // from mar into pc (redirect_q), so the branch decision only has to reach
