@@ -36,7 +36,8 @@
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
-  "CLOCK_PERIOD": 20,
+  "//": "Experiment (2026-11-12): flow target 13 ns. The chip still runs from the 50 MHz Tiny Tapeout clock; a tighter target makes the resizer repair setup before routing and keeps hold buffers off near-critical endpoints. Slack at 20 ns = reported slack + (20 - 13).",
+  "CLOCK_PERIOD": 13,
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
