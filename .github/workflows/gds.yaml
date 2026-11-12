@@ -69,6 +69,18 @@ jobs:
             awk '/^Startpoint/{sp=$2; show=!(sp in seen) && k<4; if (show) {seen[sp]=1; k++}} show' "$f"
             echo "::endgroup::"
           done
+          # Instance numbers like _8818_ change every run; the netlist keeps the RTL register
+          # names on flip-flop outputs, so print each instance named in the first 60 paths.
+          nl=(runs/wokwi/final/nl/*.nl.v)
+          f="$d/max_ss_100C_1v60/max.rpt"
+          if [ ${#nl[@]} -gt 0 ] && [ -f "$f" ]; then
+            echo "::group::max_ss_100C_1v60: netlist connections of the first 60 paths' start and end flip-flops"
+            awk '/^Startpoint|^Endpoint/{print $2} /slack \(/{if (++n >= 60) exit}' "$f" | sort -u > /tmp/insts
+            awk 'NR==FNR {want[$1]=1; next}
+                 { for (i = 1; i <= NF; i++) if ($i in want && $(i+1) ~ /^\(/) {on=1; print FILENAME": "$i} }
+                 on {print} /\);/ {on=0}' /tmp/insts "${nl[0]}"
+            echo "::endgroup::"
+          fi
           exit 0
 
   precheck:
