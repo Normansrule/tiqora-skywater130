@@ -24,8 +24,9 @@
   "CTS_SINK_CLUSTERING_SIZE": 10,
   "RUN_POST_GRT_DESIGN_REPAIR": 1,
   "RUN_POST_GRT_RESIZER_TIMING": 1,
-  "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
-  "GRT_RESIZER_SETUP_SLACK_MARGIN": 0.5,
+  "//": "Setup margins raised (2026-11-12): the resizer repairs only paths with less slack than its margin, and at 1.0 / 0.5 ns it left every path alone once the worst routed slack passed +2.8 ns. At 4.0 / 3.0 ns it keeps shortening paths with up to 4 ns of slack.",
+  "PL_RESIZER_SETUP_SLACK_MARGIN": 4.0,
+  "GRT_RESIZER_SETUP_SLACK_MARGIN": 3.0,
 
   "//": "SYNTH_EXCLUDED_CELL_FILE - cells synthesis may not use. synth_exclude.cells is the PDK default minus its ban on drive-strength-1 cells (see the file).",
   "//": "Tiqora: with this list the flow's synthesis measures 48,763 um^2 instead of 59,797 um^2 and global placement at 2x2 uses 76.6% of the free core instead of 97.7% (LibreLane 3.0.14, measured locally 2026-10-25).",
