@@ -222,9 +222,16 @@ module qspi_ctrl #(
                             // chip select already low, the stream continues.
                             // No preamble and no latency: the flash has been
                             // clocking bytes out continuously.
+                            // rx is not cleared here: the 8 nibbles of
+                            // Q_DATA replace all 32 bits before rvalid, and
+                            // a clear gated by req and the address compare
+                            // was the slowest path in the chip (GitHub run
+                            // 43081019916: core f3 -> bus request -> 32 rx
+                            // enables). make equiv proves rx still equals
+                            // the cleared version outside Q_DATA, and in
+                            // its shifted-in nibbles inside it.
                             state     <= Q_DATA;
                             nib_cnt   <= 4'd8;
-                            rx        <= 32'd0;
                         end else begin
                             // Deselect first. Whatever stream was open has
                             // to be ended before a new address means
