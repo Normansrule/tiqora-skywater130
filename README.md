@@ -220,6 +220,23 @@ about 300 µm.
 polysilicon (transistor gates), green is diffusion, white squares are contacts, blue
 hatching is local interconnect. Every other row is mirrored so neighbours share a power rail.</sub>
 
+### Manufacturing facts
+
+| | |
+|---|---|
+| Process / PDK | SkyWater SKY130 (130 nm), sky130A from open_pdks `8afc8346`, cells `sky130_fd_sc_hd` |
+| Die area | 508.76 × 225.76 µm = 114,858 µm² (3 × 2 Tiny Tapeout tiles) |
+| IOs | 24 general-purpose (8 in, 8 out, 8 bidirectional) + `clk` + `rst_n`, all used; whole chip: 64-pin QFN |
+| IO cell | `sky130_ef_io__gpiov2_pad`, 80.000 µm wide (its pitch when abutted) × 197.965 µm, from the PDK's LEF |
+| Metal layers | li1, met1 to met4 used; met5 is Tiny Tapeout's power grid |
+| Power | core 1.8 V (`VPWR`), ground 0 V (`VGND`), pad IO 3.3 V on the demo board (1.71 to 5.5 V allowed) |
+| Other IP needed | Tiny Tapeout pad ring, multiplexer and power grid; QSPI Pmod (flash + PSRAM) off chip |
+
+Every row with its source file, command or GitHub run, including how to read the IO cell
+pitch yourself: [docs/MANUFACTURING.md](docs/MANUFACTURING.md). What it is good for at 130 nm
+and on smaller processes: [docs/APPLICATIONS.md](docs/APPLICATIONS.md). Tape-out and FPGA
+references: [docs/LIBRARY.md](docs/LIBRARY.md).
+
 ## Pinout
 
 **Every pin, where it really is.** All 43 pins of the tile sit on metal 4 along its top edge, at
