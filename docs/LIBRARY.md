@@ -29,7 +29,7 @@ tiqora-skywater130 and tinytapeout-tiqora.
 | [LibreLane documentation](https://librelane.readthedocs.io/) | every flow variable in `src/config.json` (repair margins, density, routing adjustment) |
 | [OpenROAD documentation](https://openroad.readthedocs.io/) | placement, clock tree, resizer, antenna and routing messages (GPL-, DPL-, GRT-, DRT-, ANT- codes) |
 | [Magic](http://opencircuitdesign.com/magic/), [KLayout](https://www.klayout.de/), [Netgen](http://opencircuitdesign.com/netgen/) | DRC, layout viewing and LVS, as run by the flow and the pre-flight |
-| [Yosys](https://yosyshq.readthedocs.io/), [OpenSTA](https://github.com/parallaxsw/OpenSTA) | synthesis (`make area`) and static timing (`make timing`) |
+| [Yosys](https://yosyshq.readthedocs.io/), [OpenSTA](https://github.com/parallaxsw/OpenSTA) | synthesis and static timing (the area and timing targets in `test/Makefile`) |
 | [OpenRAM](https://github.com/VLSIDA/OpenRAM) | SRAM macros for sky130 and gf180, if program memory moves on chip |
 
 ## Other open processes (next targets)
@@ -54,7 +54,7 @@ tiqora-skywater130 and tinytapeout-tiqora.
 | [Project IceStorm](https://github.com/YosysHQ/icestorm) | iCE40, used by `fpga.yaml` |
 | [cocotb](https://docs.cocotb.org/), [Verilator](https://verilator.org/guide/latest/), [Icarus Verilog](https://steveicarus.github.io/iverilog/) | the simulators and test framework the suites use |
 | [SymbiYosys](https://symbiyosys.readthedocs.io/) | formal property checking (the proofs in PRs #12 to #14) |
-| [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) | the official RISC-V conformance tests (`make act`) |
+| [riscv-arch-test](https://github.com/riscv-non-isa/riscv-arch-test) | the official RISC-V conformance tests (Tiqora's act target in `test/Makefile`) |
 
 ## Course and lab material (owner's archive, not in this repository)
 
