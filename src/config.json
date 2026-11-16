@@ -61,6 +61,8 @@
   "RUN_KLAYOUT_DRC": 0,
 
   "//": "Don't put clock buffers on the outputs",
+  "//": "Input ports are not buffered by the resizer: with the 1x buffers banned, buffer_ports picked the smallest remaining buffer, dlygate4sd3_1 (a delay cell, about 1 ns at the slow corner), on every input. The rst_n path then missed slow-corner setup by 1.11 ns (Tiqora run 43890240177). Design repair still buffers these nets for slew and fanout.",
+  "DESIGN_REPAIR_BUFFER_INPUT_PORTS": 0,
   "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 0,
 
   "//": "Reduce wasted space",
