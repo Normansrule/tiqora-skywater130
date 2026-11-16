@@ -127,7 +127,7 @@ Tiqora is one tile. A working chip needs all of this, none of which Tiqora's rep
 | Max capacitance | **17 nets at max_ss; 1 at nom_tt** | measured, same run: not yet clean |
 | Max fanout | **5 nets (limit 10), every corner** | measured, same run: not yet clean |
 | Gate-level test | pass | measured, `gl_test` job of the same run |
-| Tape-out margin audit | `syn/signoff_audit.py`: six gates, run by the `gds` workflow on branch `tapeout-audit` | see the PR |
+| Tape-out margin audit | `syn/signoff_audit.py`: seven gates (G7: every slew within the cells' 1.5 ns characterised range), run by the `gds` workflow on branch `tapeout-audit` | see the PR |
 
 The flow fails only on typical-corner timing (`TIMING_VIOLATION_CORNERS = *tt*` in LibreLane's
 sky130 defaults), so a green `gds` job alone does not prove the slow corners or the electrical
