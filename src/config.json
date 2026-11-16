@@ -35,8 +35,10 @@
   "PNR_EXCLUDED_CELL_FILE": "dir::pnr_exclude.cells",
 
   "//": "Experiment (tape-out audit 2026-11-15): post-global-route repair with 30% slew/cap margin; clock leaves of 8.",
-  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
-  "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 30,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 55,
+  "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 55,
+  "CTS_MAX_CAP": 0.15,
+  "CTS_MAX_SLEW": 0.5,
 
   "//": "CLOCK_PERIOD - Increase this in case you are getting setup time violations.",
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
