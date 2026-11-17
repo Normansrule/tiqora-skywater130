@@ -24,7 +24,7 @@ WAKE = ["flash: all four lines high, 8 clocks (leave continuous read)",
         "flash: 4 dummy clocks and one byte, then chip select high",
         "both RAMs: 0xF5, four bits per clock (leave QPI if a previous run left it on)",
         "both RAMs: 0x35, one bit per clock (enter QPI)"]
-RTL = ["src/tp_pkg.sv", "src/core/tp_nregfile.sv", "src/core/tp_ncore.sv", "src/sync/sync_timebase.sv",
+RTL = ["src/tp_pkg.sv", "src/tp_drive.sv", "src/core/tp_nregfile.sv", "src/core/tp_ncore.sv", "src/sync/sync_timebase.sv",
        "src/sync/sync_capture.sv", "src/sync/sync_event_fifo.sv", "src/sync/sync_compare.sv",
        "src/sync/sync_unit.sv", "src/periph/tp_uart.sv", "src/periph/tp_periph.sv", "src/boot/tp_bootrom.sv",
        "src/bus/tp_bus.sv", "src/bus/qspi_ctrl.sv", "src/tp_soc.sv", "src/tt_um_normansrule_tiqora.sv"]

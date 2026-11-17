@@ -25,6 +25,7 @@ project:
   # Package first, then leaves, then the modules that instantiate them.
   source_files:
     - "tp_pkg.sv"
+    - "tp_drive.sv"
     - "core/tp_nregfile.sv"
     - "core/tp_ncore.sv"
     - "sync/sync_timebase.sv"

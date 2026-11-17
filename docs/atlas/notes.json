@@ -98,6 +98,14 @@
    },
    "tests": ["unit", "isa", "act"]
   },
+  "tp_drive": {
+   "title": "Register-file read drivers",
+   "category": "memory",
+   "summary": "Strong buffers (sky130 buf_4) on the register file's one-hot read selects and its 15 nibble taps, which reach across the whole register array. Only the chip build has them; in simulation, formal and on the FPGA each is a plain wire.",
+   "example": "Reading x5 on port A raises select line 5; its buffer drives the AND-OR gates of every tap bit, and each tap's buffer drives both read ports.",
+   "port_notes": {"a": "[W] the select or tap bits", "x": "[W] the same bits, driven for the long wires across the array"},
+   "tests": ["unit", "isa"]
+  },
   "tp_bus": {
    "title": "Bus: address decode and arbitration",
    "category": "control",

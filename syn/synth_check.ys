@@ -20,6 +20,7 @@
 # syn/area_sky130.sh instead.
 
 read_verilog -sv src/tp_pkg.sv
+read_verilog -sv src/tp_drive.sv
 read_verilog -sv src/core/tp_nregfile.sv
 read_verilog -sv src/core/tp_ncore.sv
 read_verilog -sv src/sync/sync_timebase.sv

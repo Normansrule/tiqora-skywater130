@@ -69,3 +69,16 @@ sky130_fd_sc_hd__clkdlybuf4s25_1
 sky130_fd_sc_hd__clkdlybuf4s25_2
 sky130_fd_sc_hd__clkdlybuf4s50_1
 sky130_fd_sc_hd__clkdlybuf4s50_2
+
+# Tape-out audit (2026-11-16): the resizer built its fanout trees from 1x
+# buffers (fanoutNNN, buf_1/clkbuf_1, each driving 10 loads); at the slow
+# corner each of those nets missed the 0.75 ns slew limit (950 pins on
+# Tiqora-Serial, GitHub run 43765684876). Without 1x buffers the trees use
+# buf_2 or larger. Synthesis may still use 1x logic cells.
+sky130_fd_sc_hd__buf_1
+sky130_fd_sc_hd__clkbuf_1
+# On Tiqora (run 43804873795, fc69221) the worst slow-corner slew, 1.857 ns,
+# is on such trees (fanout572/X clkbuf_1, 11 loads), over the cells' 1.5 ns
+# characterised range. Tried first on its own (2026-11-16), with no
+# added repair margin (margins of 30-55% left detailed routing at 246-1284
+# violations after 6 h, runs 43770788415 and 43792897057).
