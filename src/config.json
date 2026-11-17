@@ -22,6 +22,8 @@
 
   "//": "Tiqora at 3x2, timing repair (local LibreLane 3.0.14, 2026-10-26). CTS_SINK_CLUSTERING_SIZE 10 keeps each clock leaf within the fanout limit of 10 (83 fanout warnings -> 2). The post-global-route repair steps and the larger setup margins make the resizer work on near-critical paths: worst slow-corner setup slack -1.10 ns -> -0.75 ns, typical +6.45 ns. Routing stays clean (DRC 0, LVS 0, antenna 0).",
   "CTS_SINK_CLUSTERING_SIZE": 10,
+  "//": "CTS_DISTANCE_BETWEEN_BUFFERS - TritonCTS puts a clock buffer every 30 um along the H-tree. Without it the root buffer drove all 16 H-tree branches directly: fanout 16 over the limit of 10 plus a max-cap violation on clknet_0_clk at all 9 corners (run 44089517415). At 30 um: 0 fanout and cap violations, setup +1.335 ns, hold +0.147 ns (run 44111857909).",
+  "CTS_DISTANCE_BETWEEN_BUFFERS": 30,
   "RUN_POST_GRT_DESIGN_REPAIR": 1,
   "RUN_POST_GRT_RESIZER_TIMING": 1,
   "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
