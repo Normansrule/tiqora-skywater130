@@ -1,0 +1,17 @@
+# regfile_read_equiv.ys — prove the register file's new read ports are exact.
+# syn/regfile_read_ref.sv is tp_nregfile before the change (module renamed tp_nregfile_ref):
+# each read port was a priority chain of "if (ra == i) qa = r[i][3:0]". The new file decodes
+# one select line per register, passes the selects and nibble taps through tp_drive (a wire
+# here; buf_4 cells only with TP_SKY130_DRIVE) and ORs the selected nibbles. equiv_make
+# pairs the outputs and registers; equiv_simple and equiv_induct prove each pair equal at
+# every clock. yosys -s syn/regfile_read_equiv.ys exits non-zero if any pair is unproven.
+# Mutation check (2026-11-17): making select 3 also fire for ra == 4 leaves 4 pairs unproven.
+read_verilog -sv src/tp_drive.sv src/core/tp_nregfile.sv
+read_verilog -sv syn/regfile_read_ref.sv
+hierarchy -check
+proc; flatten; memory; opt_clean
+equiv_make tp_nregfile_ref tp_nregfile equiv
+hierarchy -top equiv
+equiv_simple -seq 2
+equiv_induct -seq 2
+equiv_status -assert

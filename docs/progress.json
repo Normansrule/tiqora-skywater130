@@ -189,9 +189,9 @@
           "state": "done",
           "evidence": {
             "label": "measured",
-            "version": "branch timing-speed-4 c7b3b1a, 2026-11-12, LibreLane 3.0.14, open_pdks 8afc8346",
-            "command": "GitHub run 43126414733: gds, signoff timing per corner",
-            "result": "setup +9.33 ns typical, +3.40 ns nom_ss, +2.86 ns max_ss (0 violations); hold met (worst +0.097 ns); DRC 0, LVS 0, antenna 0; precheck and gl_test pass"
+            "version": "branch tapeout-audit 476dc44, 2026-11-17, LibreLane 3.0.14, open_pdks 8afc8346",
+            "command": "GitHub run 44119238814: gds, signoff timing per corner",
+            "result": "setup +8.11 ns typical, +1.46 ns nom_ss, +1.28 ns max_ss (0 violations); hold met (worst +0.178 ns); 0 slew, cap and fanout violations; DRC 0, LVS 0, antenna 0; signoff audit 7/7; precheck and gl_test pass"
           }
         }
       ]

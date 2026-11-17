@@ -50,12 +50,31 @@ module tp_nregfile (
             r[i] <= {(we && wa == i[3:0]) ? wd : r[i][3:0], r[i][31:4]};
     end
 
+    // Read ports: decode each address to one select line per register, then OR
+    // the selected nibbles. The select lines and the 15 nibble taps each reach
+    // all over the register array, so on the chip build they go through
+    // tp_drive (a buf_4 per bit; a plain wire in simulation, formal and FPGA).
+    logic [15:1] sela, selb, sela_d, selb_d;
+    logic [59:0] tap, tap_d;          // nibble [3:0] of x1..x15, x1 lowest
+
+    always_comb begin
+        for (int i = 1; i < 16; i++) begin
+            sela[i] = (ra == i[3:0]);
+            selb[i] = (rb == i[3:0]);
+            tap[4*(i-1) +: 4] = r[i][3:0];
+        end
+    end
+
+    tp_drive #(.W(15)) u_sela_drv (.a(sela), .x(sela_d));
+    tp_drive #(.W(15)) u_selb_drv (.a(selb), .x(selb_d));
+    tp_drive #(.W(60)) u_tap_drv  (.a(tap),  .x(tap_d));
+
     always_comb begin
         qa = 4'd0;
         qb = 4'd0;
         for (int i = 1; i < 16; i++) begin
-            if (ra == i[3:0]) qa = r[i][3:0];
-            if (rb == i[3:0]) qb = r[i][3:0];
+            qa = qa | ({4{sela_d[i]}} & tap_d[4*(i-1) +: 4]);
+            qb = qb | ({4{selb_d[i]}} & tap_d[4*(i-1) +: 4]);
         end
     end
 endmodule : tp_nregfile

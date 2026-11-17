@@ -17,11 +17,13 @@
   "//": "Users have reported that values up to 80 worked well for them.",
   "PL_TARGET_DENSITY_PCT": 50,
 
-  "//": "GRT_ADJUSTMENT - share of routing tracks global routing holds back (LibreLane default 0.3). At 0.3 Tiqora's 3x2 global route ends with 58 overflows and detailed routing grinds on its last 3 to 17 shorts for hours; at 0.15 global routing has 0 overflows and detailed routing finishes with 0 violations (local LibreLane 3.0.14, 2026-10-26: DRC 0, LVS 0, antenna 0).",
-  "GRT_ADJUSTMENT": 0.15,
+  "//": "GRT_ADJUSTMENT - share of routing tracks global routing holds back (LibreLane default 0.3). At 0.3 Tiqora's 3x2 global route ends with 58 overflows and detailed routing grinds on its last 3 to 17 shorts for hours; at 0.15 global routing has 0 overflows and detailed routing finishes with 0 violations (local LibreLane 3.0.14, 2026-10-26: DRC 0, LVS 0, antenna 0). With the 1x buffers excluded, 0.15 left detailed routing stalled at 1 violation for 6 h on GitHub; 0.2 routes in about 30 minutes (2026-11-16, runs 43833386322 and 43890240177).",
+  "GRT_ADJUSTMENT": 0.2,
 
   "//": "Tiqora at 3x2, timing repair (local LibreLane 3.0.14, 2026-10-26). CTS_SINK_CLUSTERING_SIZE 10 keeps each clock leaf within the fanout limit of 10 (83 fanout warnings -> 2). The post-global-route repair steps and the larger setup margins make the resizer work on near-critical paths: worst slow-corner setup slack -1.10 ns -> -0.75 ns, typical +6.45 ns. Routing stays clean (DRC 0, LVS 0, antenna 0).",
   "CTS_SINK_CLUSTERING_SIZE": 10,
+  "//": "CTS_DISTANCE_BETWEEN_BUFFERS - TritonCTS puts a clock buffer every 30 um along the H-tree. Without it the root buffer drove all 16 H-tree branches directly: fanout 16 over the limit of 10 plus a max-cap violation on clknet_0_clk at all 9 corners (run 44089517415). At 30 um: 0 fanout and cap violations, setup +1.335 ns, hold +0.147 ns (run 44111857909).",
+  "CTS_DISTANCE_BETWEEN_BUFFERS": 30,
   "RUN_POST_GRT_DESIGN_REPAIR": 1,
   "RUN_POST_GRT_RESIZER_TIMING": 1,
   "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
@@ -38,11 +40,13 @@
   "//": "The value is in nanoseconds, so 20ns == 50MHz.",
   "CLOCK_PERIOD": 20,
 
-  "//": "Hold slack margin - Increase them in case you are getting hold violations.",
+  "//": "Hold slack margins. After global routing the target is 0.25 ns: the inflated wire estimate (LAYERS_RC) makes data paths look slower than extraction finds, so a 0.1 ns target ended at +0.023 to +0.034 ns; 0.25 ends at +0.150 ns (run 44089517415).",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.25,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
+  "//": "TP_SKY130_DRIVE: src/tp_drive.sv becomes sky130 buf_4 cells on the register-file read selects and taps (chip build only; simulation, formal and FPGA see wires).",
+  "VERILOG_DEFINES": ["TP_SKY130_DRIVE"],
   "RUN_LINTER": 1,
   "LINTER_INCLUDE_PDK_MODELS": 1,
 
@@ -61,6 +65,12 @@
   "RUN_KLAYOUT_DRC": 0,
 
   "//": "Don't put clock buffers on the outputs",
+  "//": "Input ports are not buffered by the resizer: with the 1x buffers banned, buffer_ports picked the smallest remaining buffer, dlygate4sd3_1 (a delay cell, about 1 ns at the slow corner), on every input. The rst_n path then missed slow-corner setup by 1.11 ns (Tiqora run 43890240177). Design repair still buffers these nets for slew and fanout.",
+  "DESIGN_REPAIR_BUFFER_INPUT_PORTS": 0,
+  "//": "Wire capacitance x2.2 over the tech-LEF values (res unchanged), for placement and routing estimates only; signoff STA reads the extracted SPEF. The tech LEF has no sidewall coupling, so the resizer sized drivers for about half the load extraction found: 3,045 slow-corner slew violations (run 44049238333). x1.8: 39, x2.2: 17, x2.6: 24 (runs 44044781307, 44055648178, 44069913686); with the tp_drive register-file drivers: 0 (run 44089517415). Post-route repair margins 30% (55% made that step run without end with this setting).",
+  "LAYERS_RC": {"*": {"li1": {"res": 0.07176471, "cap": 0.0001928998}, "met1": {"res": 0.0008928571, "cap": 0.0001864346}, "met2": {"res": 0.0008928571, "cap": 0.0001713578}, "met3": {"res": 0.0001566667, "cap": 0.0001885177}, "met4": {"res": 0.0001566667, "cap": 0.0001669285}, "met5": {"res": 1.78125e-05, "cap": 0.000193193}}},
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
+  "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 30,
   "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 0,
 
   "//": "Reduce wasted space",
