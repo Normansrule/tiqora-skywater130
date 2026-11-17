@@ -22,6 +22,8 @@
 
   "//": "Tiqora at 3x2, timing repair (local LibreLane 3.0.14, 2026-10-26). CTS_SINK_CLUSTERING_SIZE 10 keeps each clock leaf within the fanout limit of 10 (83 fanout warnings -> 2). The post-global-route repair steps and the larger setup margins make the resizer work on near-critical paths: worst slow-corner setup slack -1.10 ns -> -0.75 ns, typical +6.45 ns. Routing stays clean (DRC 0, LVS 0, antenna 0).",
   "CTS_SINK_CLUSTERING_SIZE": 10,
+  "//": "Experiment: buffers every 50 um along the clock tree, so the root does not drive all 16 H-tree branches directly (fanout 16 > 10, run 44089517415).",
+  "CTS_DISTANCE_BETWEEN_BUFFERS": 50,
   "RUN_POST_GRT_DESIGN_REPAIR": 1,
   "RUN_POST_GRT_RESIZER_TIMING": 1,
   "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
