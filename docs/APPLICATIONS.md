@@ -27,7 +27,7 @@ change. None of the following is measured; it is what the architecture implies.
 
 - **Finer timestamps.** Resolution equals one clock period. At 200 MHz it would be 5 ns
   (arithmetic, not a claim that the design reaches 200 MHz). On sky130 the slowest corner allows
-  about 58 MHz (estimate from measured slack) and the Tiny Tapeout pads cap the clock at 66 MHz.
+  about 53 MHz (estimate from measured slack, run 44119238814) and the Tiny Tapeout pads cap the clock at 66 MHz.
 - **A timing peripheral inside a larger chip.** The timing unit (`src/sync/`) has no CPU
   dependence; Tiqora-Serial already uses it without one. In a system-on-chip it fits as a
   hardware timestamping and trigger block next to an application processor, for example for
