@@ -36,6 +36,7 @@ TOPLEVEL_LANG ?= verilog
 SRC = ../src
 
 RTL  = $(SRC)/tp_pkg.sv
+RTL += $(SRC)/tp_drive.sv
 RTL += $(SRC)/core/tp_nregfile.sv
 RTL += $(SRC)/core/tp_ncore.sv
 RTL += $(SRC)/sync/sync_timebase.sv

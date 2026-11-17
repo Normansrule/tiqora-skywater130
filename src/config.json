@@ -40,9 +40,11 @@
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.1,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.25,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
+  "//": "TP_SKY130_DRIVE: src/tp_drive.sv becomes sky130 buf_4 cells (chip build only).",
+  "VERILOG_DEFINES": ["TP_SKY130_DRIVE"],
   "RUN_LINTER": 1,
   "LINTER_INCLUDE_PDK_MODELS": 1,
 

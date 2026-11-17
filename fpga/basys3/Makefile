@@ -17,7 +17,7 @@ ROOT   = ../..
 SRC    = $(ROOT)/src
 # The FPGA build includes the CPU / GPU / TPU modes (src/accel, TIQORA_MODES).
 DEFS   = -DTIQORA_MODES
-RTL    = $(SRC)/tp_pkg.sv $(SRC)/accel/tp_simd.sv $(SRC)/accel/tp_mac.sv $(SRC)/core/tp_nregfile.sv $(SRC)/core/tp_ncore.sv \
+RTL    = $(SRC)/tp_pkg.sv $(SRC)/accel/tp_simd.sv $(SRC)/accel/tp_mac.sv $(SRC)/tp_drive.sv $(SRC)/core/tp_nregfile.sv $(SRC)/core/tp_ncore.sv \
          $(SRC)/sync/sync_timebase.sv $(SRC)/sync/sync_capture.sv $(SRC)/sync/sync_event_fifo.sv \
          $(SRC)/sync/sync_compare.sv $(SRC)/sync/sync_unit.sv $(SRC)/periph/tp_uart.sv \
          $(SRC)/periph/tp_periph.sv $(SRC)/boot/tp_bootrom.sv $(SRC)/bus/tp_bus.sv \
