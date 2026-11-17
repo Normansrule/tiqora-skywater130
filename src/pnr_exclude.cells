@@ -82,3 +82,7 @@ sky130_fd_sc_hd__clkbuf_1
 # characterised range. Experiment exp-drv-f: this exclusion alone, with no
 # added repair margin (margins of 30-55% left detailed routing at 246-1284
 # violations after 6 h, runs 43770788415 and 43792897057).
+# Experiment: hold repair may not use the 1x delay cells; they drove long wires over 0.75 ns (run 44044781307).
+sky130_fd_sc_hd__dlygate4sd1_1
+sky130_fd_sc_hd__dlygate4sd2_1
+sky130_fd_sc_hd__dlygate4sd3_1
