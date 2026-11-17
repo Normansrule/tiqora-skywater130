@@ -40,7 +40,7 @@
 
   "//": "Hold slack margin - Increase them in case you are getting hold violations.",
   "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.05,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.1,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
   "RUN_LINTER": 1,
@@ -64,7 +64,7 @@
   "//": "Input ports are not buffered by the resizer: with the 1x buffers banned, buffer_ports picked the smallest remaining buffer, dlygate4sd3_1 (a delay cell, about 1 ns at the slow corner), on every input. The rst_n path then missed slow-corner setup by 1.11 ns (Tiqora run 43890240177). Design repair still buffers these nets for slew and fanout.",
   "DESIGN_REPAIR_BUFFER_INPUT_PORTS": 0,
   "//": "Experiment: wire capacitance x1.8 in PnR estimates (tech LEF has no coupling); GRT repair margins 30.",
-  "LAYERS_RC": {"*": {"li1": {"res": 0.07176471, "cap": 0.0001578271}, "met1": {"res": 0.0008928571, "cap": 0.0001525374}, "met2": {"res": 0.0008928571, "cap": 0.0001402019}, "met3": {"res": 0.0001566667, "cap": 0.0001542418}, "met4": {"res": 0.0001566667, "cap": 0.0001365779}, "met5": {"res": 1.78125e-05, "cap": 0.000158067}}},
+  "LAYERS_RC": {"*": {"li1": {"res": 0.07176471, "cap": 0.0001928998}, "met1": {"res": 0.0008928571, "cap": 0.0001864346}, "met2": {"res": 0.0008928571, "cap": 0.0001713578}, "met3": {"res": 0.0001566667, "cap": 0.0001885177}, "met4": {"res": 0.0001566667, "cap": 0.0001669285}, "met5": {"res": 1.78125e-05, "cap": 0.000193193}}},
   "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
   "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 30,
   "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 0,
