@@ -59,6 +59,9 @@ def load(port, image, timeout=5.0, log=print):
     t0 = time.time()
     port.write(payload); port.flush()
     reply = port.read(2)
+    if reply[:1] == b"!":
+        log("the chip refused the length: over 8 MB, or the length bytes were garbled; it is back at TP>")
+        return False
     if len(reply) != 2:
         log(f"no acknowledgement (got {reply!r}); check the baud rate (115,200 at 50 MHz)")
         return False
@@ -71,8 +74,9 @@ def load(port, image, timeout=5.0, log=print):
 
 class FakeChip:
     """Enough of the boot ROM, in Python, to test the host side with no board."""
-    def __init__(self, corrupt=False):
+    def __init__(self, corrupt=False, limit=MAX_BYTES):
         self.out, self.inbuf, self.corrupt, self.timeout = bytearray(b"TP>"), bytearray(), corrupt, 1
+        self.limit = limit
         self.ram = None
     def reset_input_buffer(self): pass
     def flush(self): pass
@@ -83,7 +87,10 @@ class FakeChip:
         self.inbuf += data
         if len(self.inbuf) >= 4:
             n = struct.unpack("<I", self.inbuf[:4])[0]
-            if len(self.inbuf) >= 4 + n:
+            if n > self.limit:                        # the boot ROM's own bound (sw/mkboot.py)
+                self.out += b"!TP>"
+                self.inbuf = self.inbuf[4:]
+            elif len(self.inbuf) >= 4 + n:
                 self.ram = bytes(self.inbuf[4:4 + n])
                 s = (sum(self.ram) + (1 if self.corrupt else 0)) & 0xFF
                 self.out += bytes([s]) + b"K"
@@ -106,6 +113,12 @@ def selftest():
     except ValueError: check(True, "an empty program is refused")
     try: frame(b"\0" * (MAX_BYTES + 1)); check(False, "an oversized program is refused")
     except ValueError: check(True, "an oversized program is refused")
+    big = FakeChip()
+    big.write(struct.pack("<I", MAX_BYTES + 1))
+    check(bytes(big.out) == b"TP>!TP>", "past 8 MB the boot ROM answers '!' and TP> again")
+    said = []
+    check(not load(FakeChip(limit=16), img, log=said.append) and "refused the length" in said[-1],
+          "a load the chip refuses with '!' fails and says the length was refused")
     import os, tempfile
     with tempfile.NamedTemporaryFile("w", suffix=".hex", delete=False) as f:
         f.write("00000013\n12345678\n")

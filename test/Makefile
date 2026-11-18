@@ -148,6 +148,7 @@ endif
 boot: prog
 	@sh iv.sh -g2012 -o tb_boot.vvp -s tb_boot $(RTL) qspi_model.sv tb_boot.sv
 	sh vv.sh tb_boot.vvp
+	cd .. && python3 sw/tpload.py selftest
 
 wake: prog
 	@sh iv.sh -g2012 -o tb_wake.vvp -s tb_wake $(RTL) qspi_model.sv tb_wake.sv
