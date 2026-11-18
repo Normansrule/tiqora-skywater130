@@ -70,9 +70,9 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: equiv warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: equiv warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust branch shared syncref docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust branch modes tour shared syncref docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
@@ -345,3 +345,20 @@ shared:
 # Tiqora-Serial, and a small stress build that overflows its queue often).
 syncref:
 	python3 sync_model.py --suite
+
+# Forward-branch prefetch and its QSPI abort (tb_branch.sv): sw/examples/branch_mix.c
+# from flash and from RAM, checksum against test/branch_check.py, every abort
+# case covered, chip select never rising with sck high, RAM timing held.
+branch: pytools
+	$(ZCC) $(CFLAGS_C) -T ../sw/link.ld -Wl,--gc-sections -o branch_flash.elf ../sw/crt0.S ../sw/lib/rt.c ../sw/examples/branch_mix.c
+	$(ZCC) $(CFLAGS_C) -T ../sw/link_ram.ld -Wl,--gc-sections -o branch_ram.elf ../sw/crt0.S ../sw/lib/rt.c ../sw/examples/branch_mix.c
+	python3 ../sw/rv32e_check.py branch_flash.elf branch_ram.elf
+	$(ZOBJ) -O binary branch_flash.elf branch_flash.bin && $(ZOBJ) -O binary branch_ram.elf branch_ram.bin
+	python3 -c "d=open('branch_flash.bin','rb').read();d+=b'\\0'*((-len(d))%4);open('branch_flash.hex','w').write('\\n'.join('%08x'%int.from_bytes(d[i:i+4],'little') for i in range(0,len(d),4)))"
+	python3 -c "d=open('branch_ram.bin','rb').read();open('branch_ram.bytes','w').write('\\n'.join('%02x'%b for b in d))"
+	@iverilog -g2012 -o tb_branch.vvp -s tb_branch $(RTL) qspi_model.sv tb_branch.sv > tb_branch.log 2>&1 || { grep -v sorry tb_branch.log; exit 1; }
+	@E=$$(python3 branch_check.py) && \
+	vvp -n tb_branch.vvp +HEX=branch_flash.hex +EXPECT=$$E > branch_flash.txt && \
+	vvp -n tb_branch.vvp +RAMHEX=branch_ram.bytes +EXPECT=$$E > branch_ram.txt; s=$$?; \
+	grep -hv 'readmemh\|finish called' branch_flash.txt branch_ram.txt; \
+	[ $$s -eq 0 ] && grep -q '^[0-9]* checks, 0 failures' branch_flash.txt && grep -q '^[0-9]* checks, 0 failures' branch_ram.txt

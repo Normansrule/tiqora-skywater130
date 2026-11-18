@@ -6,37 +6,37 @@
   "modes": {
    "define": "TIQORA_MODES",
    "modules_um2": {
-    "qspi_ctrl": 6516.2,
+    "qspi_ctrl": 6673.9,
     "sync_capture": 890.9,
     "sync_compare": 5800.6,
     "sync_event_fifo": 2655.0,
     "sync_timebase": 4922.2,
     "sync_unit": 4559.4,
     "tp_bootrom": 1127.3,
-    "tp_bus": 1332.5,
+    "tp_bus": 1340.0,
     "tp_drive": 0.0,
-    "tp_mac": 14938.1,
-    "tp_ncore": 12059.1,
+    "tp_mac": 14951.8,
+    "tp_ncore": 12072.8,
     "tp_nregfile": 11164.5,
     "tp_periph": 1498.9,
-    "tp_simd": 8094.0,
+    "tp_simd": 7908.8,
     "tp_soc": 236.5,
     "tp_uart": 2683.8,
     "tt_um_normansrule_tiqora": 28.8
    },
-   "total_hierarchical_um2": 78507.7952
+   "total_hierarchical_um2": 78515.3024
   },
   "modules_um2": {
-   "qspi_ctrl": 6602.6,
+   "qspi_ctrl": 6596.3,
    "sync_capture": 890.9,
    "sync_compare": 5800.6,
    "sync_event_fifo": 2655.0,
    "sync_timebase": 4922.2,
    "sync_unit": 4559.4,
    "tp_bootrom": 1127.3,
-   "tp_bus": 1332.5,
+   "tp_bus": 1340.0,
    "tp_drive": 0.0,
-   "tp_ncore": 11208.2,
+   "tp_ncore": 11290.8,
    "tp_nregfile": 11164.5,
    "tp_periph": 1498.9,
    "tp_soc": 236.5,
@@ -47,9 +47,9 @@
    "src/accel/tp_mac.sv": "84363f09b3439807a68e4180db45bc77403b9447079f103ba9f608177025aee1",
    "src/accel/tp_simd.sv": "9402e7b46eacc351e09dbffd4a7b6be695621db7aa0aa8ca2218dfc2cc0d471c",
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
-   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
-   "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
+   "src/bus/qspi_ctrl.sv": "520fa6dd741a39e8201080bc861998ba0015617f403bd0614a25a5ad9c342d97",
+   "src/bus/tp_bus.sv": "198cf1c515775a1b69d90c86c55076f1234aac738096cf37614ff2daeb7edaad",
+   "src/core/tp_ncore.sv": "f3567d7988c212e30793fc69955b9b27bf5c3e5774a201bbf8c3ef9028583d41",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
    "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
@@ -60,11 +60,11 @@
    "src/sync/sync_unit.sv": "2a4f9c3df3e71c382c9d11803a12b3c293fab6094ead429536c0edfc38972130",
    "src/tp_drive.sv": "225c674410fb4615620c26e5aaea0222739363ec4f32183b87e7f8453c4abbbf",
    "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
-   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tp_soc.sv": "796035441250a9fb76ffac9c54c42798afabe2aee638e2a3339ca77b90963112",
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c"
   },
   "tool": "Yosys 0.33",
-  "total_hierarchical_um2": 54716.2272,
+  "total_hierarchical_um2": 54800.0576,
   "what": "sky130_fd_sc_hd cell area per module, hierarchical synthesis before placement (the flattened netlist the flow builds is smaller: synthesis optimizes across boundaries)"
  },
  "blocks": [
@@ -282,7 +282,7 @@
    "ff_bits": 174,
    "file": "src/core/tp_ncore.sv",
    "handshake": "imem: hold imem_req and the address until imem_rvalid. dmem: hold dmem_req, address, data and byte enables until dmem_rvalid. Xpulse: one-clock t_valid with t_op, t_sub, t_rs1, t_rs2; t_rdata returns in the same clock.",
-   "latency": "18.3 clocks per instruction on straight-line code and 40.3 on bench_kernel (measured, v20 RTL simulation, make run PROG=... RUNARGS=+PROFILE). After a TWAIT deadline, software resumes 10 to 17 clocks later depending on the rotation phase (make latency).",
+   "latency": "18.3 clocks per instruction on straight-line code and 39.7 on bench_kernel (measured, RTL simulation with forward-branch prefetch, make run PROG=... RUNARGS=+PROFILE; v20 was 40.3). After a TWAIT deadline, software resumes 10 to 17 clocks later depending on the rotation phase (make latency).",
    "line": 84,
    "module": "tp_ncore",
    "params": {
@@ -327,6 +327,11 @@
     {
      "dir": "output",
      "name": "imem_ready",
+     "width": 1
+    },
+    {
+     "dir": "output",
+     "name": "imem_abort",
      "width": 1
     },
     {
@@ -699,6 +704,11 @@
      "width": 1
     },
     {
+     "dir": "input",
+     "name": "imem_abort",
+     "width": 1
+    },
+    {
      "dir": "output",
      "name": "imem_rvalid",
      "width": 1
@@ -771,6 +781,11 @@
     {
      "dir": "output",
      "name": "q_dev",
+     "width": 1
+    },
+    {
+     "dir": "output",
+     "name": "q_abort",
      "width": 1
     },
     {
@@ -849,7 +864,8 @@
     "decode addr[31:28]: 0 flash, 1 RAM, 2 timing unit, 3 GPIO/UART, 4 boot ROM",
     "grant: the data port wins over instruction fetch",
     "own: whoever started a QSPI transaction keeps the mux until it answers",
-    "hold: a prefetched word that arrives early is kept in the QSPI receive register (i_hold)"
+    "hold: a prefetched word that arrives early is kept in the QSPI receive register (i_hold)",
+    "abort: a taken forward branch ends its fall-through prefetch on the wire (q_abort)"
    ],
    "stall": "Instruction fetch waits while a data access owns the QSPI controller.",
    "summary": "Routes the core's instruction and data requests to the QSPI controller, the timing-unit registers, GPIO/UART or the boot ROM, decoding address bits 31:28.",
@@ -1130,6 +1146,11 @@
     {
      "dir": "input",
      "name": "dev",
+     "width": 1
+    },
+    {
+     "dir": "input",
+     "name": "abort",
      "width": 1
     },
     {
@@ -2404,6 +2425,26 @@
    "const_bits": 0,
    "drivers": [
     {
+     "bits": 1,
+     "block": "tt_um_normansrule_tiqora/u_soc/g_cpu.u_core",
+     "port": "imem_abort"
+    }
+   ],
+   "in": "tt_um_normansrule_tiqora/u_soc",
+   "loads": [
+    {
+     "bits": 1,
+     "block": "tt_um_normansrule_tiqora/u_soc/u_bus",
+     "port": "imem_abort"
+    }
+   ],
+   "net": "imem_abort",
+   "width": 1
+  },
+  {
+   "const_bits": 0,
+   "drivers": [
+    {
      "bits": 32,
      "block": "tt_um_normansrule_tiqora/u_soc/g_cpu.u_core",
      "port": "imem_addr"
@@ -2624,6 +2665,26 @@
    ],
    "net": "pin_sync",
    "width": 8
+  },
+  {
+   "const_bits": 0,
+   "drivers": [
+    {
+     "bits": 1,
+     "block": "tt_um_normansrule_tiqora/u_soc/u_bus",
+     "port": "q_abort"
+    }
+   ],
+   "in": "tt_um_normansrule_tiqora/u_soc",
+   "loads": [
+    {
+     "bits": 1,
+     "block": "tt_um_normansrule_tiqora/u_soc/u_qspi",
+     "port": "abort"
+    }
+   ],
+   "net": "q_abort",
+   "width": 1
   },
   {
    "const_bits": 0,
@@ -3914,9 +3975,9 @@
    "src/accel/tp_mac.sv": "84363f09b3439807a68e4180db45bc77403b9447079f103ba9f608177025aee1",
    "src/accel/tp_simd.sv": "9402e7b46eacc351e09dbffd4a7b6be695621db7aa0aa8ca2218dfc2cc0d471c",
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
-   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
-   "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
+   "src/bus/qspi_ctrl.sv": "520fa6dd741a39e8201080bc861998ba0015617f403bd0614a25a5ad9c342d97",
+   "src/bus/tp_bus.sv": "198cf1c515775a1b69d90c86c55076f1234aac738096cf37614ff2daeb7edaad",
+   "src/core/tp_ncore.sv": "f3567d7988c212e30793fc69955b9b27bf5c3e5774a201bbf8c3ef9028583d41",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
    "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
@@ -3927,7 +3988,7 @@
    "src/sync/sync_unit.sv": "2a4f9c3df3e71c382c9d11803a12b3c293fab6094ead429536c0edfc38972130",
    "src/tp_drive.sv": "225c674410fb4615620c26e5aaea0222739363ec4f32183b87e7f8453c4abbbf",
    "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
-   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tp_soc.sv": "796035441250a9fb76ffac9c54c42798afabe2aee638e2a3339ca77b90963112",
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c"
   },
   "tool": "Yosys 0.33"

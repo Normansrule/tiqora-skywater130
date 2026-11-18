@@ -92,6 +92,7 @@ module tp_ncore #(
     output logic              imem_req,
     output logic [31:0]       imem_addr,
     output logic              imem_ready,  // the core can take an instruction this clock
+    output logic              imem_abort,  // drop the fetch in flight (taken branch)
     input  wire  logic        imem_rvalid,
     input  wire  logic [31:0] imem_rdata,
     // data port
@@ -388,10 +389,20 @@ module tp_ncore #(
     // Instruction prefetch
     // ------------------------------------------------------------------
     // The next instruction's fetch starts as soon as the current one is
-    // known to fall through without using the bus: everything except loads,
-    // stores, branches, jumps and ECALL/EBREAK (63% of a typical instruction
-    // stream). The fetch then runs while this instruction executes, instead
-    // of after it.
+    // known not to use the bus or to jump for certain: everything except
+    // loads, stores, jumps and ECALL/EBREAK. The fetch then runs while this
+    // instruction executes, instead of after it.
+    //
+    // Forward branches prefetch too, betting on "not taken" (backward
+    // branches close loops and are mostly taken, so they do not): the
+    // fall-through word streams in while the comparison runs. If the branch
+    // is taken, its redirect clock raises imem_abort, and tp_bus and
+    // qspi_ctrl drop the fetch in flight (and a word arriving in that clock)
+    // before the target fetch starts. A taken branch re-addresses the flash
+    // anyway and the abort adds no clock to that, so the bet costs nothing;
+    // a forward branch that falls through saves the overlap. Measured
+    // (bench_kernel, make run RUNARGS=+PROFILE): 40.30 -> 39.74 clocks per
+    // instruction. Prefetching backward branches as well measured 40.29.
     //
     // A word that arrives before the core is back in FETCH is held by tp_bus
     // in the QSPI controller's own receive register, which keeps its value
@@ -403,7 +414,7 @@ module tp_ncore #(
     // pc afterwards: the same number, so it is stable for the whole request
     // as the bus contract requires.
     logic prefetch_ok, pc_advanced;
-    assign prefetch_ok = legal && !(is_ld || is_st || is_br || is_jal || is_jalr || is_sys);
+    assign prefetch_ok = legal && !(is_ld || is_st || is_jal || is_jalr || is_sys || (is_br && ir[31]));
     // pc_advanced = second || !(state == S_ALIGN || state == S_PASS), held in
     // its own flip-flop (adv_q) so the fetch-address select below comes
     // straight from a register. Decoding it from the state register put a
@@ -430,6 +441,7 @@ module tp_ncore #(
     assign fetching   = (state == S_FETCH) && !redirect_q;
     assign imem_req   = fetching || (prefetch_ok && state != S_HALT);
     assign imem_ready = fetching;
+    assign imem_abort = (state == S_FETCH) && redirect_q;
     assign imem_addr  = pc_advanced ? pc_full : pc4_full;
 
     // ------------------------------------------------------------------

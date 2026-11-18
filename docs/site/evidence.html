@@ -675,7 +675,7 @@ canvas.routed:active { cursor: grabbing; }
  <tbody>
   <tr><th>Name</th><td>TinyPulse</td><td>renamed Tiqora; the C API, opcodes, register map and bootloader protocol unchanged, <code>tinypulse.h</code> still works</td><td>same</td><td>same</td></tr>
   <tr><th>RTL</th><td>nibble-serial RV32E + Xpulse</td><td>instruction prefetch and a shorter flash read; CPU/GPU/TPU modes behind <code>TIQORA_MODES</code> (not in the tile)</td><td>unchanged</td><td>the timing unit's event-loss fix: two ways a pin event could vanish without the overflow flag, found by the reference model</td></tr>
-  <tr><th>Clocks per instruction</th><td>50.16 mixed, 32.21 straight-line</td><td>40.30 mixed, 18.32 straight-line <span class="ev measured">measured</span> RTL simulation</td><td>unchanged</td><td>unchanged</td></tr>
+  <tr><th>Clocks per instruction</th><td>50.16 mixed, 32.21 straight-line</td><td>40.30 mixed, 18.32 straight-line <span class="ev measured">measured</span> RTL simulation</td><td>unchanged</td><td>39.74 mixed with forward-branch prefetch, 18.32 straight-line <span class="ev measured">measured</span> RTL simulation</td></tr>
   <tr><th>Wake on a deadline</th><td>32 clocks</td><td>16 clocks</td><td>unchanged</td><td>unchanged</td></tr>
   <tr><th>RTL checks</th><td>not recorded here</td><td>240 checks in 15 suites before the modes were added; 470 in 16 with them</td><td>same</td><td>495 in 18 suites <span class="ev measured">measured</span> (main 3684851, 2026-10-27), + the recorded tour, 15 checks</td></tr>
   <tr><th>Official RISC-V tests</th><td>37/37</td><td>37/37 <span class="ev measured">measured</span></td><td>unchanged RTL</td><td>37/37 <span class="ev measured">measured</span> (main 3684851, 2026-10-27)</td></tr>

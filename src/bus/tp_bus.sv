@@ -23,6 +23,7 @@ module tp_bus
     input  wire  logic        imem_req,
     input  wire  logic [31:0] imem_addr,
     input  wire  logic        imem_ready,   // the core can take a word this clock
+    input  wire  logic        imem_abort,   // taken branch: drop the fetch in flight
     output logic              imem_rvalid,
     output logic [31:0]       imem_rdata,
 
@@ -42,6 +43,7 @@ module tp_bus
     output logic [31:0]       q_wdata,
     output logic [3:0]        q_be,
     output logic              q_dev,        // 0 = flash, 1 = PSRAM
+    output logic              q_abort,      // end the fetch on the wire now
     input  wire  logic        q_rvalid,
     input  wire  logic [31:0] q_rdata,
 
@@ -98,6 +100,16 @@ module tp_bus
     logic start_d, start_i;
     assign start_d = !busy && dmem_req && d_is_ext;
     assign start_i = !busy && !i_hold && !start_d && imem_req && i_is_ext;
+
+    // A taken branch drops the fall-through word it prefetched: q_abort ends
+    // the fetch on the wire in the controller. A data transaction is never
+    // aborted. busy stays set: the target fetch follows on the next clock,
+    // still owned by the fetch port, and the controller takes it straight
+    // from its abort state. The word can never be held already, nor land
+    // in the abort clock: a branch resolves at most 16 clocks after its
+    // prefetch starts and a word takes at least 17 (test/tb_branch.sv checks
+    // this at every abort), so i_hold needs no abort term.
+    assign q_abort = imem_abort && busy && !owner;
 
     always_ff @(posedge clk) begin
         if (rst) begin
