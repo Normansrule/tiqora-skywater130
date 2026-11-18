@@ -27,7 +27,7 @@ delay are separate matters), and can be disciplined to an external reference.
 | **I/O** | 8 inputs · 8 outputs · UART on the demo board's USB bridge |
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
-| **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
+| **Speed** | 18.3 clocks per instruction on straight-line code, 39.7 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation) — 2.7 and 1.2 million instructions/s at 50 MHz |
 | **Logic timing** | 12.45 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, main 3684851, 2026-10-27) |
 | **Area** | 50,965 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 3684851, 2026-10-27, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile) |
@@ -299,11 +299,16 @@ Point `PROG=` at any C file of your own.
 | Sort + checksum + CRC-32 (`bench_kernel.c`) | 50.2 | **40.3** | 1.24× |
 | The C self-test, from flash | 406,049 clocks | **337,417** | 1.20× |
 
+Since v20 forward branches prefetch as well: `bench_kernel.c` **39.74** clocks per instruction
+(from 40.30), `bench_alu.c` unchanged at 18.32 (measured, same command).
+
 v20 starts fetching the next instruction while the current one executes, for every instruction
 that cannot change the flow or use the bus (63% of a typical stream). The word is held in the
 QSPI controller's own receive register until the core is ready, so the speedup costs one
-flip-flop, one 30-bit address mux and about 1.7% more logic. Two thirds of the remaining time is
-still the QSPI bus: loads, stores and taken branches each restart a memory transaction.
+flip-flop, one 30-bit address mux and about 1.7% more logic. Forward branches now prefetch too,
+betting on "not taken"; a taken one aborts the fetch on the wire (`make branch`). Cost: 51,294 →
+51,483 µm² flat (+0.4%, Yosys 0.33, `make area`). Two thirds of the remaining time is still the
+QSPI bus: loads, stores and taken branches each restart a memory transaction.
 
 Printing a line with three numbers costs about 30,000 clocks, so `tp_io.h`'s `uart_putu` avoids
 division entirely — the core has no hardware divider, and the usual `v % 10, v / 10` loop would

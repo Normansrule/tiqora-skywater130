@@ -81,7 +81,7 @@ The links above are the GitHub Pages copy, published by `.github/workflows/pages
 | **I/O** | 8 inputs · 8 outputs · UART on the demo board's USB bridge |
 | **Timing** | 32-bit timebase with rate trim · 2 deadline triggers · 8 capture channels · event queue |
 | **Programming** | through the demo board's own USB-C port, a USB-UART adapter, or the flasher |
-| **Speed** | 18.3 clocks per instruction on straight-line code, 40.3 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
+| **Speed** | 18.3 clocks per instruction on straight-line code, 39.7 on a mixed sort/checksum/CRC benchmark (measured, RTL simulation, v20): 2.7 and 1.2 million instructions/s at 50 MHz |
 | **Logic timing** | 8.98 ns worst path at the slow corner against 20 ns (estimate before wires, `make timing`, branch timing-speed-2 6966205; was 12.45 ns on main 3684851); routed: +8.11 ns typical, +1.28 ns at the worst slow corner (measured, GitHub run 44119238814, tapeout-audit 476dc44; +2.86 ns before the slew repair, run 43126414733) |
 | **Area** | 50,965 µm² of standard cells, 44% of the 3 × 2 die (measured, `make area`, Yosys 0.33, main 3684851, 2026-10-27, with the cells this design's flow excludes (src/synth_exclude.cells) removed; before placement) |
 | **Cost** | 3 × 2 Tiny Tapeout tiles = 420 € (70 € a tile, the price this README has always used) |
@@ -489,11 +489,18 @@ Point `PROG=` at any C file of your own.
 | Sort + checksum + CRC-32 (`bench_kernel.c`) | 50.2 | **40.3** | 1.24× |
 | The C self-test, from flash | 406,049 clocks | **337,417** | 1.20× |
 
+Since v20 forward branches prefetch as well (below): `bench_kernel.c` **39.74** clocks per
+instruction (from 40.30), `bench_alu.c` unchanged at 18.32 (measured, same command).
+
 v20 starts fetching the next instruction while the current one executes, for every instruction
 that cannot change the flow or use the bus (63% of a typical stream). The word is held in the
 QSPI controller's own receive register until the core is ready, so the speedup costs one
-flip-flop, one 30-bit address mux and about 1.7% more logic. Two thirds of the remaining time is
-still the QSPI bus: loads, stores and taken branches each restart a memory transaction.
+flip-flop, one 30-bit address mux and about 1.7% more logic. Forward branches now prefetch too,
+betting on "not taken"; a taken one aborts the fetch on the wire (`make branch` checks it from
+flash and RAM). Cost: 51,294 → 51,483 µm² flat (+0.4%, Yosys 0.33, `make area`). Prefetching
+backward branches as well gained nothing (40.29), because they close loops and are mostly taken.
+Two thirds of the remaining time is still the QSPI bus: loads, stores and taken branches each
+restart a memory transaction.
 
 Printing a line with three numbers costs about 30,000 clocks, so `tp_io.h`'s `uart_putu` avoids
 division entirely — the core has no hardware divider, and the usual `v % 10, v / 10` loop would
@@ -679,6 +686,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
+| `make branch` | forward-branch prefetch and its QSPI abort: `sw/examples/branch_mix.c` from flash and RAM against a Python checksum (`test/branch_check.py`), aborts seen on the wire, no aborted word ever delivered, chip select never rising with sck high, RAM timing | 14 |
 | `make shared` | the timing unit and its reference model are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 7 files |
 | `make modes` | the CPU / GPU / TPU modes build (`TIQORA_MODES`, not in the tile): every GPU and TPU instruction against `sw/modes_model.py`, wrong-mode traps, switch latency ([docs/MODES.md](docs/MODES.md)) | 230 |
 | `make syncref` | the timing unit against a Python reference model, every output on every clock, 60,000 random clocks in each of three builds, and no pin event lost without overflow (two bugs it found are fixed, [docs/TESTING.md](docs/TESTING.md)) | 4 |

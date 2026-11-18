@@ -1,14 +1,14 @@
 {
  "captions": [
   {
-   "at": 1222,
+   "at": 1211,
    "blocks": [
     "tp_ncore"
    ],
    "text": "The word 0x00000000 arrives. No RV32E or Xpulse instruction has opcode 0, so the core runs one pass without writing anything, latches ILLEGAL and moves on."
   },
   {
-   "at": 1236,
+   "at": 1220,
    "blocks": [
     "tp_ncore",
     "tp_soc"
@@ -16,7 +16,7 @@
    "text": "ILLEGAL (uo_out[6]) is high and stays high until reset. Execution continues with the next instruction."
   },
   {
-   "at": 1247,
+   "at": 1231,
    "blocks": [
     "sync_capture",
     "sync_unit"
@@ -24,7 +24,7 @@
    "text": "ui_in[0] rises. Two synchronizer flip-flops later the edge is an event, stamped with the timebase."
   },
   {
-   "at": 1251,
+   "at": 1235,
    "blocks": [
     "sync_capture",
     "sync_event_fifo"
@@ -32,14 +32,14 @@
    "text": "ui_in[1] rises 4 clocks later: the second event, stamped exactly 4 ticks after the first."
   },
   {
-   "at": 1255,
+   "at": 1239,
    "blocks": [
     "sync_event_fifo"
    ],
    "text": "ui_in[2] rises, but the queue is already full (2 of 2). This event is lost."
   },
   {
-   "at": 1258,
+   "at": 1242,
    "blocks": [
     "sync_event_fifo",
     "tp_soc"
@@ -47,23 +47,23 @@
    "text": "OVF (uo_out[3]) goes high and stays high: software can tell an event was dropped."
   },
   {
-   "at": 1380,
+   "at": 1364,
    "blocks": [
     "sync_unit",
     "sync_event_fifo"
    ],
-   "text": "tpop x2: pin channel 0, rising, timestamp 1253."
+   "text": "tpop x2: pin channel 0, rising, timestamp 1237."
   },
   {
-   "at": 1412,
+   "at": 1396,
    "blocks": [
     "sync_unit",
     "sync_event_fifo"
    ],
-   "text": "tpop x3: pin channel 1, rising, timestamp 1257."
+   "text": "tpop x3: pin channel 1, rising, timestamp 1241."
   },
   {
-   "at": 1444,
+   "at": 1428,
    "blocks": [
     "sync_unit",
     "sync_event_fifo"
@@ -71,7 +71,7 @@
    "text": "tpop x4: empty (0)."
   },
   {
-   "at": 1508,
+   "at": 1492,
    "blocks": [
     "tp_ncore"
    ],
@@ -105,8 +105,8 @@
   }
  ],
  "cycles": [
-  1218,
-  1514
+  1207,
+  1498
  ],
  "event_format": {
   "26:0": "timestamp, low 27 bits of the timebase",
@@ -119,7 +119,7 @@
  "kind_text": "Recorded from an RTL simulation, not computed in the browser",
  "marks": [
   {
-   "at": 1258,
+   "at": 1242,
    "label": "overflow"
   }
  ],
@@ -130,9 +130,9 @@
   "simulator": "Icarus Verilog version 12.0 (stable) ()",
   "sources": {
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
-   "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
-   "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
+   "src/bus/qspi_ctrl.sv": "520fa6dd741a39e8201080bc861998ba0015617f403bd0614a25a5ad9c342d97",
+   "src/bus/tp_bus.sv": "198cf1c515775a1b69d90c86c55076f1234aac738096cf37614ff2daeb7edaad",
+   "src/core/tp_ncore.sv": "f3567d7988c212e30793fc69955b9b27bf5c3e5774a201bbf8c3ef9028583d41",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
    "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
@@ -143,7 +143,7 @@
    "src/sync/sync_unit.sv": "2a4f9c3df3e71c382c9d11803a12b3c293fab6094ead429536c0edfc38972130",
    "src/tp_drive.sv": "225c674410fb4615620c26e5aaea0222739363ec4f32183b87e7f8453c4abbbf",
    "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
-   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
+   "src/tp_soc.sv": "796035441250a9fb76ffac9c54c42798afabe2aee638e2a3339ca77b90963112",
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
    "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
    "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
@@ -158,43 +158,43 @@
    "block": "tp_ncore",
    "changes": [
     [
-     1218,
+     1207,
      "009c bne  x13, x11, fail"
     ],
     [
-     1222,
+     1211,
      "00a0 .word 0"
     ],
     [
-     1254,
+     1238,
      "00a4 time x1"
     ],
     [
-     1285,
+     1269,
      "00a8 addi x1, x1, 96"
     ],
     [
-     1303,
+     1287,
      "00ac twait x1"
     ],
     [
-     1366,
+     1350,
      "00b0 tpop x2"
     ],
     [
-     1397,
+     1381,
      "00b4 tpop x3"
     ],
     [
-     1429,
+     1413,
      "00b8 tpop x4"
     ],
     [
-     1461,
+     1445,
      "00bc tstat x15"
     ],
     [
-     1493,
+     1477,
      "00c0 ecall"
     ]
    ],
@@ -208,23 +208,35 @@
    "block": "tp_ncore",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1222,
+     1211,
      1
     ],
     [
-     1228,
+     1212,
      2
     ],
     [
-     1236,
+     1220,
      0
     ],
     [
-     1254,
+     1238,
+     1
+    ],
+    [
+     1244,
+     2
+    ],
+    [
+     1252,
+     6
+    ],
+    [
+     1253,
      1
     ],
     [
@@ -233,7 +245,7 @@
     ],
     [
      1268,
-     6
+     0
     ],
     [
      1269,
@@ -248,7 +260,7 @@
      0
     ],
     [
-     1285,
+     1287,
      1
     ],
     [
@@ -257,30 +269,30 @@
     ],
     [
      1300,
-     0
-    ],
-    [
-     1303,
-     1
-    ],
-    [
-     1308,
-     2
-    ],
-    [
-     1316,
      6
     ],
     [
-     1317,
+     1301,
      3
     ],
     [
-     1365,
+     1349,
      0
     ],
     [
-     1366,
+     1350,
+     1
+    ],
+    [
+     1356,
+     2
+    ],
+    [
+     1364,
+     6
+    ],
+    [
+     1365,
      1
     ],
     [
@@ -289,7 +301,7 @@
     ],
     [
      1380,
-     6
+     0
     ],
     [
      1381,
@@ -301,7 +313,7 @@
     ],
     [
      1396,
-     0
+     6
     ],
     [
      1397,
@@ -313,7 +325,7 @@
     ],
     [
      1412,
-     6
+     0
     ],
     [
      1413,
@@ -325,7 +337,7 @@
     ],
     [
      1428,
-     0
+     6
     ],
     [
      1429,
@@ -337,7 +349,7 @@
     ],
     [
      1444,
-     6
+     0
     ],
     [
      1445,
@@ -349,7 +361,7 @@
     ],
     [
      1460,
-     0
+     6
     ],
     [
      1461,
@@ -361,7 +373,7 @@
     ],
     [
      1476,
-     6
+     0
     ],
     [
      1477,
@@ -373,18 +385,6 @@
     ],
     [
      1492,
-     0
-    ],
-    [
-     1493,
-     1
-    ],
-    [
-     1500,
-     2
-    ],
-    [
-     1508,
      4
     ]
    ],
@@ -408,11 +408,11 @@
    "block": "sync_capture",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1247,
+     1231,
      1
     ]
    ],
@@ -426,11 +426,11 @@
    "block": "sync_capture",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1251,
+     1235,
      1
     ]
    ],
@@ -444,11 +444,11 @@
    "block": "sync_capture",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1255,
+     1239,
      1
     ]
    ],
@@ -462,23 +462,23 @@
    "block": "sync_event_fifo",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1250,
+     1234,
      1
     ],
     [
-     1254,
+     1238,
      2
     ],
     [
-     1381,
+     1365,
      1
     ],
     [
-     1413,
+     1397,
      0
     ]
    ],
@@ -492,15 +492,15 @@
    "block": "sync_unit",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1250,
+     1234,
      1
     ],
     [
-     1413,
+     1397,
      0
     ]
    ],
@@ -514,11 +514,11 @@
    "block": "sync_event_fifo",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1258,
+     1242,
      1
     ]
    ],
@@ -532,11 +532,11 @@
    "block": "tp_ncore",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1236,
+     1220,
      1
     ]
    ],
@@ -550,11 +550,11 @@
    "block": "tp_ncore",
    "changes": [
     [
-     1218,
+     1207,
      0
     ],
     [
-     1508,
+     1492,
      1
     ]
    ],
@@ -568,31 +568,31 @@
    "block": "sync_unit",
    "changes": [
     [
-     1218,
+     1207,
      null
     ],
     [
-     1380,
-     134218981
+     1364,
+     134218965
     ],
     [
-     1381,
+     1365,
      null
     ],
     [
-     1412,
-     402654441
+     1396,
+     402654425
     ],
     [
-     1413,
+     1397,
      null
     ],
     [
-     1444,
+     1428,
      0
     ],
     [
-     1445,
+     1429,
      null
     ]
    ],

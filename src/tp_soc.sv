@@ -52,7 +52,7 @@ module tp_soc
     output logic [3:0]            sd_oe,
     input  wire  logic [3:0]      sd_in
 );
-    logic        imem_req, imem_ready, imem_rvalid;
+    logic        imem_req, imem_ready, imem_abort, imem_rvalid;
     logic [31:0] imem_addr, imem_rdata;
     logic        dmem_req, dmem_we, dmem_rvalid;
     logic [31:0] dmem_addr, dmem_wdata, dmem_rdata;
@@ -61,7 +61,7 @@ module tp_soc
     logic [2:0]  t_op;
     logic [6:0]  t_sub;
     logic [31:0] t_rs1, t_rs2, t_rdata, t_now;
-    logic        q_req, q_we, q_dev, q_rvalid;
+    logic        q_req, q_we, q_dev, q_rvalid, q_abort;
     logic [23:0] q_addr;
     logic [31:0] q_wdata, q_rdata;
     logic [3:0]  q_be;
@@ -85,6 +85,7 @@ module tp_soc
             .imem_req   (imem_req),
             .imem_addr  (imem_addr),
             .imem_ready (imem_ready),
+            .imem_abort (imem_abort),
             .imem_rvalid(imem_rvalid),
             .imem_rdata (imem_rdata),
             .dmem_req   (dmem_req),
@@ -113,6 +114,7 @@ module tp_soc
         .imem_req   (imem_req),
         .imem_addr  (imem_addr),
         .imem_ready (imem_ready),
+        .imem_abort (imem_abort),
         .imem_rvalid(imem_rvalid),
         .imem_rdata (imem_rdata),
         .dmem_req   (dmem_req),
@@ -128,6 +130,7 @@ module tp_soc
         .q_wdata    (q_wdata),
         .q_be       (q_be),
         .q_dev      (q_dev),
+        .q_abort    (q_abort),
         .q_rvalid   (q_rvalid),
         .q_rdata    (q_rdata),
         .reg_req    (reg_req),
@@ -162,6 +165,7 @@ module tp_soc
         .wdata     (q_wdata),
         .be        (q_be),
         .dev       (q_dev),
+        .abort     (q_abort),
         .rvalid    (q_rvalid),
         .rdata     (q_rdata),
         .sck       (sck),

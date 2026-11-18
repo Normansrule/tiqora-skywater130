@@ -45,6 +45,7 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
 | latency | 1 | software resumes 10–17 clocks after a `TWAIT` deadline, on all 8 rotation phases |
 | adjust | 3 | a time step neither skips nor repeats a deadline |
+| branch | 14 | forward-branch prefetch: a taken branch aborts the fall-through fetch, from flash and RAM, checked against a Python checksum and at the QSPI pins |
 | shared | 7 files | the timing unit and its reference model match Tiqora-Serial's, by SHA-256 manifest |
 | syncref | 4 | the timing unit against a Python reference model (`test/sync_model.py`), every output on every clock, 60,000 random clocks in each of three builds (Tiqora, Tiqora-Serial and a small stress build), and no pin event lost without overflow |
 

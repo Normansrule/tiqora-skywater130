@@ -81,6 +81,10 @@ module qspi_ctrl #(
     input  wire  logic [31:0] wdata,
     input  wire  logic [3:0]  be,
     input  wire  logic        dev,        // 0 = flash, 1 = PSRAM
+    // End the read in progress at once: no rvalid, and the stream is closed.
+    // tp_bus raises it only for an instruction fetch (a taken branch
+    // dropping its fall-through prefetch), never for a data access.
+    input  wire  logic        abort,
     // Extra sck cycles inserted before the data phase. A real flash launches
     // its output on the falling edge of sck, so the word the controller
     // samples arrives one to three cycles later than the ideal model; this
@@ -111,6 +115,7 @@ module qspi_ctrl #(
     localparam logic [3:0] Q_WLOAD  = 4'd6;   // wake-up: set up the next step
     localparam logic [3:0] Q_WSHIFT = 4'd7;   //          clock it out
     localparam logic [3:0] Q_WGAP   = 4'd8;   //          chip select high between steps
+    localparam logic [3:0] Q_ABORT  = 4'd9;   // read dropped: chip select up, then idle
 
     logic [3:0]  state;
     logic [2:0]  wstep;              // wake-up step, 0..5
@@ -207,14 +212,35 @@ module qspi_ctrl #(
             cs_flash_n    <= 1'b1;
             cs_ram_n      <= 1'b1;
             sck           <= 1'b0;
+        end else if (abort && (state == Q_DESEL || state == Q_PREFIX ||
+                               state == Q_DUMMY || state == Q_DATA || state == Q_END)) begin
+            // Abort. sck goes low on this edge and chip select rises on the
+            // next (Q_ABORT), so chip select never rises with sck high. A
+            // flash left in continuous read mode stays in it: the mode bits
+            // only change when a full address phase is clocked in. The
+            // stream position is lost, so the next fetch re-addresses.
+            rvalid      <= 1'b0;
+            sck         <= 1'b0;
+            phase       <= 1'b0;
+            stream_open <= 1'b0;
+            state       <= Q_ABORT;
         end else begin
             rvalid <= 1'b0;
 
             unique case (state)
 
-                Q_IDLE: begin
+                // Q_ABORT is idle with chip select going up: the target fetch
+                // of the taken branch usually arrives in this same clock, and
+                // takes the non-streaming path below (the abort closed the
+                // stream), which raises chip select too.
+                Q_IDLE, Q_ABORT: begin
                     phase <= 1'b0;
                     sck   <= 1'b0;
+                    if (state == Q_ABORT) begin
+                        cs_flash_n <= 1'b1;
+                        cs_ram_n   <= 1'b1;
+                        state      <= Q_IDLE;
+                    end
                     if (req) begin
                         cur_dev  <= dev;
                         cur_we   <= we;

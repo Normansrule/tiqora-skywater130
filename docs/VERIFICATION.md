@@ -25,6 +25,7 @@ Run everything with `cd test && make sim && make && make lint`, plus `make act` 
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
+| `make branch` | forward-branch prefetch and its QSPI abort: `sw/examples/branch_mix.c` from flash and RAM against a Python checksum (`test/branch_check.py`), aborts seen on the wire, no aborted word ever delivered, chip select never rising with sck high, RAM timing | 14 |
 | `make shared` | the timing unit and its reference model are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 7 files |
 | `make modes` | the CPU / GPU / TPU modes build (`TIQORA_MODES`, not in the tile): every GPU and TPU instruction against `sw/modes_model.py`, wrong-mode traps, switch latency ([docs/MODES.md](MODES.md)) | 230 |
 | `make syncref` | the timing unit against a Python reference model, every output on every clock, 60,000 random clocks in each of three builds, and no pin event lost without overflow (two bugs it found are fixed, [docs/TESTING.md](TESTING.md)) | 4 |
