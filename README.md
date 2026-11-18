@@ -169,6 +169,25 @@ multiplexer, and Tiqora is one 3 × 2 block of tiles on it:
 
 ![From the demo board to Tiqora's tiles on the die](docs/images/board_to_silicon.svg)
 
+<sub>A drawing, not to scale. The same journey with real dimensions follows.</sub>
+
+**On the Tiny Tapeout chip, in millimetres.** The QFN-64 package is 9.00 mm square. The die
+inside is 3.588 × 5.188 mm: 44 GPIO pads and 23 power, ground, corner and reset pads around a
+3.167 × 4.767 mm user area, which holds 480 tile slots of 161.00 × 111.52 µm on a 173.88 µm
+pitch. Tiqora is one 3 × 2 block of them, 508.76 × 225.76 µm (0.509 × 0.226 mm, 0.115 mm²),
+0.76% of the user area:
+
+![To scale, in mm and µm: the QFN-64 package, the 3.588 × 5.188 mm die with its pad ring and 480 tile slots, the tile grid around Tiqora, and Tiqora's 508.76 × 225.76 µm block](docs/images/tt_floorplan.svg)
+
+<sub>Drawn by `docs/tools/tt_floorplan.py` from the sources, each pinned to a commit in
+`docs/tools/tt_chip.json`: the die and pads from efabless/caravel's openframe layout
+(`caravel_openframe.mag`, `chip_io_openframe.mag`), the tile grid computed from tt-multiplexer's
+`cfg/sky130.yaml` and checked by `make docs` against all 12 sizes in tt-support-tools'
+`tile_sizes.yaml`, and Tiqora's block from the routed run's `design__die__bbox` (GitHub run
+44119238814). Tiny Tapeout assigns the slot at tape-out, so the one shown is an example; the
+die's position in the package is not published, so it is drawn centred.
+[Step through it](https://normansrule.github.io/tiqora-skywater130/physical.html#on-the-chip).</sub>
+
 **Where the area goes, to scale.** Each block's measured cell area from synthesis, laid out in
 the real 508.76 × 225.76 µm die outline. This is a treemap of measured numbers, not a
 placement; the routed layout follows below.
@@ -776,7 +795,7 @@ docs/site/     the explorer site: pages/ (templates), lib/ (shared styles, scrip
 docs/atlas/    hand-written notes the atlas adds to what it reads from the RTL
 docs/fpga/     the recorded Basys 3 run behind the board animation
 docs/tools/    atlas.py, traces.py, die_map.py, build_site.py, check_site.py, readme_media.py,
-               motion.py, site_shots.py, fpga_media.py: the site and its README pictures;
+               motion.py, site_shots.py, fpga_media.py, tt_floorplan.py: the site and its README pictures;
                layout_preview.py, figures.py, build_explorer.py: the other images
 syn/           synthesis and area scripts
 .github/       Tiny Tapeout CI: gds (hardening, pre-flight, gate-level test), test, docs, fpga;

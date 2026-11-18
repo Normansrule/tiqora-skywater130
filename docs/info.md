@@ -61,6 +61,14 @@ multiplexer, and Tiqora is one 3 × 2 block of tiles on it:
 
 ![From the demo board to Tiqora's tiles on the die](images/board_to_silicon.svg)
 
+A drawing, not to scale. To scale, with real dimensions: the QFN-64 package is 9.00 mm square;
+the die inside is 3.588 × 5.188 mm, with 44 GPIO pads and 23 power, ground, corner and reset pads
+around a 3.167 × 4.767 mm user area that holds 480 tile slots of 161.00 × 111.52 µm. Tiqora is one
+3 × 2 block of them, 508.76 × 225.76 µm (0.115 mm², 0.76% of the user area). The slot shown is an
+example: Tiny Tapeout assigns it at tape-out.
+
+![To scale: the QFN-64 package, the 3.588 × 5.188 mm die and its 480 tile slots, the tile grid around Tiqora, and its 508.76 × 225.76 µm block](images/tt_floorplan_print.svg)
+
 
 **An illustration, not a placement.** This is every real sky130 cell of the synthesized
 design, drawn with its real geometry but packed into rows block by block by a simple script
