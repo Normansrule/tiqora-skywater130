@@ -99,14 +99,14 @@ module tb_boot;
     // A length the loader must refuse: '!', then TP> again, and RAM untouched.
     task refuse(input [31:0] n, input [8*40:1] what);
         integer sel0, j;
-        reg [7:0] c;
+        reg [7:0] c, r;
         reg [8*24:1] again;
         begin
             sel0 = ram_sel;
             send_len(n);
             host_recv(DIV, c);
             again = 0;
-            for (j = 0; j < 3; j = j + 1) begin host_recv(DIV, b); again = {again[8*23:1], b}; end
+            for (j = 0; j < 3; j = j + 1) begin host_recv(DIV, r); again = {again[8*23:1], r}; end
             chk(c == "!" && again[24:1] == "TP>" && ram_sel == sel0, {"length ", what, ": refused with !, TP> again, RAM untouched"});
         end
     endtask
