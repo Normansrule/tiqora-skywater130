@@ -12,6 +12,10 @@
 // jumps back to 0x4000_0000 with no reset. The hello-world load above then
 // goes through that re-entered bootloader, so it also proves warm entry.
 //
+// Lengths: one byte over 8 MB (the size of RAM A) and 0xFFFF_FFFF are each
+// refused with '!' and a fresh TP>, with no RAM access; exactly 8 MB is
+// accepted (checked last: the loader then waits for 8 MB of data).
+//
 // The UART divider is overridden to 64 clocks per bit so this runs in
 // seconds; on silicon it is 434 (115,200 baud at 50 MHz). Each received byte
 // costs the bootloader about 150 clocks (eight nibble-serial instructions and
@@ -84,6 +88,28 @@ module tb_boot;
     reg     ran_from_ram = 1'b0;
     integer resets = 0;
     always @(posedge rst_n) resets = resets + 1;
+    integer ram_sel = 0;                   // every time RAM is selected
+    always @(negedge cs_r) if (rst_n) ram_sel = ram_sel + 1;
+
+    task send_len(input [31:0] n);
+        integer m;
+        for (m = 0; m < 4; m = m + 1) host_send(n >> (8 * m));
+    endtask
+
+    // A length the loader must refuse: '!', then TP> again, and RAM untouched.
+    task refuse(input [31:0] n, input [8*40:1] what);
+        integer sel0, j;
+        reg [7:0] c, r;
+        reg [8*24:1] again;
+        begin
+            sel0 = ram_sel;
+            send_len(n);
+            host_recv(DIV, c);
+            again = 0;
+            for (j = 0; j < 3; j = j + 1) begin host_recv(DIV, r); again = {again[8*23:1], r}; end
+            chk(c == "!" && again[24:1] == "TP>" && ram_sel == sel0, {"length ", what, ": refused with !, TP> again, RAM untouched"});
+        end
+    endtask
     always @(posedge clk) if (rst_n && dut.u_soc.g_cpu.u_core.pc[31:28] == 4'h1) ran_from_ram = 1'b1;
 
     // Read a hex program into `image`; returns its length in words.
@@ -132,6 +158,8 @@ module tb_boot;
         banner = 0;
         for (k = 0; k < 3; k = k + 1) begin host_recv(DIV, b); banner = {banner[8*15:1], b}; end
         chk(banner[24:1] == "TP>", "after reset: boot ROM announces itself with TP>");
+        refuse(32'h0080_0001, "8 MB + 1");
+        refuse(32'hFFFF_FFFF, "0xFFFF_FFFF");
         send_image(nwords, sum);
         host_recv(DIV, got_sum);
         host_recv(DIV, got_k);
@@ -182,6 +210,18 @@ module tb_boot;
         chk(dut.u_soc.g_cpu.u_core.pc[31:28] == 4'h1, "and it halted at an address in RAM (0x1xxx_xxxx)");
         chk(dut.u_soc.g_cpu.u_core.illegal_q === 1'b0, "no illegal instructions anywhere along the way");
         chk(u_psram.violations == 0, "RAM timing: selected under 8 us, deselected at least 18 ns, always");
+
+        // ---- exactly 8 MB fits: the loader takes it and waits for the bytes ----
+        rst_n = 1'b0; repeat (10) @(posedge clk); rst_n = 1'b1;
+        banner = 0;
+        for (k = 0; k < 3; k = k + 1) begin host_recv(DIV, b); banner = {banner[8*15:1], b}; end
+        send_len(32'h0080_0000);
+        k = 0;
+        while (uo_out[4] !== 1'b0 && k < 40 * DIV) begin @(posedge clk); k = k + 1; end
+        chk(banner[24:1] == "TP>" && k == 40 * DIV, "length exactly 8 MB: accepted, no '!', the loader waits for data");
+        host_send(8'h5A);
+        repeat (400) @(posedge clk);
+        chk(u_psram.mem[0] === 8'h5A, "and its first byte lands at the start of RAM A");
 
         $display("\n%0d checks, %0d failures", checks, errors);
         if (errors == 0) $display("BOOTLOADER TEST PASSED\n");

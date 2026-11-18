@@ -329,7 +329,7 @@ Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent imple
 | Event queue | 2,529 |
 | GPIO registers | 1,403 |
 | Bus | 1,300 |
-| Boot ROM (43-instruction UART bootloader) | 1,010 |
+| Boot ROM (48-instruction UART bootloader) | 1,127 |
 | Capture channels (8) | 891 |
 
 <sub>Per-block numbers come from the hierarchical netlist (52,000 µm² total). The flattened netlist
@@ -349,11 +349,12 @@ it needed 4 × 2 tiles (560 €). The rewrite added the UART and GPIO and fits 3
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
 | `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach (offsets in `src/tp_pkg.sv`, `SR_*`) |
 | `0x3000_0000` | — | GPIO and UART registers |
-| `0x4000_0000` | 172 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
 
 Only address bits 31:28 (which device) and 23:0 (where in it) are decoded (`src/bus/tp_bus.sv`),
 so each device repeats every 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again. The
-bootloader takes the length it is sent as given, so `sw/tpload.py` refuses images over 8 MB.
+bootloader refuses a length over 8 MB (the size of RAM A) with `!` before storing a byte, so a
+program can never spill into RAM B or wrap onto itself; `sw/tpload.py` also refuses such images.
 
 **From reset to the first instruction.** The chip wakes its own flash and RAMs whatever state
 they were left in, then reads the first word:
@@ -616,7 +617,7 @@ from first power-up, including what each status pin means when something's wrong
 ### Program it over USB serial — no flasher
 
 Tiqora has a boot ROM, the way an RP2040 does. **Hold `ui_in[7]` high while you release
-reset** and, instead of running flash, the chip runs a 43-instruction bootloader that takes a
+reset** and, instead of running flash, the chip runs a 48-instruction bootloader that takes a
 program over the UART:
 
 ```
@@ -624,6 +625,7 @@ chip → PC   TP>                               ready
 PC → chip   length (4 bytes, little endian), then the program
 chip → PC   checksum byte, then K              verified
             the program runs from RAM at 0x1000_0000
+chip → PC   ! then TP> again                   length over 8 MB (RAM A): refused, nothing stored
 ```
 
 On the PC side, `sw/tpload.py` does all of it (it only needs `pyserial`):
@@ -665,7 +667,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
 | `make wrap` | `TWAIT` held correctly across the timebase rollover | 10 |
-| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, and a warm entry with hostile registers | 14 |
+| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, lengths over 8 MB are refused, and a warm entry with hostile registers | 18 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
 | `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
