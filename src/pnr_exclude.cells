@@ -82,3 +82,5 @@ sky130_fd_sc_hd__clkbuf_1
 # characterised range. Tried first on its own (2026-11-16), with no
 # added repair margin (margins of 30-55% left detailed routing at 246-1284
 # violations after 6 h, runs 43770788415 and 43792897057).
+# Experiment exp-route-d: hold repair without the weakest delay cell
+sky130_fd_sc_hd__dlygate4sd3_1
