@@ -27,7 +27,7 @@
   "//": "CTS_DISTANCE_BETWEEN_BUFFERS - TritonCTS puts a clock buffer every 30 um along the H-tree. Without it the root buffer drove all 16 H-tree branches directly: fanout 16 over the limit of 10 plus a max-cap violation on clknet_0_clk at all 9 corners (run 44089517415). At 30 um: 0 fanout and cap violations, setup +1.335 ns, hold +0.147 ns (run 44111857909).",
   "CTS_DISTANCE_BETWEEN_BUFFERS": 30,
   "RUN_POST_GRT_DESIGN_REPAIR": 1,
-  "RUN_POST_GRT_RESIZER_TIMING": 1,
+  "RUN_POST_GRT_RESIZER_TIMING": 0,
   "PL_RESIZER_SETUP_SLACK_MARGIN": 1.0,
   "GRT_RESIZER_SETUP_SLACK_MARGIN": 0.5,
 
@@ -43,7 +43,7 @@
   "CLOCK_PERIOD": 20,
 
   "//": "Hold slack margins. After global routing the target is 0.25 ns: the inflated wire estimate (LAYERS_RC) makes data paths look slower than extraction finds, so a 0.1 ns target ended at +0.023 to +0.034 ns; 0.25 ends at +0.150 ns (run 44089517415).",
-  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
+  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.25,
   "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.25,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
