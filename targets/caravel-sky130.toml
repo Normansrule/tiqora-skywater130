@@ -1,0 +1,81 @@
+# caravel-sky130 — Tiqora in the Caravel user project area (Efabless
+# caravel_user_project, the chipIgnite harness).
+#
+# Two hardening stages:
+#   core     tiqora_caravel_core: the plain macro plus the pad logic
+#            (output enables, constants), with Caravel's io_in/io_out/io_oeb
+#            names. All logic lives here.
+#   wrapper  user_project_wrapper: the fixed 2920 x 3520 um frame, wiring
+#            only, with the core placed as macro "mprj".
+# The pad list below generates both RTL files and user_defines.v.
+name = "caravel-sky130"
+kind = "carrier"
+summary = "Caravel user project area (Efabless chipIgnite harness)"
+pdk = "sky130A"
+
+[design]
+files = ["src/targets/tiqora_macro.sv"]
+# Caravel's user clock is the management SoC's wb_clk_i; its frequency is
+# set by the management core. 25 ns is caravel_user_project's own setting.
+clock_period_ns = 25.0
+io_delay_pct = 20
+
+[floorplan]
+die_um = [380, 380]
+density_pct = 50
+max_util_pct = 45
+
+[signoff]
+setup_min_ns = 0.0
+hold_min_ns = 0.0
+max_util_pct = 70
+
+[librelane]
+SYNTH_EXCLUDED_CELL_FILE = "dir::../../src/synth_exclude.cells"
+GRT_ADJUSTMENT = 0.15
+CTS_SINK_CLUSTERING_SIZE = 10
+RUN_POST_GRT_DESIGN_REPAIR = 1
+RUN_POST_GRT_RESIZER_TIMING = 1
+PL_RESIZER_SETUP_SLACK_MARGIN = 1.0
+GRT_RESIZER_SETUP_SLACK_MARGIN = 0.5
+PL_RESIZER_HOLD_SLACK_MARGIN = 0.1
+GRT_RESIZER_HOLD_SLACK_MARGIN = 0.05
+RT_MAX_LAYER = "met4"
+PDN_MULTILAYER = 0
+
+[carrier]
+frame = "caravel"
+macro = "tiqora_macro"
+core = "tiqora_caravel_core"
+instance = "mprj"
+location_um = [60, 15]          # caravel_user_project macro.cfg places mprj here
+clock = "wb_clk_i"
+reset_n = ["!wb_rst_i"]
+# Same order as the Tiny Tapeout pins: ui_in on 8-15, uo_out on 16-23,
+# the QSPI Pmod (CS0 SD0 SD1 SCK SD2 SD3 CS1 CS2) on 24-31.
+pins = [
+  { pad = 8,  in = "gpio_in[0]" },
+  { pad = 9,  in = "gpio_in[1]" },
+  { pad = 10, in = "gpio_in[2]" },
+  { pad = 11, in = "gpio_in[3]" },
+  { pad = 12, in = "gpio_in[4]" },
+  { pad = 13, in = "gpio_in[5]" },
+  { pad = 14, in = "gpio_in[6]" },
+  { pad = 15, in = "gpio_in[7]" },
+  { pad = 16, out = "gpio_out[0]" },
+  { pad = 17, out = "gpio_out[1]" },
+  { pad = 18, out = "gpio_out[2]" },
+  { pad = 19, out = "gpio_out[3]" },
+  { pad = 20, out = "gpio_out[4]" },
+  { pad = 21, out = "gpio_out[5]" },
+  { pad = 22, out = "gpio_out[6]" },
+  { pad = 23, out = "gpio_out[7]" },
+  { pad = 24, out = "qspi_cs_flash_n", oe = "qspi_ctl_oe" },
+  { pad = 25, in = "qspi_sd_in[0]", out = "qspi_sd_out[0]", oe = "qspi_sd_oe[0]" },
+  { pad = 26, in = "qspi_sd_in[1]", out = "qspi_sd_out[1]", oe = "qspi_sd_oe[1]" },
+  { pad = 27, out = "qspi_sck", oe = "qspi_ctl_oe" },
+  { pad = 28, in = "qspi_sd_in[2]", out = "qspi_sd_out[2]", oe = "qspi_sd_oe[2]" },
+  { pad = 29, in = "qspi_sd_in[3]", out = "qspi_sd_out[3]", oe = "qspi_sd_oe[3]" },
+  { pad = 30, out = "qspi_cs_rama_n", oe = "qspi_ctl_oe" },
+  { pad = 31, out = "qspi_cs_ramb_n", oe = "qspi_ctl_oe" },
+]

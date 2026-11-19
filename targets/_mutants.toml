@@ -1,0 +1,50 @@
+# _mutants.toml — RTL mutants for `tapeout.py rtl-mutants` (make targets).
+#
+# Each entry breaks one line of target RTL, runs the lockstep bench
+# (`make -C test targets-bench`) and expects it to FAIL, then restores the
+# file. On top of these, rtl-mutants swaps two output pads of every carrier
+# in its generated core. A mutant that survives means the bench cannot see
+# that kind of wiring mistake.
+bench = ["make", "-s", "-C", "test", "targets-bench"]
+
+# Not a mutant: removing the reset gating of qspi_sd_oe. qspi_ctrl.sv
+# resets its state on the first clock of reset and drives sd_oe only in
+# PREFIX, write DATA and WSHIFT (lines 388-390), so the gate only matters
+# before the first clock edge, when the flops are X. Tried 2026-11-19: it
+# survives the bench, as it must. Kept in the RTL for power-up.
+
+[[mutant]]
+file = "src/targets/tiqora_macro.sv"
+find = "assign qspi_ctl_oe = ~rst;"
+replace = "assign qspi_ctl_oe = 1'b1;"
+why = "SCK and the chip selects are driven during reset"
+
+[[mutant]]
+file = "src/targets/tiqora_caravel_core.sv"
+find = "assign io_oeb[25] = ~m_qspi_sd_oe[0];"
+replace = "assign io_oeb[25] = m_qspi_sd_oe[0];"
+why = "a Caravel output enable loses its inversion"
+
+[[mutant]]
+file = "src/targets/tiqora_caravel_core.sv"
+find = "wire m_rst_n = ~wb_rst_i;"
+replace = "wire m_rst_n = wb_rst_i;"
+why = "Caravel reset polarity inverted"
+
+[[mutant]]
+file = "src/targets/tiqora_openframe_core.sv"
+find = "assign {gpio_dm2[24], gpio_dm1[24], gpio_dm0[24]} = 3'b110;"
+replace = "assign {gpio_dm2[24], gpio_dm1[24], gpio_dm0[24]} = 3'b001;"
+why = "an Openframe output pad left in input-only mode"
+
+[[mutant]]
+file = "src/targets/tiqora_openframe_core.sv"
+find = "wire m_rst_n = resetb_l & porb_l;"
+replace = "wire m_rst_n = porb_l;"
+why = "the Openframe reset pad is ignored"
+
+[[mutant]]
+file = "src/targets/openframe_project_wrapper.sv"
+find = "        .gpio_oeb(gpio_oeb),"
+replace = "        .gpio_oeb(),"
+why = "the wrapper drops the core's output enables"

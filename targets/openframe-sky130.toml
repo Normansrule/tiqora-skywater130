@@ -1,0 +1,78 @@
+# openframe-sky130 — Tiqora as the whole chip in the Efabless Openframe
+# padframe: 44 GPIO, no management core, the same frame Tiny Tapeout's
+# sky130 chips are built in.
+#
+# Two hardening stages, as for Caravel: tiqora_openframe_core (all logic,
+# including each pad's digital mode) and openframe_project_wrapper (wiring).
+# Pads follow the openframe example SoC where it has the same function:
+# clock on 38, flash on 36/37/39-42, UART on 5/6.
+name = "openframe-sky130"
+kind = "carrier"
+summary = "Openframe padframe, Tiqora is the whole chip (44 GPIO)"
+pdk = "sky130A"
+
+[design]
+files = ["src/targets/tiqora_macro.sv"]
+# 25 ns: the same RTL on main missed 20 ns at the slow corner by 2.30 ns
+# after routing (Tiny Tapeout gds run 40624722131, branch real-numbers-main), so 20 ns would fail the
+# setup gate. Pre-layout timing (targets/STATUS.md) is far more optimistic.
+clock_period_ns = 25.0
+io_delay_pct = 20
+
+[floorplan]
+die_um = [400, 400]
+density_pct = 50
+max_util_pct = 45
+
+[signoff]
+setup_min_ns = 0.0
+hold_min_ns = 0.0
+max_util_pct = 70
+
+[librelane]
+SYNTH_EXCLUDED_CELL_FILE = "dir::../../src/synth_exclude.cells"
+GRT_ADJUSTMENT = 0.15
+CTS_SINK_CLUSTERING_SIZE = 10
+RUN_POST_GRT_DESIGN_REPAIR = 1
+RUN_POST_GRT_RESIZER_TIMING = 1
+PL_RESIZER_SETUP_SLACK_MARGIN = 1.0
+GRT_RESIZER_SETUP_SLACK_MARGIN = 0.5
+PL_RESIZER_HOLD_SLACK_MARGIN = 0.1
+GRT_RESIZER_HOLD_SLACK_MARGIN = 0.05
+RT_MAX_LAYER = "met4"
+PDN_MULTILAYER = 0
+
+[carrier]
+frame = "openframe"
+macro = "tiqora_macro"
+core = "tiqora_openframe_core"
+instance = "tiqora"
+location_um = [550, 1990]       # where the openframe example places its SoC (macro.cfg)
+clock = "pad 38"
+reset_n = ["resetb_l", "porb_l"]
+pins = [
+  { pad = 5,  in = "gpio_in[3]" },            # UART RX
+  { pad = 6,  out = "gpio_out[4]" },          # UART TX
+  { pad = 16, in = "gpio_in[0]" },
+  { pad = 17, in = "gpio_in[1]" },
+  { pad = 18, in = "gpio_in[2]" },
+  { pad = 19, in = "gpio_in[4]" },
+  { pad = 20, in = "gpio_in[5]" },
+  { pad = 21, in = "gpio_in[6]" },
+  { pad = 22, in = "gpio_in[7]" },            # boot select at reset
+  { pad = 24, out = "gpio_out[0]" },          # TRIG0
+  { pad = 25, out = "gpio_out[1]" },
+  { pad = 26, out = "gpio_out[2]" },
+  { pad = 27, out = "gpio_out[3]" },
+  { pad = 28, out = "gpio_out[5]" },
+  { pad = 29, out = "gpio_out[6]" },
+  { pad = 30, out = "gpio_out[7]" },
+  { pad = 39, out = "qspi_cs_flash_n", oe = "qspi_ctl_oe" },
+  { pad = 40, out = "qspi_sck", oe = "qspi_ctl_oe" },
+  { pad = 41, in = "qspi_sd_in[0]", out = "qspi_sd_out[0]", oe = "qspi_sd_oe[0]" },
+  { pad = 42, in = "qspi_sd_in[1]", out = "qspi_sd_out[1]", oe = "qspi_sd_oe[1]" },
+  { pad = 36, in = "qspi_sd_in[2]", out = "qspi_sd_out[2]", oe = "qspi_sd_oe[2]" },
+  { pad = 37, in = "qspi_sd_in[3]", out = "qspi_sd_out[3]", oe = "qspi_sd_oe[3]" },
+  { pad = 43, out = "qspi_cs_rama_n", oe = "qspi_ctl_oe" },
+  { pad = 35, out = "qspi_cs_ramb_n", oe = "qspi_ctl_oe" },
+]
