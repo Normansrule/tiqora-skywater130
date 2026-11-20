@@ -71,7 +71,7 @@
   "DESIGN_REPAIR_BUFFER_INPUT_PORTS": 0,
   "//": "Wire capacitance x2.2 over the tech-LEF values (res unchanged), for placement and routing estimates only; signoff STA reads the extracted SPEF. The tech LEF has no sidewall coupling, so the resizer sized drivers for about half the load extraction found: 3,045 slow-corner slew violations (run 44049238333). x1.8: 39, x2.2: 17, x2.6: 24 (runs 44044781307, 44055648178, 44069913686); with the tp_drive register-file drivers: 0 (run 44089517415). Post-route repair margins 30% (55% made that step run without end with this setting).",
   "LAYERS_RC": {"*": {"li1": {"res": 0.07176471, "cap": 0.0001928998}, "met1": {"res": 0.0008928571, "cap": 0.0001864346}, "met2": {"res": 0.0008928571, "cap": 0.0001713578}, "met3": {"res": 0.0001566667, "cap": 0.0001885177}, "met4": {"res": 0.0001566667, "cap": 0.0001669285}, "met5": {"res": 1.78125e-05, "cap": 0.000193193}}},
-  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 30,
+  "GRT_DESIGN_REPAIR_MAX_SLEW_PCT": 45,
   "GRT_DESIGN_REPAIR_MAX_CAP_PCT": 30,
   "DESIGN_REPAIR_BUFFER_OUTPUT_PORTS": 0,
 
