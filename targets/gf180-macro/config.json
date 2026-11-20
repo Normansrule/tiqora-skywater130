@@ -19,7 +19,7 @@
         "dir::../../src/targets/tiqora_macro.sv"
     ],
     "CLOCK_PORT": "clk",
-    "CLOCK_PERIOD": 60.0,
+    "CLOCK_PERIOD": 70.0,
     "IO_DELAY_CONSTRAINT": 20,
     "FP_SIZING": "absolute",
     "DIE_AREA": [

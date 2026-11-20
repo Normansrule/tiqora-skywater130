@@ -117,8 +117,8 @@ with the whole metrics file and the gate table.
 - **Clock.** `sky130-macro` and `openframe-sky130` use 25 ns: the same RTL on
   main missed 20 ns at the slow corner by 2.30 ns after routing (Tiny Tapeout
   gds run 40624722131, branch real-numbers-main). Caravel uses 25 ns because that is caravel_user_project's
-  own setting for `wb_clk_i`. `gf180-macro` uses 60 ns, an estimate from its
-  pre-layout timing (see its file). Pre-layout timing in STATUS.md has no
+  own setting for `wb_clk_i`. `gf180-macro` uses 70 ns, set from its
+  measured routed slack at 60 ns plus about 7% margin (see its file). Pre-layout timing in STATUS.md has no
   wires and an ideal clock, so it is a bound, not a rating.
 - **Routing and timing repair** copy the settings the Tiny Tapeout 3x2 run
   converged with (`src/config.json` explains each). Macros stop at met4 with

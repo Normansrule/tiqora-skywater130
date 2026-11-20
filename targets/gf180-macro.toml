@@ -10,11 +10,12 @@ pdk = "gf180mcuD"
 top = "tiqora_macro"
 files = ["src/targets/tiqora_macro.sv"]
 clock_port = "clk"
-# 60 ns (an estimate): pre-layout, the slowest corner needs 34.0 ns
-# register to register (targets/STATUS.md). On sky130 the routed slow-corner
-# path came out about 1.6x its pre-layout figure, which puts gf180 near
-# 54 ns; 60 ns leaves margin. The gds run decides.
-clock_period_ns = 60.0
+# 70 ns, set from a measured routed result: at 60 ns LibreLane 3.0.14 routed
+# the macro with setup slack -3.260 ns at max_ss_125C_4v50 on a pin path
+# (flop to flop +4.713 ns), targets run 44641297233. Pin delays are 20% of
+# the period on each side, so a pin-to-pin path needs 0.6 x period >= 39.3 ns,
+# i.e. 65.4 ns; 70 ns adds about 7% margin. The next harden run checks it.
+clock_period_ns = 70.0
 io_delay_pct = 20
 
 [floorplan]

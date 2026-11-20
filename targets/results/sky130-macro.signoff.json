@@ -1,0 +1,6 @@
+{
+  "verdict": "FAIL: core 29/55 gates (slow-corner slew, cap, fanout; timing passes) — run 44640071986",
+  "measured": "LibreLane 3.0.14 --dockerized, tapeout.py signoff, GitHub targets workflow",
+  "run": "https://github.com/Normansrule/tiqora-skywater130/actions/runs/44640071986",
+  "commit": "82f75f8"
+}
