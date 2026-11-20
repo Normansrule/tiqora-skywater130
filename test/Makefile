@@ -29,6 +29,8 @@
 #   make bridge     the demo-board bridge (sw/demoboard/tpboot.py) against a simulated chip
 #   make timing     critical-path estimate from real cell delays (needs native yosys, LIB=...)
 #   make GATES=yes  the cocotb tests on the post-hardening netlist
+#   make targets    every tape-out target's top in lockstep with the Tiny Tapeout
+#                   top, then the framework's own checks and mutants (targets/)
 #   make prog       regenerate the .hex programs
 
 SIM ?= icarus
@@ -69,7 +71,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer targets targets-bench
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -132,6 +134,32 @@ wrap: prog
 xpulse: prog
 	@sh iv.sh -g2012 -o tb_xpulse.vvp -s tb_xpulse $(RTL) qspi_model.sv tb_xpulse.sv
 	sh vv.sh tb_xpulse.vvp
+
+# Tape-out targets (targets/*.toml, syn/targets/tapeout.py): the generated
+# Caravel and Openframe tops and the plain macro run in lockstep with the
+# Tiny Tapeout top, on three programs (Xpulse, every RV32E instruction, the
+# timebase wrap); then the framework checks its rules and
+# kills its mutants.
+TARGET_RTL = $(RTL) $(SRC)/targets/tiqora_macro.sv $(SRC)/targets/tiqora_caravel_core.sv \
+             $(SRC)/targets/user_project_wrapper.sv $(SRC)/targets/tiqora_openframe_core.sv \
+             $(SRC)/targets/openframe_project_wrapper.sv
+
+targets: prog
+	python3 ../syn/targets/tapeout.py check
+	verilator --lint-only -Wall --timing $(RTL) $(SRC)/targets/tiqora_macro.sv --top-module tiqora_macro
+	verilator --lint-only -Wall --timing $(TARGET_RTL) --top-module user_project_wrapper
+	verilator --lint-only -Wall --timing $(TARGET_RTL) --top-module openframe_project_wrapper
+	verilator --lint-only -Wall --timing -DUSE_POWER_PINS $(TARGET_RTL) --top-module user_project_wrapper
+	verilator --lint-only -Wall --timing -DUSE_POWER_PINS $(TARGET_RTL) --top-module openframe_project_wrapper
+	$(MAKE) --no-print-directory targets-bench
+	python3 ../syn/targets/tapeout.py mutants
+	python3 ../syn/targets/tapeout.py rtl-mutants
+
+targets-bench:
+	@sh iv.sh -g2012 -o tb_targets.vvp -s tb_targets $(TARGET_RTL) qspi_model.sv tb_targets.sv
+	sh vv.sh tb_targets.vvp +PROG=xpulse.hex +SEED=$(SEED)
+	sh vv.sh tb_targets.vvp +PROG=isa.hex +SEED=$(SEED)
+	sh vv.sh tb_targets.vvp +PROG=wrap.hex +SEED=$(SEED)
 
 clean-sim:
 	rm -rf .zig-cache-test .zig-cache-act run_* tb_run_* readme_*
@@ -325,6 +353,7 @@ tour:
 # editing one copy without updating both manifests fails here.
 shared:
 	cd .. && sha256sum -c --quiet docs/shared_timing.sha256 && echo "shared timing unit: $$(wc -l < docs/shared_timing.sha256) files match the manifest"
+	cd .. && sha256sum -c --quiet docs/shared_flow.sha256 && echo "shared tape-out flow: $$(wc -l < docs/shared_flow.sha256) files match the manifest"
 
 # The timing unit against a Python reference model (sync_model.py), every
 # output compared on every clock: 60,000 random clocks of pins, Xpulse

@@ -1,0 +1,49 @@
+# sky130-macro — Tiqora as a hard macro for any sky130 chip: a custom SoC,
+# a Caravel or Openframe user area, or a multi-project die. Plain named pins
+# (src/targets/tiqora_macro.sv), power on vccd1/vssd1 as Caravel and
+# Openframe user areas expect.
+name = "sky130-macro"
+kind = "macro"
+summary = "Hard macro for any sky130 chip, plain pins"
+pdk = "sky130A"
+
+[design]
+top = "tiqora_macro"
+files = ["src/targets/tiqora_macro.sv"]
+clock_port = "clk"
+# 25 ns: the same RTL on main missed 20 ns at the slow corner by 2.30 ns
+# after routing (Tiny Tapeout gds run 40624722131, branch real-numbers-main), so 20 ns would fail the
+# setup gate. Pre-layout timing (targets/STATUS.md) is far more optimistic.
+clock_period_ns = 25.0
+io_delay_pct = 20
+
+[floorplan]
+die_um = [380, 380]
+density_pct = 50
+# synthesised cell area / die area: rule T8 fails above this
+max_util_pct = 45
+
+[power]
+vdd = "vccd1"
+gnd = "vssd1"
+
+[signoff]
+setup_min_ns = 0.0
+hold_min_ns = 0.0
+max_util_pct = 70
+
+# Passed to LibreLane as written; rule T6 checks every name. The routing and
+# timing-repair settings are the ones the Tiny Tapeout 3x2 run converged
+# with (src/config.json explains each).
+[librelane]
+SYNTH_EXCLUDED_CELL_FILE = "dir::../../src/synth_exclude.cells"
+GRT_ADJUSTMENT = 0.15
+CTS_SINK_CLUSTERING_SIZE = 10
+RUN_POST_GRT_DESIGN_REPAIR = 1
+RUN_POST_GRT_RESIZER_TIMING = 1
+PL_RESIZER_SETUP_SLACK_MARGIN = 1.0
+GRT_RESIZER_SETUP_SLACK_MARGIN = 0.5
+PL_RESIZER_HOLD_SLACK_MARGIN = 0.1
+GRT_RESIZER_HOLD_SLACK_MARGIN = 0.05
+RT_MAX_LAYER = "met4"
+PDN_MULTILAYER = 0

@@ -1,0 +1,36 @@
+{
+ "synth": {
+  "tool": "Yosys 0.33",
+  "pdk_label": "open_pdks sky130A 1.0.471 (conda litex-hub)",
+  "liberty": "sky130_fd_sc_hd__tt_025C_1v80.lib",
+  "command": "python3 syn/targets/tapeout.py synth openframe-sky130 --pdk-root $PDK_ROOT",
+  "top": "tiqora_openframe_core",
+  "area_um2": 53515.1,
+  "cells": 7624,
+  "flops": 1191,
+  "util_pct": 33.45
+ },
+ "sta": {
+  "tool": "OpenSTA 3.1.0",
+  "period_ns": 25.0,
+  "io_delay_pct": 20,
+  "command": "python3 syn/targets/tapeout.py sta openframe-sky130 --pdk-root $PDK_ROOT",
+  "corners": {
+   "nom_tt_025C_1v80": {
+    "setup_ws_ns": 12.949,
+    "hold_ws_ns": 0.06,
+    "reg2reg_ns": 7.002
+   },
+   "nom_ss_100C_1v60": {
+    "setup_ws_ns": 11.199,
+    "hold_ws_ns": 0.392,
+    "reg2reg_ns": 13.43
+   },
+   "nom_ff_n40C_1v95": {
+    "setup_ws_ns": 13.467,
+    "hold_ws_ns": -0.062,
+    "reg2reg_ns": 4.51
+   }
+  }
+ }
+}

@@ -1,0 +1,6 @@
+{
+  "verdict": "FAIL at 70 ns: core 33/55 (slew at ss, capacitance 1-2, fanout 1; setup +2.74 ns max_ss, every corner passes timing; DRC, LVS clean) — run 44651895910",
+  "measured": "LibreLane 3.0.14 --dockerized, tapeout.py signoff, GitHub targets workflow",
+  "run": "https://github.com/Normansrule/tiqora-skywater130/actions/runs/44651895910",
+  "commit": "c5d4f38"
+}

@@ -1,0 +1,6 @@
+{
+  "verdict": "FAIL: core 28/55, wrapper 24/52 (wrapper: 12 antenna nets, capacitance on 61 pad wires, slew, fanout; timing, DRC and LVS pass) — run 44651895910",
+  "measured": "LibreLane 3.0.14 --dockerized, tapeout.py signoff, GitHub targets workflow",
+  "run": "https://github.com/Normansrule/tiqora-skywater130/actions/runs/44651895910",
+  "commit": "c5d4f38"
+}
