@@ -43,8 +43,8 @@
   "CLOCK_PERIOD": 20,
 
   "//": "Hold slack margins. After global routing the target is 0.25 ns: the inflated wire estimate (LAYERS_RC) makes data paths look slower than extraction finds, so a 0.1 ns target ended at +0.023 to +0.034 ns; 0.25 ends at +0.150 ns (run 44089517415).",
-  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.1,
-  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.25,
+  "PL_RESIZER_HOLD_SLACK_MARGIN": 0.25,
+  "GRT_RESIZER_HOLD_SLACK_MARGIN": 0.0,
 
   "//": "RUN_LINTER, LINTER_INCLUDE_PDK_MODELS - Disabling the linter is not recommended!",
   "//": "TP_SKY130_DRIVE: src/tp_drive.sv becomes sky130 buf_4 cells on the register-file read selects and taps (chip build only; simulation, formal and FPGA see wires).",
