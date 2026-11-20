@@ -45,6 +45,10 @@ module tiqora_openframe_core (
     output wire [43:0] gpio_dm2,
     output wire [43:0] gpio_dm1,
     output wire [43:0] gpio_dm0,
+    output wire [43:0] gpio_analog_en,
+    output wire [43:0] gpio_analog_pol,
+    output wire [43:0] gpio_analog_sel,
+    output wire [43:0] gpio_holdover,
     output wire [43:0] gpio_ib_mode_sel,
     output wire [43:0] gpio_vtrip_sel,
     output wire [43:0] gpio_slow_sel
@@ -270,6 +274,10 @@ module tiqora_openframe_core (
     assign gpio_oeb[43] = ~m_qspi_ctl_oe;
     assign {gpio_dm2[43], gpio_dm1[43], gpio_dm0[43]} = 3'b110;
     assign gpio_inp_dis[43] = 1'b1;
+    assign gpio_analog_en = 44'b0;
+    assign gpio_analog_pol = 44'b0;
+    assign gpio_analog_sel = 44'b0;
+    assign gpio_holdover = 44'b0;
     assign gpio_ib_mode_sel = 44'b0;
     assign gpio_vtrip_sel = 44'b0;
     assign gpio_slow_sel = 44'b0;
