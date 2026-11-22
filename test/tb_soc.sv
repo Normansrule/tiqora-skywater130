@@ -68,6 +68,9 @@ module tb_soc;
         .rst_n  (rst_n)
     );
 
+`include "sync_tap_tiqora.svh"
+
+
     qspi_flash_model #(.DUMMY(4), .WORDS(512)) u_flash (
         .cs_n   (cs_f),
         .sck    (sck),

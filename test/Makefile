@@ -69,9 +69,9 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref syncdiff docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
+sim: unit soc isa stress wrap xpulse boot wake c mcu reset bridge printf spi readme latency adjust modes tour shared syncref syncdiff docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
@@ -188,6 +188,10 @@ c_ram.elf: pytools $(C_SRCS) ../sw/link_ram.ld ../sw/tiqora.h ../sw/tp_io.h
 MCU_SRCS = ../sw/crt0.S ../sw/lib/rt.c ../sw/examples/mcu_e2e.c
 mcu_flash.elf: pytools $(MCU_SRCS) ../sw/link.ld ../sw/tiqora.h ../sw/tp_io.h
 	$(ZCC) $(CFLAGS_C) -T ../sw/link.ld -Wl,--gc-sections -o $@ $(MCU_SRCS)
+reset: mcu_flash.hex
+	@sh iv.sh -g2012 -o tb_reset.vvp -s tb_reset $(RTL) qspi_model.sv tb_reset.sv
+	sh vv.sh tb_reset.vvp
+
 mcu: mcu_flash.hex
 	@sh iv.sh -g2012 -o tb_mcu.vvp -s tb_mcu $(RTL) qspi_model.sv tb_mcu.sv
 	sh vv.sh tb_mcu.vvp
@@ -330,5 +334,20 @@ shared:
 # output compared on every clock: 60,000 random clocks of pins, Xpulse
 # instructions and register accesses, in three configurations (Tiqora,
 # Tiqora-Serial, and a small stress build that overflows its queue often).
+# The timing unit inside the whole chip, driven by the CPU's Xpulse
+# instructions in four end-to-end benches, replayed clock for clock through
+# the reference model (sync_tap.sv). Tiqora-Serial runs the same model on
+# traces from its UART host port, so both chips meet one statement of the unit.
+TAPS = xpulse mcu wake soc
+syncdiff: prog mcu_flash.hex
+	@for t in $(TAPS); do \
+	  iverilog -g2012 -DSYNC_TAP -o tb_$${t}_tap.vvp -s tb_$$t $(RTL) qspi_model.sv sync_tap.sv tb_$$t.sv || exit 1; \
+	  vvp -n tb_$${t}_tap.vvp +SYNCTAP=tap_$$t.txt > tap_$$t.log 2>&1 || { cat tap_$$t.log; exit 1; }; \
+	done
+	python3 sync_model.py --taps $(foreach t,$(TAPS),tap_$(t).txt)
+
+audit-mutants:
+	python3 audit_mutants.py
+
 syncref:
 	python3 sync_model.py --suite

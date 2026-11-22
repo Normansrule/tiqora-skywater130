@@ -39,14 +39,16 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | wake | 14 | the chip wakes the flash and RAM from cold, warm and pre-set states |
 | c | 12 | a Clang-compiled C program from flash and via the bootloader |
 | mcu | 16 | the chip as a microcontroller: C from flash, a host on the UART, pins, trigger tick, capture timestamp, RAM |
+| reset | 45 | a one-clock reset at six points mid-work (UART byte, flash stream in continuous-read mode, RAM write, armed deadline, trigger pulse, queued event): every pin at its power-up value one clock in, every pin back on its built-in function, the timing unit cleared, no stale trigger after release, a reboot to `ready`, then a full `mcu_e2e` run |
 | bridge | 10 | the demo-board bridge vs a simulated chip with jitter and clock error |
 | printf | 23 | `tp_printf`, character for character against Python's `%` formatting |
 | spi | 2 | the software SPI reads a simulated W25Q128 flash's JEDEC ID (`EF 40 18`) |
 | readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
 | latency | 1 | software resumes 10–17 clocks after a `TWAIT` deadline, on all 8 rotation phases |
 | adjust | 3 | a time step neither skips nor repeats a deadline |
-| shared | 7 files | the timing unit and its reference model match Tiqora-Serial's, by SHA-256 manifest |
+| shared | 8 files | the timing unit, its reference model and the trace tap (`test/sync_tap.sv`) match Tiqora-Serial's, by SHA-256 manifest |
 | syncref | 4 | the timing unit against a Python reference model (`test/sync_model.py`), every output on every clock, 60,000 random clocks in each of three builds (Tiqora, Tiqora-Serial and a small stress build), and no pin event lost without overflow |
+| syncdiff | 4 | the same model replays the timing unit as the CPU drives it inside the whole chip (`test/sync_tap.sv` in tb_xpulse, tb_mcu, tb_wake, tb_soc), every output on every clock; Tiqora-Serial checks its UART front end against the same model |
 
 **Two event-loss bugs the reference model found, fixed 2026-10-26.** The
 timing unit promises that every pin event is either queued or counted by the

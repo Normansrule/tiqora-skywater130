@@ -652,6 +652,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
 | `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
+| `make reset` | a one-clock reset in the middle of work (a UART byte, a flash stream, a RAM write, an armed deadline, a trigger pulse, a queued event): pins back at power-up values, timing unit cleared, the chip boots again, then a full run | 45 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (v20) |
 | `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
@@ -660,8 +661,9 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make readme` | this README's minimal program, compiled verbatim, from flash and RAM: one 8-tick pulse at the TRIG0 pin, the greeting, the GPIO toggle | 10 |
 | `make latency` | software resumes 10–17 clocks after a `TWAIT` deadline, for deadlines on all 8 rotation phases | 1 |
 | `make adjust` | a time step neither skips nor repeats a deadline (fires at the step; a broken equality comparator fails it) | 3 |
-| `make shared` | the timing unit and its reference model are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 7 files |
+| `make shared` | the timing unit, its reference model and the in-chip trace tap are byte-identical to Tiqora-Serial's (SHA-256 manifest in both repositories) | 8 files |
 | `make syncref` | the timing unit against a Python reference model, every output on every clock, 60,000 random clocks in each of three builds, and no pin event lost without overflow (two bugs it found are fixed, [docs/TESTING.md](docs/TESTING.md)) | 4 |
+| `make syncdiff` | the same model on the timing unit inside the whole chip, driven by the CPU in four end-to-end benches (xpulse, mcu, wake, soc), every output on every clock; Tiqora-Serial runs it on its UART front end | 4 |
 | Tiny Tapeout pre-flight | CI's own project checker (TinyTapeout/tt-gds-action/precheck) on the routed 3x2 layout | passes (verify-audits, CI run 40278476822) |
 | `make timing` | critical-path estimate from real sky130 cell delays | 12.57 ns / 20 ns, slow corner, estimate before wires (main 2026-10-25) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |

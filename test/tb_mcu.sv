@@ -35,6 +35,9 @@ module tb_mcu;
     tt_um_normansrule_tiqora dut (
         .ui_in(ui_in), .uo_out(uo_out), .uio_in(uio_in),
         .uio_out(uio_out), .uio_oe(uio_oe), .ena(ena), .clk(clk), .rst_n(rst_n));
+
+`include "sync_tap_tiqora.svh"
+
     defparam dut.u_soc.u_periph.DIV_RESET = BOOT_DIV;
     qspi_flash_model #(.DUMMY(4), .WORDS(4096)) u_flash (
         .cs_n(cs_f), .sck(sck), .ctrl_sd({uio_out[5], uio_out[4], uio_out[2], uio_out[1]}), .dev_sd(flash_sd));
