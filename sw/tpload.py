@@ -15,9 +15,13 @@ Build C programs for RAM with sw/link_ram.ld, then
 
 Protocol (implemented by the boot ROM, sw/mkboot.py):
     chip -> host   "TP>"
-    host -> chip   length N, 4 bytes little endian, then N bytes
-    chip -> host   (sum of the N bytes) mod 256, then "K"
-    the chip then runs the program from 0x1000_0000
+    host -> chip   length N, 4 bytes little endian, then N bytes, then the
+                   check word, 4 bytes little endian (check_word below)
+    chip -> host   (sum of the N bytes) mod 256, then "K", and it runs the
+                   program from 0x1000_0000;
+                   or "?" then "TP>" if the check word does not match what
+                   arrived: nothing runs, and the host can send it again;
+                   or "!" then "TP>" if N is over 8 MB
 
 Only depends on pyserial (pip install pyserial).
 """
@@ -33,12 +37,24 @@ def load_image(path):
     return open(path, "rb").read()
 
 
+def check_word(image):
+    """Fletcher-style check: (sum2 mod 2^16) << 16 | (sum mod 2^16), where sum
+    adds the bytes and sum2 adds the running sums. A plain sum misses two bytes
+    swapped; sum2 weights each byte by its position, so it catches that."""
+    s1 = s2 = 0
+    for b in image:
+        s1 = (s1 + b) & 0xFFFFFFFF
+        s2 = (s2 + s1) & 0xFFFFFFFF
+    return ((s2 & 0xFFFF) << 16) | (s1 & 0xFFFF)
+
+
 def frame(image):
     if not image:
         raise ValueError("the program is empty")
     if len(image) > MAX_BYTES:
         raise ValueError(f"{len(image)} bytes will not fit in RAM A ({MAX_BYTES} bytes)")
-    return struct.pack("<I", len(image)) + image, sum(image) & 0xFF
+    return (struct.pack("<I", len(image)) + image + struct.pack("<I", check_word(image)),
+            sum(image) & 0xFF)
 
 
 def load(port, image, timeout=5.0, log=print):
@@ -59,8 +75,13 @@ def load(port, image, timeout=5.0, log=print):
     t0 = time.time()
     port.write(payload); port.flush()
     reply = port.read(2)
-    if reply[:1] == b"!":
+    # The first byte of a good reply is the sum, which can be any value,
+    # including '!' or '?': only the second byte tells the cases apart.
+    if reply == b"!T":
         log("the chip refused the length: over 8 MB, or the length bytes were garbled; it is back at TP>")
+        return False
+    if reply == b"?T":
+        log("the image arrived corrupted (check word mismatch); the chip did not run it and is back at TP>")
         return False
     if len(reply) != 2:
         log(f"no acknowledgement (got {reply!r}); check the baud rate (115,200 at 50 MHz)")
@@ -74,8 +95,9 @@ def load(port, image, timeout=5.0, log=print):
 
 class FakeChip:
     """Enough of the boot ROM, in Python, to test the host side with no board."""
-    def __init__(self, corrupt=False, limit=MAX_BYTES):
+    def __init__(self, corrupt=False, limit=MAX_BYTES, swap=False):
         self.out, self.inbuf, self.corrupt, self.timeout = bytearray(b"TP>"), bytearray(), corrupt, 1
+        self.swap = swap                              # the line swaps image bytes 0 and 1
         self.limit = limit
         self.ram = None
     def reset_input_buffer(self): pass
@@ -90,8 +112,17 @@ class FakeChip:
             if n > self.limit:                        # the boot ROM's own bound (sw/mkboot.py)
                 self.out += b"!TP>"
                 self.inbuf = self.inbuf[4:]
-            elif len(self.inbuf) >= 4 + n:
-                self.ram = bytes(self.inbuf[4:4 + n])
+            elif len(self.inbuf) >= 8 + n:
+                ram = bytearray(self.inbuf[4:4 + n])
+                if self.swap and n > 1:
+                    ram[0], ram[1] = ram[1], ram[0]
+                self.ram = bytes(ram)
+                sent = struct.unpack("<I", self.inbuf[4 + n:8 + n])[0]
+                self.inbuf = self.inbuf[8 + n:]
+                if sent != check_word(self.ram):          # the boot ROM's check
+                    self.out += b"?TP>"
+                    self.ram = None                       # not run
+                    return
                 s = (sum(self.ram) + (1 if self.corrupt else 0)) & 0xFF
                 self.out += bytes([s]) + b"K"
 
@@ -119,6 +150,17 @@ def selftest():
     said = []
     check(not load(FakeChip(limit=16), img, log=said.append) and "refused the length" in said[-1],
           "a load the chip refuses with '!' fails and says the length was refused")
+    said = []
+    sw = FakeChip(swap=True)
+    check(not load(sw, img, log=said.append) and "corrupted" in said[-1] and sw.ram is None
+          and bytes(sw.out) == b"P>",          # "?T" read, "P>" still to come
+          "two bytes swapped on the line: same sum, but the chip answers '?' and runs nothing")
+    a, b = bytes([1, 2, 3]), bytes([2, 1, 3])
+    check(sum(a) == sum(b) and check_word(a) != check_word(b),
+          "the check word tells a swap apart where the sum cannot")
+    bang = bytes([0x21]) + bytes(31)                  # sum mod 256 = '!'
+    check(load(FakeChip(), bang, log=quiet), "an image whose sum is '!' (0x21) still loads")
+    check(frame(img)[0][-4:] == struct.pack("<I", check_word(img)), "the check word follows the image")
     import os, tempfile
     with tempfile.NamedTemporaryFile("w", suffix=".hex", delete=False) as f:
         f.write("00000013\n12345678\n")

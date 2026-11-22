@@ -64,6 +64,7 @@ module tb_c;
         end
     end
 
+    reg [31:0] c_s1, c_s2;              // boot check word: sum, sum of sums
     task host_send(input [7:0] b);
         integer i;
         begin
@@ -144,10 +145,16 @@ module tb_c;
         chk(rx_buf[0] == "T" && rx_buf[1] == "P" && rx_buf[2] == ">", "uart: bootloader ready");
         rx_on = 1'b0;
         for (k = 0; k < 4; k = k + 1) host_send((4 * nw) >> (8 * k));
+        c_s1 = 0; c_s2 = 0;
         for (i = 0; i < nw; i = i + 1) begin
             w = img[i];
-            for (k = 0; k < 4; k = k + 1) host_send(w[8*k +: 8]);
+            for (k = 0; k < 4; k = k + 1) begin
+                host_send(w[8*k +: 8]);
+                c_s1 = c_s1 + w[8*k +: 8]; c_s2 = c_s2 + c_s1;
+            end
         end
+        // the check word the boot ROM verifies before it runs anything
+        for (k = 0; k < 4; k = k + 1) host_send({c_s2[15:0], c_s1[15:0]} >> (8 * k));
         rx_n = 0; rx_on = 1'b1;
         while (rx_n < 2) @(posedge clk);                 // checksum, K
         chk(rx_buf[1] == "K", "uart: program accepted");

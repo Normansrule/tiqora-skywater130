@@ -329,7 +329,7 @@ Bell) fit a RISC-V microcontroller in 2 × 2 tiles; this is an independent imple
 | Event queue | 2,529 |
 | GPIO registers | 1,403 |
 | Bus | 1,300 |
-| Boot ROM (48-instruction UART bootloader) | 1,127 |
+| Boot ROM (60-instruction UART bootloader) | 1,439 |
 | Capture channels (8) | 891 |
 
 <sub>Per-block numbers come from the hierarchical netlist (52,000 µm² total). The flattened netlist
@@ -349,7 +349,7 @@ it needed 4 × 2 tiles (560 €). The rewrite added the UART and GPIO and fits 3
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
 | `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach (offsets in `src/tp_pkg.sv`, `SR_*`) |
 | `0x3000_0000` | — | GPIO and UART registers |
-| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+| `0x4000_0000` | 240 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
 
 Only address bits 31:28 (which device) and 23:0 (where in it) are decoded (`src/bus/tp_bus.sv`),
 so each device repeats every 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again. The
@@ -617,16 +617,22 @@ from first power-up, including what each status pin means when something's wrong
 ### Program it over USB serial — no flasher
 
 Tiqora has a boot ROM, the way an RP2040 does. **Hold `ui_in[7]` high while you release
-reset** and, instead of running flash, the chip runs a 48-instruction bootloader that takes a
+reset** and, instead of running flash, the chip runs a 60-instruction bootloader that takes a
 program over the UART:
 
 ```
 chip → PC   TP>                               ready
-PC → chip   length (4 bytes, little endian), then the program
+PC → chip   length (4 bytes, little endian), the program, then its check word (4 bytes)
 chip → PC   checksum byte, then K              verified
             the program runs from RAM at 0x1000_0000
+chip → PC   ? then TP> again                   check word wrong: the image arrived corrupted, nothing runs
 chip → PC   ! then TP> again                   length over 8 MB (RAM A): refused, nothing stored
 ```
+
+The check word is Fletcher-style: the sum of the bytes in the low half and the sum of the
+running sums in the high half, both mod 2^16. A plain byte sum misses two bytes swapped; the
+running sums weight each byte by its position, so they do not. The ROM compares it before
+jumping, so a corrupted load never runs.
 
 On the PC side, `sw/tpload.py` does all of it (it only needs `pyserial`):
 
@@ -667,12 +673,12 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
 | `make wrap` | `TWAIT` held correctly across the timebase rollover | 10 |
-| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, lengths over 8 MB are refused, and a warm entry with hostile registers | 18 |
+| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, lengths over 8 MB are refused, a corrupted image (two bytes swapped) is refused before it runs, and a warm entry with hostile registers | 20 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
 | `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (main 3684851, 2026-10-27) |
-| `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
+| `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap, the check word | 12 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
 | `make printf` | `tp_printf` against Python's `%` formatting, 23 cases | 23 |
 | `make spi` | software SPI reads a simulated W25Q128's JEDEC ID | 2 |
@@ -687,7 +693,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 | `make timing` | critical-path estimate from real sky130 cell delays | 8.98 ns / 20 ns at the slow corner, 4.68 ns typical, estimate before wires (branch timing-speed-2 6966205, 2026-11-02) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (main 3684851, 2026-10-27) |
-| `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
+| `tpload.py selftest` | the PC-side loader: framing, check word, error cases | 13 |
 | `make lint` | Verilator `-Wall`, no waivers | clean |
 
 Tiqora was cross-checked against the RISC-V conformance suite and against TinyQV, the

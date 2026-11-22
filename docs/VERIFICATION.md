@@ -13,12 +13,12 @@ Run everything with `cd test && make sim && make && make lint`, plus `make act` 
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
 | `make wrap` | `TWAIT` held correctly across the timebase rollover | 10 |
-| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, lengths over 8 MB are refused, and a warm entry with hostile registers | 18 |
+| `make boot` | UART bootloader: a program sent over serial lands in RAM and runs, lengths over 8 MB are refused, a corrupted image (two bytes swapped) is refused before it runs, and a warm entry with hostile registers | 20 |
 | `make wake` | the chip wakes the flash and RAM itself, from cold, warm and pre-set states | 14 |
 | `make c` | Clang-compiled C, run from flash and over the UART bootloader, output checked | 12 |
 | `make mcu` | the chip as a microcontroller: C from flash talks to a host over the UART both ways, reads and drives pins, fires a trigger on an exact tick, timestamps an input edge, uses RAM | 16 |
 | `make act` | **the official RISC-V architecture tests** (riscv-arch-test, RV32E): signatures vs the golden model, run from RAM | **37 / 37** (main 3684851, 2026-10-27) |
-| `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap | 10 |
+| `make bridge` | the demo-board bridge vs a simulated chip: jitter, ±2% clock error, counter wrap, the check word | 12 |
 | `make -C ../fpga/basys3 sim` | the whole Basys 3 design at 100 MHz: C from emulated flash, the bootloader over USB serial, the button demo | 26 |
 | `make printf` | `tp_printf` against Python's `%` formatting, 23 cases | 23 |
 | `make spi` | software SPI reads a simulated W25Q128's JEDEC ID | 2 |
@@ -32,7 +32,7 @@ Run everything with `cd test && make sim && make && make lint`, plus `make act` 
 | `make timing` | critical-path estimate from real sky130 cell delays | 12.45 ns / 20 ns at the slow corner, 6.04 ns typical, estimate before wires (main 3684851, 2026-10-27) |
 | `make` (cocotb) | from the pins only: firmware printing over the UART, the boot strap | 6 |
 | `make gl` | the same cocotb tests on a netlist synthesized to sky130 cells (`make GATES=yes` on the post-layout one) | 5 + 1 skipped (main 3684851, 2026-10-27) |
-| `tpload.py selftest` | the PC-side loader: framing, checksum, error cases | 7 |
+| `tpload.py selftest` | the PC-side loader: framing, check word, error cases | 13 |
 | `make lint` | Verilator `-Wall`, no waivers | clean |
 
 Tiqora was cross-checked against the RISC-V conformance suite and against TinyQV, the
