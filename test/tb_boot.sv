@@ -3,7 +3,7 @@
 // The testbench plays the PC on the far side of a USB-UART bridge:
 //   hold ui_in[7] high through reset  -> the core starts in the boot ROM
 //   expect "TP>" on uo_out[4]
-//   send a 4-byte length and the hello-world program on ui_in[3]
+//   send a 4-byte length, the hello-world program and its check word on ui_in[3]
 //   expect the checksum byte and 'K'
 //   expect the program, now running from RAM, to print "Hi Tiqora\n"
 //
@@ -123,20 +123,29 @@ module tb_boot;
         end
     endtask
 
-    // Send `image` as the bootloader expects it; returns the byte sum.
-    task send_image(input integer n, output integer s);
+    // Send `image` as the bootloader expects it: length, bytes, then the
+    // check word (sum2 mod 2^16) << 16 | (sum mod 2^16) of the bytes as
+    // intended. `swap` puts bytes 0 and 1 on the line the wrong way round,
+    // as a corrupted transfer would: same byte sum, different check word.
+    // Returns the byte sum.
+    task send_image(input integer n, input logic swap, output integer s);
         integer j, m;
-        reg [31:0] v;
+        reg [31:0] v, s1, s2, chkw;
+        reg [7:0]  bt;
         begin
             for (m = 0; m < 4; m = m + 1) host_send((4 * n) >> (8 * m));
-            s = 0;
+            s = 0; s1 = 0; s2 = 0;
             for (j = 0; j < n; j = j + 1) begin
                 v = image[j];
+                if (swap && j == 0) v = {v[31:16], v[7:0], v[15:8]};
                 for (m = 0; m < 4; m = m + 1) begin
                     host_send(v[8*m +: 8]);
-                    s = s + v[8*m +: 8];
+                    bt = image[j] >> (8 * m);
+                    s = s + bt; s1 = s1 + bt; s2 = s2 + s1;
                 end
             end
+            chkw = {s2[15:0], s1[15:0]};
+            for (m = 0; m < 4; m = m + 1) host_send(chkw >> (8 * m));
         end
     endtask
 
@@ -160,7 +169,17 @@ module tb_boot;
         chk(banner[24:1] == "TP>", "after reset: boot ROM announces itself with TP>");
         refuse(32'h0080_0001, "8 MB + 1");
         refuse(32'hFFFF_FFFF, "0xFFFF_FFFF");
-        send_image(nwords, sum);
+
+        // ---- a corrupted transfer: two bytes swapped, the byte sum unchanged ----
+        send_image(nwords, 1'b1, sum);
+        host_recv(DIV, b);
+        banner = 0;
+        for (k = 0; k < 3; k = k + 1) begin host_recv(DIV, got_k); banner = {banner[8*15:1], got_k}; end
+        chk(b == "?" && banner[24:1] == "TP>",
+            "two bytes swapped in transit: the check word differs, '?' and TP> again");
+        chk(!ran_from_ram, "and the corrupted image never ran (the core never left the ROM)");
+
+        send_image(nwords, 1'b0, sum);
         host_recv(DIV, got_sum);
         host_recv(DIV, got_k);
         chk(got_sum == sum[7:0] && got_k == "K", "first program loaded: checksum and K");
@@ -174,8 +193,8 @@ module tb_boot;
         chk(dut.u_soc.g_cpu.u_core.pc[31:28] == 4'h4, "the core is executing from the boot ROM");
 
         chk(ran_from_ram && resets == 1, "re-entry came from the RAM program, with no second reset");
-        // length, little endian, then the bytes
-        send_image(nwords, sum);
+        // length, little endian, then the bytes, then the check word
+        send_image(nwords, 1'b0, sum);
 
         chk(dut.u_soc.u_periph.u_uart.rx_overrun === 1'b0, "no byte overran the bootloader while loading");
         host_recv(DIV, got_sum);

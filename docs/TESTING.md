@@ -35,11 +35,11 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | stress | 18 | 8 simultaneous captures, queue overflow, 2³² rollover |
 | wrap | 10 | `TWAIT` across the timebase rollover |
 | xpulse | 15 | all eleven timing instructions |
-| boot | 18 | the UART bootloader, end to end, with RAM timing checked; lengths of 8 MB + 1 and 0xFFFF_FFFF are refused with `!` and nothing stored, exactly 8 MB is accepted; a RAM program re-enters it by jumping to 0x4000_0000 with hostile registers, then a second program loads |
+| boot | 20 | the UART bootloader, end to end, with RAM timing checked; lengths of 8 MB + 1 and 0xFFFF_FFFF are refused with `!` and nothing stored, exactly 8 MB is accepted; an image with two bytes swapped in transit (same byte sum) gets `?` and never runs; a RAM program re-enters it by jumping to 0x4000_0000 with hostile registers, then a second program loads |
 | wake | 14 | the chip wakes the flash and RAM from cold, warm and pre-set states |
 | c | 12 | a Clang-compiled C program from flash and via the bootloader |
 | mcu | 16 | the chip as a microcontroller: C from flash, a host on the UART, pins, trigger tick, capture timestamp, RAM |
-| bridge | 10 | the demo-board bridge vs a simulated chip with jitter and clock error |
+| bridge | 12 | the demo-board bridge vs a simulated chip with jitter and clock error, and the boot check word |
 | printf | 23 | `tp_printf`, character for character against Python's `%` formatting |
 | spi | 2 | the software SPI reads a simulated W25Q128 flash's JEDEC ID (`EF 40 18`) |
 | readme | 10 | the README's minimal program, compiled verbatim, from flash and RAM, checked at the pins |
@@ -95,8 +95,8 @@ instruction, ending in `37 of 37 official RV32E tests pass`.
 ## The software side
 
 ```bash
-python3 ../sw/tpload.py selftest                  # the PC-side UART loader, 7 checks
-python3 ../sw/demoboard/test_tpboot.py            # the demo-board bridge, 10 checks (also in make sim)
+python3 ../sw/tpload.py selftest                  # the PC-side UART loader, 13 checks
+python3 ../sw/demoboard/test_tpboot.py            # the demo-board bridge, 12 checks (also in make sim)
 cd ../sw && make TOOLCHAIN=zig && make TOOLCHAIN=zig RAM=1    # build the example for flash and RAM
 ```
 

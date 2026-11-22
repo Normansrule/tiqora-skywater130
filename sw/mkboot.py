@@ -7,8 +7,13 @@ Hold ui_in[7] HIGH while reset is released and the core starts here, at
     2. reads a 4-byte little-endian length N; if N is over 8 MB (RAM A),
        sends "!" and goes back to step 1 without storing anything
     3. reads N bytes and stores them to RAM A from 0x1000_0000 upwards
-    4. sends back one byte, the sum of all N bytes mod 256, then 'K'
-    5. waits for 'K' to finish transmitting, then jumps to 0x1000_0000
+    4. reads a 4-byte check word: (sum2 mod 2^16) << 16 | (sum mod 2^16), where
+       sum is the sum of the N bytes and sum2 the sum of the running sums
+       (Fletcher-style; it catches swapped and moved bytes, which a sum misses)
+    5. if the check word differs, sends '?' and starts again at step 1,
+       without running anything
+    6. otherwise sends back one byte, the sum of all N bytes mod 256, then 'K',
+       waits for 'K' to finish transmitting, and jumps to 0x1000_0000
 
 The UART runs at whatever UART_DIV holds: 434 after reset, which is
 115,200 baud at 50 MHz. The loaded program runs from RAM, so it is lost at
@@ -23,7 +28,7 @@ Run:  python3 sw/mkboot.py   (from the repo root) — regenerates
 """
 import sys, os
 sys.path.insert(0, os.path.dirname(__file__))
-from mkprog import addi, lui, sw, lw, bne, jal, I, R, S, B, OPC_OPIMM, OPC_OP, OPC_BRANCH, OPC_STORE
+from mkprog import addi, lui, sw, lw, bne, jal, slli, I, R, S, B, OPC_OPIMM, OPC_OP, OPC_BRANCH, OPC_STORE
 
 def andi(rd, rs1, imm): return I(OPC_OPIMM, 7, rd, rs1, imm)
 def sll(rd, rs1, rs2):  return R(OPC_OP, 1, 0, rd, rs1, rs2)
@@ -33,11 +38,13 @@ def sb(rs2, rs1, imm):  return S(OPC_STORE, 0, rs1, rs2, imm)
 def beq(rs1, rs2, imm): return B(OPC_BRANCH, 0, rs1, rs2, imm)
 def jalr(rd, rs1, imm): return I(0x67, 0, rd, rs1, imm)
 def bltu(rs1, rs2, imm): return B(OPC_BRANCH, 6, rs1, rs2, imm)
+def srli(rd, rs1, sh):  return I(OPC_OPIMM, 5, rd, rs1, sh)
 
 RAM_BYTES = 8 * 1024 * 1024          # RAM A, 0x1000_0000 to 0x107F_FFFF; the same cap as sw/tpload.py
 
 UART_DATA, UART_STAT = 0x0C, 0x10
 PER, RAM, T, LEN, PTR, SUM, SH, A0, RA = 5, 6, 7, 8, 9, 11, 12, 10, 1
+LK, S2 = 13, 14                      # rd32's return address; the running sum of sums
 
 prog, notes, labels, fix = [], [], {}, []
 def L(name): labels[name] = len(prog)
@@ -51,28 +58,34 @@ L("start")
 for ch in b"TP>":
     emit(addi(A0, 0, ch),       f"a0 = {chr(ch)!r}")
     emit_to(lambda off: jal(RA, off), "tx", "send it")
-emit(addi(LEN, 0, 0),           "length = 0")
-emit(addi(SH, 0, 0),            "shift = 0")
-L("len")
-emit_to(lambda off: jal(RA, off), "rx", "a0 = next byte")
-emit(sll(A0, A0, SH),           "a0 <<= shift")
-emit(or_(LEN, LEN, A0),         "length |= a0")
-emit(addi(SH, SH, 8),           "shift += 8")
-emit(addi(T, 0, 32),            "t = 32")
-emit_to(lambda off: bne(SH, T, off), "len", "four bytes yet?")
+emit(addi(LEN, 0, 0),           "length = 0 (rd32 ORs into it)")
+emit_to(lambda off: jal(LK, off), "rd32", "length = next 4 bytes, little endian")
 emit(lui(T, RAM_BYTES >> 12),   "t = 8 MB, the size of RAM A")
 emit_to(lambda off: bltu(T, LEN, off), "big", "longer than RAM A? refuse it")
 emit(addi(PTR, RAM, 0),         "ptr = RAM")
 emit(addi(SUM, 0, 0),           "sum = 0")
+emit(addi(S2, 0, 0),            "sum2 = 0")
 L("data")
 emit_to(lambda off: beq(LEN, 0, off), "done", "all bytes in?")
 emit_to(lambda off: jal(RA, off), "rx", "a0 = next byte")
 emit(sb(A0, PTR, 0),            "store it")
 emit(add(SUM, SUM, A0),         "sum += a0")
+emit(add(S2, S2, SUM),          "sum2 += sum: each byte counts once per byte after it")
 emit(addi(PTR, PTR, 1),         "ptr++")
 emit(addi(LEN, LEN, -1),        "length--")
 emit_to(lambda off: jal(0, off), "data", "loop")
 L("done")
+# The host sends a check word after the image: sum2 in the top half, sum in the
+# bottom half (both mod 2^16), as in Fletcher's checksum. A plain sum misses two
+# bytes swapped or a byte moved; sum2 weights each byte by its position, so it
+# does not. A mismatch means the image in RAM is not the one that was sent, so
+# the ROM says '?' and offers TP> again instead of running it.
+emit_to(lambda off: jal(LK, off), "rd32", "check = next 4 bytes (length is 0 here)")
+emit(slli(T, S2, 16),           "t = sum2 << 16")
+emit(slli(A0, SUM, 16),         "a0 = sum << 16")
+emit(srli(A0, A0, 16),          "a0 = sum & 0xFFFF")
+emit(or_(T, T, A0),             "t = the check word this image should have")
+emit_to(lambda off: bne(T, LEN, off), "bad", "different? do not run it")
 emit(addi(A0, SUM, 0),          "a0 = sum (the UART sends its low byte)")
 emit_to(lambda off: jal(RA, off), "tx", "send the checksum")
 emit(addi(A0, 0, ord("K")),     "a0 = 'K'")
@@ -90,8 +103,23 @@ emit(jalr(0, RAM, 0),           "run the program")
 # program. Refuse it before storing anything, say '!', and offer TP> again.
 L("big")
 emit(addi(A0, 0, ord("!")),     "big: a0 = '!'")
-emit_to(lambda off: jal(RA, off), "tx", "     send it")
+emit_to(lambda off: jal(0, off), "say", "     report it")
+L("bad")
+emit(addi(A0, 0, ord("?")),     "bad: a0 = '?'")
+L("say")
+emit_to(lambda off: jal(RA, off), "tx", "say: send it")
 emit_to(lambda off: jal(0, off), "start", "     and start over: TP>")
+# rd32: four bytes, least significant first, ORed into length (which must be 0).
+L("rd32")
+emit(addi(SH, 0, 0),            "rd32: shift = 0")
+L("rd32b")
+emit_to(lambda off: jal(RA, off), "rx", "      a0 = next byte")
+emit(sll(A0, A0, SH),           "      a0 <<= shift")
+emit(or_(LEN, LEN, A0),         "      length |= a0")
+emit(addi(SH, SH, 8),           "      shift += 8")
+emit(addi(T, 0, 32),            "      t = 32")
+emit_to(lambda off: bne(SH, T, off), "rd32b", "      four bytes yet?")
+emit(jalr(0, LK, 0),            "      return")
 L("tx")
 emit(lw(T, PER, UART_STAT),     "tx: t = UART_STAT")
 emit(andi(T, T, 1),             "    t &= TX_BUSY")
@@ -116,7 +144,9 @@ sv = f"""// tp_bootrom.sv — GENERATED by sw/mkboot.py. Do not edit; edit that 
 // The UART bootloader, {len(prog)} instructions, as a combinational table at
 // 0x4000_0000. Hold ui_in[7] high while reset is released to run it. It
 // prints "TP>", receives a length-prefixed program over the UART into RAM A,
-// answers with a checksum and 'K', and jumps to 0x1000_0000. A length over
+// checks a Fletcher-style check word sent after it (a mismatch gets '?' and
+// TP> again, and nothing runs), answers with a checksum and 'K', and jumps
+// to 0x1000_0000. A length over
 // 8 MB (the size of RAM A) is refused with '!' before any byte is stored,
 // and the prompt TP> comes again.
 //

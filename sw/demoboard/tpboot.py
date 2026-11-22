@@ -84,9 +84,21 @@ class BitBangUart:
         return value
 
 
+def check_word(image):
+    """The boot ROM's check: (sum2 mod 2^16) << 16 | (sum mod 2^16), where sum
+    adds the bytes and sum2 the running sums (as sw/tpload.py)."""
+    s1 = s2 = 0
+    for b in image:
+        s1 = (s1 + b) & 0xFFFF
+        s2 = (s2 + s1) & 0xFFFF
+    return (s2 << 16) | s1
+
+
 def frame_program(image):
     n = len(image)
-    return bytes([n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >> 24) & 255]) + image, sum(image) & 255
+    c = check_word(image)
+    return (bytes([n & 255, (n >> 8) & 255, (n >> 16) & 255, (n >> 24) & 255]) + image
+            + bytes([c & 255, (c >> 8) & 255, (c >> 16) & 255, (c >> 24) & 255]), sum(image) & 255)
 
 
 def bootload(uart, image, log=print):
@@ -103,6 +115,9 @@ def bootload(uart, image, log=print):
         % (len(image), len(payload) * 10 // BAUD + 1, BAUD))
     uart.write(payload)
     got_sum, got_k = uart.read(2000), uart.read(2000)
+    if got_sum == ord("?") and got_k == ord("T"):
+        log("load failed: the image arrived corrupted; the chip did not run it and is back at TP>")
+        return False
     if got_k != ord("K") or got_sum != want:
         log("load failed: chip answered %r %r, expected checksum %d and K" % (got_sum, got_k, want))
         return False

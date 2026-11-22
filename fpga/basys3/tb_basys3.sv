@@ -86,7 +86,7 @@ module tb_basys3;
     integer trig0_rises = 0;
     always @(posedge led[0]) if (dut.rst_n === 1'b1) trig0_rises = trig0_rises + 1;
 
-    reg [31:0] img [0:4095]; integer nw, k; reg [31:0] w; string mode;
+    reg [31:0] img [0:4095]; integer nw, k; reg [31:0] w, s1, s2; string mode;
     initial begin
         if (!$value$plusargs("MODE=%s", mode)) mode = "selftest";
         $display("\n=== Tiqora on the Basys 3 (simulated board: %0s) ===", mode);
@@ -103,7 +103,16 @@ module tb_basys3;
             nw = 0; while (nw < 4096 && img[nw] !== 32'hxxxx_xxxx) nw = nw + 1;
             rx_n = 0;
             for (k = 0; k < 4; k = k + 1) send((4 * nw) >> (8 * k), BOOT_DIV);
-            for (int i = 0; i < nw; i++) begin w = img[i]; for (k = 0; k < 4; k = k + 1) send(w[8*k +: 8], BOOT_DIV); end
+            s1 = 0; s2 = 0;
+            for (int i = 0; i < nw; i++) begin
+                w = img[i];
+                for (k = 0; k < 4; k = k + 1) begin
+                    send(w[8*k +: 8], BOOT_DIV);
+                    s1 = s1 + w[8*k +: 8]; s2 = s2 + s1;
+                end
+            end
+            // check word: the boot ROM runs nothing unless it matches
+            for (k = 0; k < 4; k = k + 1) send({s2[15:0], s1[15:0]} >> (8 * k), BOOT_DIV);
             wait_for("K", 200000);
             chk(rx_n >= 2 && rx_buf[1] == "K", "program accepted (checksum + K)");
             repeat (12 * BOOT_DIV) @(posedge dut.clk50);
