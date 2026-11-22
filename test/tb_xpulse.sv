@@ -54,6 +54,9 @@ module tb_xpulse;
         .ena(ena), .clk(clk), .rst_n(rst_n)
     );
 
+`include "sync_tap_tiqora.svh"
+
+
     qspi_flash_model #(.DUMMY(4), .WORDS(512)) u_flash (
         .cs_n(cs_f), .sck(sck), .ctrl_sd({uio_out[5], uio_out[4], uio_out[2], uio_out[1]}), .dev_sd(flash_sd));
     qspi_psram_model #(.DUMMY(6), .BYTES(4096)) u_psram (
