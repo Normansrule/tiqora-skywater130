@@ -69,7 +69,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer views views-lockstep views-page views-mutants
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -136,6 +136,46 @@ xpulse: prog
 clean-sim:
 	rm -rf .zig-cache-test .zig-cache-act run_* tb_run_* readme_*
 	rm -f *.vvp *.vcd
+	rm -rf views_gl
+
+# ---- "Inside a gate" (docs/site/views.html): every view checked against the next
+# layout == transistors (KLayout LVS + an independent geometric check),
+# transistors == liberty gate (switch level, every input), gates == RTL
+# (lockstep on six runs), state diagrams == behaviour, ISA lens assembled,
+# every link on the page resolves, the page itself in a browser, and mutants
+# that each of those checks must catch. Needs: pip klayout ziglang pyelftools,
+# GNU as, Icarus, node + Playwright (the page test is skipped without them).
+# program:seed[:option]; BOOT starts in the ROM, RESETS adds random mid-run resets
+VIEWS_RUNS = prog.hex:1 xpulse.hex:2 wrap.hex:3 isa.hex:4 c_flash.hex:5 prog.hex:6:BOOT c_flash.hex:7:RESETS xpulse.hex:8:RESETS
+VIEWS_CYCLES ?= 40000
+views: views-lockstep
+	cd .. && python3 docs/tools/views_switch.py
+	cd .. && python3 docs/tools/views_lvs.py
+	cd .. && python3 test/views/mini_lvs.py
+	cd .. && python3 docs/tools/views_isa.py --check
+	cd .. && python3 docs/tools/views_build.py --check
+	cd .. && python3 test/views/check_views.py
+	$(MAKE) views-page
+	$(MAKE) views-mutants
+
+views-lockstep: prog
+	mkdir -p views_gl
+	rm -f views_gl/*
+	python3 views/netlist_v.py views_gl G_
+	@sh iv.sh -g2012 -o views_gl/tb_lockstep.vvp -s tb_lockstep $(RTL) qspi_model.sv views_gl/cells.v views_gl/netlist.v views/tb_lockstep.sv
+	@for r in $(VIEWS_RUNS); do \
+	  p=$${r%%:*}; rest=$${r#*:}; seed=$${rest%%:*}; opt=""; [ "$$rest" != "$$seed" ] && opt=+$${rest#*:}; \
+	  sh vv.sh views_gl/tb_lockstep.vvp +PROG=$$p +CYCLES=$(VIEWS_CYCLES) +SEED=$$seed +FSMLOG=views_gl/fsm_$$seed.log $$opt > views_gl/run_$$seed.log 2>&1; st=$$?; \
+	  grep -v 'Not enough words' views_gl/run_$$seed.log; \
+	  [ $$st -eq 0 ] || exit 1; \
+	done
+	python3 views/fsm_check.py views_gl/fsm_*.log
+
+views-page:
+	@if node -e "require('playwright')" 2>/dev/null; then node views/page_test.js; else echo "views-page: Playwright not found, browser test skipped"; fi
+
+views-mutants:
+	cd .. && python3 test/views/mutants.py
 
 # Only pull in the cocotb flow if cocotb is actually installed, so that
 # `make sim` works on a machine that only has Icarus.

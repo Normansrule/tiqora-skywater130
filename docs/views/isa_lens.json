@@ -1,0 +1,130 @@
+{
+ "about": "The RV32E instructions Tiqora decodes, one example of each kind. Written by hand; every row is assembled by a real assembler (docs/tools/views_isa.py), and its opcode (bits 6:0) is checked against the constant the core's decoder uses. Each row links to the line of tp_ncore that decodes it.",
+ "rows": [
+  {
+   "note": "load a 20-bit constant into the top of a register",
+   "opc": "OPC_LUI",
+   "rv": "lui a0, 0x12345"
+  },
+  {
+   "note": "PC-relative address: adds a 20-bit constant, shifted up, to this instruction's address",
+   "opc": "OPC_AUIPC",
+   "rv": "auipc a0, 1"
+  },
+  {
+   "note": "call: jump, keeping the return address in ra",
+   "opc": "OPC_JAL",
+   "rv": "jal ra, .+16"
+  },
+  {
+   "note": "return",
+   "opc": "OPC_JALR",
+   "rv": "jalr zero, 0(ra)"
+  },
+  {
+   "note": "compare two registers and branch in one instruction; RISC-V has no flags",
+   "opc": "OPC_BRANCH",
+   "rv": "beq a0, a1, .+8"
+  },
+  {
+   "note": "signed less-than",
+   "opc": "OPC_BRANCH",
+   "rv": "blt a0, a1, .+8"
+  },
+  {
+   "note": "unsigned less-than",
+   "opc": "OPC_BRANCH",
+   "rv": "bltu a0, a1, .+8"
+  },
+  {
+   "note": "load a word",
+   "opc": "OPC_LOAD",
+   "rv": "lw a0, 8(sp)"
+  },
+  {
+   "note": "load a byte, sign-extended",
+   "opc": "OPC_LOAD",
+   "rv": "lb a0, 1(sp)"
+  },
+  {
+   "note": "load a byte, zero-extended",
+   "opc": "OPC_LOAD",
+   "rv": "lbu a0, 1(sp)"
+  },
+  {
+   "note": "store a word",
+   "opc": "OPC_STORE",
+   "rv": "sw a0, 8(sp)"
+  },
+  {
+   "note": "store a byte",
+   "opc": "OPC_STORE",
+   "rv": "sb a0, 1(sp)"
+  },
+  {
+   "note": "add a 12-bit constant; no flags are set",
+   "opc": "OPC_OPIMM",
+   "rv": "addi a0, a0, 5"
+  },
+  {
+   "note": "shift left",
+   "opc": "OPC_OPIMM",
+   "rv": "slli a0, a0, 3"
+  },
+  {
+   "note": "arithmetic shift right",
+   "opc": "OPC_OPIMM",
+   "rv": "srai a0, a0, 3"
+  },
+  {
+   "note": "bitwise and with a constant",
+   "opc": "OPC_OPIMM",
+   "rv": "andi a0, a0, 255"
+  },
+  {
+   "note": "three operands: two sources and a separate destination",
+   "opc": "OPC_OP",
+   "rv": "add a0, a0, a1"
+  },
+  {
+   "note": "subtract",
+   "opc": "OPC_OP",
+   "rv": "sub a0, a0, a1"
+  },
+  {
+   "note": "set a0 to 1 if a1 < a2 (signed), else 0",
+   "opc": "OPC_OP",
+   "rv": "slt a0, a1, a2"
+  },
+  {
+   "note": "exclusive or",
+   "opc": "OPC_OP",
+   "rv": "xor a0, a0, a1"
+  },
+  {
+   "note": "order memory accesses",
+   "opc": "OPC_FENCE",
+   "rv": "fence"
+  },
+  {
+   "note": "call the environment; on Tiqora it halts the core",
+   "opc": "OPC_SYSTEM",
+   "rv": "ecall"
+  },
+  {
+   "note": "breakpoint",
+   "opc": "OPC_SYSTEM",
+   "rv": "ebreak"
+  },
+  {
+   "note": "Xpulse TWAIT a0: sleep until the timebase reaches a0 (Tiqora's own custom-0 opcode)",
+   "opc": "OPC_CUSTOM0",
+   "rv": ".insn r 0x0b, 3, 0, zero, a0, zero"
+  },
+  {
+   "note": "Xpulse TARM a0, a1: arm trigger a1 to fire at time a0, in hardware",
+   "opc": "OPC_CUSTOM0",
+   "rv": ".insn r 0x0b, 4, 0, zero, a0, a1"
+  }
+ ]
+}

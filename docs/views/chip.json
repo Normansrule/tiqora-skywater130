@@ -1,0 +1,19 @@
+{
+ "about": "What differs between the chips for the Inside a gate page. Everything else in docs/tools/views_*.py, docs/views/views.js, views.css and test/views/*.py,*.js is shared unchanged by tiqora-skywater130 and tinytapeout-tiqora.",
+ "top": "tt_um_normansrule_tiqora",
+ "start": {"m": "tp_uart", "g": "tp_uart/tcnt"},
+ "links_root": "tp_soc",
+ "isa": {"module": "tp_ncore", "decoder": "src/core/tp_ncore.sv"},
+ "lockstep": {
+  "models": ["qspi_model.sv"],
+  "quick": "+PROG=prog.hex +CYCLES=3000 +SEED=1",
+  "sends": "+PROG=c_flash.hex +CYCLES=40000 +SEED=1"
+ },
+ "mutants": {
+  "rtl_file": "src/periph/tp_uart.sv",
+  "rtl_from": "tx_busy ? tsh[0] : 1'b1;",
+  "rtl_to": "tx_busy ? tsh[0] : 1'b0;",
+  "cone_module": "tp_uart",
+  "cone_port": "tx"
+ }
+}
