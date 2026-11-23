@@ -34,6 +34,15 @@ def check(d):
     E = err.append
     files = d["files"]
     hier_paths = {n["path"]: n["module"] for n in d["hierarchy"]}
+    ch = d["chip"]
+    if ch["start"]["m"] not in d["modules"] or ch["start"]["g"] not in d["groups"]:
+        E(f"chip: start {ch['start']} is not a module and group of the page")
+    if ch["links_root"] not in d["modules"] or not d["modules"][ch["links_root"]]["links"]:
+        E(f"chip: links_root {ch['links_root']} has no connections to draw")
+    if bool(ch["isa_module"]) != bool(d["isa"]) or (ch["isa_module"] and ch["isa_module"] not in d["modules"]):
+        E(f"chip: instruction module {ch['isa_module']} and instruction data disagree")
+    if ch["top"] != d["hierarchy"][0]["module"]:
+        E(f"chip: top {ch['top']} is not the hierarchy's root")
     for n in d["hierarchy"]:
         if n["module"] not in d["modules"]:
             E(f"hierarchy {n['path']}: module {n['module']} has no data")

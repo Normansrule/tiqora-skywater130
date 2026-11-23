@@ -32,6 +32,8 @@ import json, os, re, shutil, subprocess, sys, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 PY = sys.executable
 QUICK = "--quick" in sys.argv
+CHIP = json.load(open(os.path.join(ROOT, "docs", "views", "chip.json")))
+MUT = CHIP["mutants"]
 
 
 def jload(p):
@@ -60,19 +62,17 @@ def sub_file(path, old, new):
 
 
 # ------------------------------------------------------------------ mutations
-RTL = None
-
-
-def lockstep(cwd, prog="prog.hex", cycles=3000):
-    t = os.path.join(cwd, "test")
+def lockstep(cwd, run="quick"):
+    """Build the RTL-versus-gates bench in the mutant's copy and run it (chip.json names the run)."""
     rtl = " ".join("../" + l.split()[-1] for l in open(os.path.join(cwd, "syn", "synth_check.ys")) if l.startswith("read_verilog"))
+    models = " ".join(CHIP["lockstep"]["models"])
     return (f"cd test && mkdir -p views_mut && {PY} views/netlist_v.py views_mut G_ && "
-            f"sh iv.sh -g2012 -o views_mut/ls.vvp -s tb_lockstep {rtl} qspi_model.sv views_mut/cells.v views_mut/netlist.v views/tb_lockstep.sv && "
-            f"sh vv.sh views_mut/ls.vvp +PROG={prog} +CYCLES={cycles} +SEED=1")
+            f"iverilog -g2012 -o views_mut/ls.vvp -s tb_lockstep {rtl} {models} views_mut/cells.v views_mut/netlist.v views/tb_lockstep.sv && "
+            f"sh vv.sh views_mut/ls.vvp {CHIP['lockstep'][run]}")
 
 
 def m_rtl_tx_idle(c):
-    sub_file(os.path.join(c, "src/periph/tp_uart.sv"), "tx_busy ? tsh[0] : 1'b1;", "tx_busy ? tsh[0] : 1'b0;")
+    sub_file(os.path.join(c, MUT["rtl_file"]), MUT["rtl_from"], MUT["rtl_to"])
     return [lockstep(c)]
 
 
@@ -82,7 +82,7 @@ SWAP = {"nand2_1": "nor2_1", "nor2_1": "nand2_1", "a21oi_1": "o21ai_0", "o21ai_0
 def m_netlist_gate(c):
     p = os.path.join(c, "docs/views/netlist.json")
     d = jload(p)
-    m = d["modules"]["tp_uart"]
+    m = d["modules"][MUT["cone_module"]]
     drv = {}
     for cn, cell in m["cells"].items():
         for pin, bits in cell["pins"].items():
@@ -90,7 +90,7 @@ def m_netlist_gate(c):
                 for b in bits:
                     drv[b] = cn
     # walk back from the tx port to the nearest swappable gate
-    todo, seen = list(m["ports"]["tx"]["bits"]), set()
+    todo, seen = list(m["ports"][MUT["cone_port"]]["bits"]), set()
     while todo:
         b = todo.pop(0)
         cn = drv.get(b)
@@ -101,14 +101,14 @@ def m_netlist_gate(c):
         if t in SWAP:
             m["cells"][cn]["type"] = "sky130_fd_sc_hd__" + SWAP[t]
             jsave(p, d)
-            # a run that sends on the UART (the C self-test prints), long enough to reach it
-            return [lockstep(c, "c_flash.hex", 40000)]
+            # a run long enough to drive that output (chip.json "sends")
+            return [lockstep(c, "sends")]
         todo += [bb for pin, bits in m["cells"][cn]["pins"].items() if pin not in ("Y", "X", "Q") for bb in bits]
-    raise RuntimeError("no swappable gate in tp_uart's tx cone")
+    raise RuntimeError(f"no swappable gate in the cone of {MUT['cone_module']}.{MUT['cone_port']}")
 
 
 def m_rtl_stale(c):
-    sub_file(os.path.join(c, "src/periph/tp_uart.sv"), "module tp_uart", "// mutant\nmodule tp_uart")
+    sub_file(os.path.join(c, MUT["rtl_file"]), "module ", "// mutant\nmodule ")
     return [f"{PY} docs/tools/views_build.py --check"]
 
 
@@ -186,9 +186,18 @@ def fsm_logs(c):
 def m_fsm_edge(c):
     p = os.path.join(c, "docs/views/netlist.json")
     d = jload(p)
-    F = d["fsms"]["tp_ncore"]
-    # drop a transition between two different states (staying put is taken by every run, so is a change)
-    i = next(i for i, t in enumerate(F["transitions"]) if t["from"] != t["to"])
+    # drop the state change the runs take most often (a self-loop would hide in "staying put")
+    taken = {}
+    for log in fsm_logs(c).split():
+        for line in open(log):
+            mod, a, b, _ = line.split()
+            if a != b:
+                taken[(mod, int(a), int(b))] = taken.get((mod, int(a), int(b)), 0) + 1
+    mod, a, b = max(sorted(taken), key=lambda k: taken[k])
+    F = d["fsms"][mod]
+    idx_of_bit = {len(st["pattern"]) - 1 - st["pattern"].index("1"): st["index"] for st in F["states"]}
+    idx_of_code = {c_["rtl"]: idx_of_bit[c_["onehot_bit"]] for c_ in F["codes"]}
+    i = next(i for i, t in enumerate(F["transitions"]) if (t["from"], t["to"]) == (idx_of_code[a], idx_of_code[b]))
     del F["transitions"][i]
     jsave(p, d)
     return [f"{PY} test/views/fsm_check.py {fsm_logs(c)}"]
@@ -197,7 +206,7 @@ def m_fsm_edge(c):
 def m_fsm_onehot(c):
     p = os.path.join(c, "docs/views/netlist.json")
     d = jload(p)
-    codes = d["fsms"]["qspi_ctrl"]["codes"]
+    codes = d["fsms"][sorted(d["fsms"])[0]]["codes"]
     codes[0]["onehot_bit"], codes[1]["onehot_bit"] = codes[1]["onehot_bit"], codes[0]["onehot_bit"]
     jsave(p, d)
     # check_views cannot see this one: the data stays self-consistent, only behaviour shows the lie
@@ -210,8 +219,12 @@ def views_json(c):
 
 def m_link_rtl_line(c):
     d = jload(views_json(c))
-    g = d["groups"]["tp_uart/tcnt"]
-    g["rtl"] = [g["rtl"][0] - 1] + g["rtl"][1:]     # the line above the declaration
+    g = d["groups"][CHIP["start"]["g"]]
+    m = d["modules"][g["module"]]
+    src = d["files"][m["file"]]
+    base = g["name"].split("[")[0]
+    wrong = next(ln for ln in range(m["lines"][0], m["lines"][1] + 1) if base not in src[ln - 1])
+    g["rtl"] = [wrong] + g["rtl"][1:]                # a line of the module that does not name the register
     jsave(views_json(c), d, compact=True)
     return [f"{PY} test/views/check_views.py docs/site/data/views.json"]
 
@@ -271,6 +284,9 @@ MUTANTS = [
 ]
 
 
+ISA_ONLY = {"link-isa-line", "isa-opcode", "pkg-opcode"}
+
+
 def has_playwright():
     return subprocess.run(["node", "-e", "require('playwright')"], capture_output=True).returncode == 0
 
@@ -291,6 +307,8 @@ def main():
                 sys.exit(1)
         for name, fn in MUTANTS:
             if only and name not in only:
+                continue
+            if name in ISA_ONLY and not CHIP.get("isa"):
                 continue
             if name == "page-pmos" and not pw:
                 print(f"mutant {name:16s} skipped (no Playwright)")

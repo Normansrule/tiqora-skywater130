@@ -30,7 +30,8 @@ import json, os, re, subprocess, sys, tempfile
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 OUT_NET = os.path.join(ROOT, "docs", "views", "netlist.json")
 OUT_CELLS = os.path.join(ROOT, "docs", "views", "cells.json")
-TOP = "tt_um_normansrule_tiqora"
+CHIP = json.load(open(os.path.join(ROOT, "docs", "views", "chip.json")))
+TOP = CHIP["top"]
 
 # (gds layer, datatype) -> name, bottom to top. 64/20 n-well, 65/20 diffusion,
 # 65/44 tap, 66/20 poly, 66/44 licon, 67/20 li1, 67/44 mcon, 68/20 met1,

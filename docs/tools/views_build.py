@@ -413,9 +413,8 @@ def links_between(netlist, mod):
     return [[a, b, n] for (a, b), n in sorted(pairs.items())]
 
 
-def isa_decode_lines(isa, src):
-    """Each lens row gets the tp_ncore line(s) that decode its opcode (tp_pkg::OPC_X)."""
-    f = "src/core/tp_ncore.sv"
+def isa_decode_lines(isa, src, f):
+    """Each instruction row gets the decoder line(s) that use its opcode constant (tp_pkg::OPC_X)."""
     rows = []
     for r in isa["rows"]:
         hits = [i + 1 for i, ln in enumerate(src[f]) if re.search(r"tp_pkg::%s\b" % r["opc"], strip_comment(ln))]
@@ -428,12 +427,13 @@ def build():
     netlist = load("docs/views/netlist.json")
     cells_doc = load("docs/views/cells.json")
     cells_lib = cells_doc["cells"]
-    isa = load("docs/views/isa.json") if os.path.exists(os.path.join(ROOT, "docs/views/isa.json")) else None
+    chip = load("docs/views/chip.json")
+    isa = load("docs/views/isa.json") if chip.get("isa") else None
     files = rtl_files()
     spans = module_spans(files)
     src = {f: open(os.path.join(ROOT, f)).read().rstrip("\n").split("\n") for f in files}
     if isa:
-        isa = isa_decode_lines(isa, src)
+        isa = isa_decode_lines(isa, src, chip["isa"]["decoder"])
     modules, groups = {}, {}
     for mname, m in sorted(netlist["modules"].items()):
         f, lo, hi = spans[mname]
@@ -462,6 +462,8 @@ def build():
         "celltypes": {short(k): cell_entry(k, v) for k, v in sorted(cells_lib.items())},
         "fsms": fsms,
         "isa": isa,
+        "chip": {"top": chip["top"], "start": chip["start"], "links_root": chip["links_root"],
+                 "isa_module": chip["isa"]["module"] if chip.get("isa") else None},
     }
     return out
 

@@ -866,7 +866,7 @@
     var b = paneFsm.body;
     b.innerHTML = "";
     var tabs = h("div", { class: "vw-tabs", role: "tablist", "aria-label": "Lingua franca views" });
-    [["fsm", "State machines"], ["links", "Connections"], ["isa", "RISC-V instructions"]].forEach(function (t) {
+    [["fsm", "State machines"], ["links", "Connections"]].concat(V.isa ? [["isa", "RISC-V instructions"]] : []).forEach(function (t) {
       tabs.appendChild(h("button", { type: "button", role: "tab", "aria-selected": String(fsmTab === t[0]), id: "vw-tab-" + t[0],
         onclick: function () { fsmTab = t[0]; renderFsm(); } }, [t[1]]));
     });
@@ -886,7 +886,7 @@
     });
     panel.appendChild(pick);
     if (sel.f == null) {
-      panel.appendChild(h("p", { class: "vw-empty", text: "Yosys found two state machines in the RTL. Choose one: its states are viewing points into the source, the gates and the transistors." }));
+      panel.appendChild(h("p", { class: "vw-empty", text: "Yosys found " + V.fsms.length + " state machine" + (V.fsms.length === 1 ? "" : "s") + " in the RTL. Choose one: its states are viewing points into the source, the gates and the transistors." }));
       return;
     }
     var F = V.fsms[sel.f], n = F.states.length, R = 165, cx = 300, cy = 225;
@@ -949,7 +949,7 @@
   function nameOf(F, idx) { var st = F.states.filter(function (x) { return x.index === idx; })[0]; return st ? st.name : String(idx); }
   function binary(v, n) { var t = v.toString(2); while (t.length < n) t = "0" + t; return t; }
   function renderLinks(panel) {
-    var parent = sel.m && V.modules[sel.m].links.length ? sel.m : "tp_soc";
+    var parent = sel.m && V.modules[sel.m].links.length ? sel.m : V.chip.links_root;
     var mod = V.modules[parent];
     panel.appendChild(h("p", { class: "vw-meta", text: "Inside " + parent + ": each box is a submodule and each line the number of wires two of them share, counted in the gate netlist. Choose a box to open that module." }));
     var subs = {};
@@ -971,7 +971,7 @@
       var p = pos[nm];
       var g = s("g", { class: "mb", transform: "translate(" + p[0] + "," + p[1] + ")" }, [
         s("rect", { x: -62, y: -20, width: 124, height: 40, rx: 4 }),
-        s("text", { y: -3, "text-anchor": "middle", class: "mn", text: nm.replace(/^g_cpu\./, "") }),
+        s("text", { y: -3, "text-anchor": "middle", class: "mn", text: nm.split(".").pop() }),
         s("text", { y: 12, "text-anchor": "middle", class: "mt", text: (typ || "") + (typ ? " · " + fmt(V.modules[typ].cells) : "") })]);
       if (typ) clickable(g, "module " + nm + " (" + typ + "), open it", function () { go({ m: typ, g: null, c: null, t: null, line: null }); });
       svg.appendChild(g);
@@ -987,7 +987,7 @@
       var td0 = h("td", {}, [h("code", { text: r.rv })]);
       if (r.rtl) {
         var a = h("button", { type: "button", class: "vw-link", text: "decoded on line " + r.rtl[1].join(", "),
-          onclick: function () { go({ m: "tp_ncore", g: null, c: null, t: null, line: r.rtl[1][0], f: null, st: null, e: null }); } });
+          onclick: function () { go({ m: V.chip.isa_module, g: null, c: null, t: null, line: r.rtl[1][0], f: null, st: null, e: null }); } });
         td0.appendChild(h("br")); td0.appendChild(a);
       }
       tb.appendChild(h("tr", {}, [td0, h("td", {}, [h("code", { text: r.rv_hex })]),
@@ -1014,7 +1014,7 @@
   }
   window.addEventListener("hashchange", function () { var o = readHash(); go(o, true); });
   var start = readHash();
-  if (!start.m) { start.m = "tp_uart"; start.g = "tp_uart/tcnt"; }
+  if (!start.m) { start.m = V.chip.start.m; start.g = V.chip.start.g; }
   go(start, true);
   root.classList.add("ready");
 })();

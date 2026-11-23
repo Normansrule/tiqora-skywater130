@@ -24,6 +24,10 @@ const { chromium } = require("playwright");
 const ROOT = path.resolve(__dirname, "..", "..");
 const PAGE = path.resolve(process.argv[2] || path.join(ROOT, "docs/site/views.html"));
 const URL = "file://" + PAGE;
+// the chip's own starting point (docs/views/chip.json, carried in the page data)
+const CHIP = JSON.parse(require("fs").readFileSync(path.join(ROOT, "docs/views/chip.json"), "utf8"));
+const SM = CHIP.start.m, SG = CHIP.start.g;
+const START = "#m=" + encodeURIComponent(SM) + "&g=" + encodeURIComponent(SG);
 let fails = 0, checks = 0;
 function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + what); } }
 
@@ -102,14 +106,14 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   console.log("page_test: " + drawn + " register and output groups drawn and checked");
 
   // ---- 3. viewing points link
-  await page.goto(URL + "#m=tp_uart&g=tp_uart%2Ftcnt");
+  await page.goto(URL + START);
   await page.waitForSelector("#views.ready");
   // a gate -> its transistors and layout
   const gate = page.locator("#vw-gate-body g.gate:not(.ff)").nth(3);
   await gate.click();
   ok(/[?#&]c=/.test(await page.evaluate(() => location.hash)), "choosing a gate puts it in the address");
   const nf = await page.locator("#vw-cell-body g.fet").count();
-  const ct = await page.evaluate(() => { const c = decodeURIComponent(location.hash.match(/c=([^&]+)/)[1]); return TQViews.data.groups["tp_uart/tcnt"].ctypes[TQViews.data.groups["tp_uart/tcnt"].nodes.findIndex(n => n[0] === c)]; });
+  const ct = await page.evaluate(SG => { const c = decodeURIComponent(location.hash.match(/c=([^&]+)/)[1]); const G = TQViews.data.groups[SG]; return G.ctypes[G.nodes.findIndex(n => n[0] === c)]; }, SG);
   ok(nf > 0 && nf === (await page.evaluate(ct => TQViews.data.celltypes[ct].fets.length, ct)), "transistor view draws every transistor of " + ct);
   ok(await page.locator("#vw-lay-body svg.lay polygon").count() > 10, "layout view draws polygons");
   ok(await page.locator("#vw-lay-body g.gm").count() === nf, "every transistor is marked in the layout");
@@ -143,7 +147,7 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   }
 
   // an RTL line -> its group
-  await page.goto(URL + "#m=tp_uart");
+  await page.goto(URL + "#m=" + encodeURIComponent(SM));
   await page.waitForSelector("#views.ready");
   const mk = page.locator("#vw-rtl-body .vw-ln.mk").first();
   await mk.click();
@@ -152,7 +156,7 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
 
   // FSMs: each state -> RTL arm lit, its one-hot flip-flop selected; each edge selectable
   const nfsm = await page.evaluate(() => TQViews.data.fsms.length);
-  ok(nfsm === 2, "two state machines in the data");
+  ok(nfsm >= 1 && nfsm === Object.keys(JSON.parse(require("fs").readFileSync(path.join(ROOT, "docs/views/netlist.json"), "utf8")).fsms).length, "every extracted state machine is in the page data (" + nfsm + ")");
   for (let fi = 0; fi < nfsm; fi++) {
     await page.locator("#vw-fsm-body button[role=tab]", { hasText: "State machines" }).click();
     await page.locator("#vw-fsm-body .vw-chips button").nth(fi).click();
@@ -180,22 +184,25 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   ok(await boxes.count() >= 3, "connections view shows submodules");
   await boxes.first().click();
   ok(/m=/.test(await page.evaluate(() => location.hash)), "a connections box opens its module");
-  // ISA -> decode line
+  // ISA -> decode line (chips with a processor)
+  if (CHIP.isa) {
   await page.locator("#vw-fsm-body button[role=tab]", { hasText: "RISC-V instructions" }).click();
   const rows = await page.locator("#vw-fsm-body table.vw-isa tr").count();
   const nisa = await page.evaluate(() => TQViews.data.isa.rows.length);
   ok(rows === nisa + 1, "ISA table has every row (" + (rows - 1) + "/" + nisa + ")");
   await page.locator("#vw-fsm-body .vw-link").first().click();
   const line = await page.evaluate(() => TQViews.data.isa.rows[0].rtl[1][0]);
-  ok(await page.locator("#vw-rtl-body .vw-ln.on-x[data-line='" + line + "']").count() === 1, "ISA row lights its decode line " + line + " in tp_ncore");
+  ok(await page.locator("#vw-rtl-body .vw-ln.on-x[data-line='" + line + "']").count() === 1, "ISA row lights its decode line " + line + " in " + CHIP.isa.module);
+  } else ok(await page.locator("#vw-fsm-body button[role=tab]", { hasText: "RISC-V" }).count() === 0, "no instruction tab on a chip without a processor");
 
   // the address bar round-trips
-  await page.goto(URL + "#m=qspi_ctrl&f=0&st=0");
+  const fm = await page.evaluate(() => TQViews.data.fsms[0].module);
+  await page.goto(URL + "#m=" + fm + "&f=0&st=0");
   await page.waitForSelector("#views.ready");
-  ok(await page.locator(".vw-crumb", { hasText: "qspi_ctrl" }).count() >= 1, "deep link opens the module");
+  ok(await page.locator(".vw-crumb", { hasText: fm }).count() >= 1, "deep link opens the module");
 
   // a flip-flop in the transistor view: CLK 0 -> 1 loads D, D alone does not change Q
-  await page.goto(URL + "#m=tp_uart&g=tp_uart%2Ftcnt");
+  await page.goto(URL + START);
   await page.waitForSelector("#views.ready");
   await page.locator("#vw-gate-body g.gate.ff").first().click();
   const pin = n => page.locator("#vw-cell-body button.pin", { hasText: new RegExp("^" + n + " =") });
@@ -210,7 +217,7 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   ok(JSON.stringify(qs) === JSON.stringify(["Q = 1", "Q = 1", "Q = 1", "Q = 0"]), "flip-flop in the page loads on the rising edge only: " + qs.join(", "));
 
   // ---- 4. keyboard only
-  await page.goto(URL + "#m=tp_uart&g=tp_uart%2Ftcnt");
+  await page.goto(URL + START);
   await page.waitForSelector("#views.ready");
   await page.locator("#vw-gate-body g.gate").nth(2).focus();
   await page.keyboard.press("Enter");
@@ -227,7 +234,7 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
       const p = await browser.newPage({ colorScheme: scheme, reducedMotion: motion });
       const errs = [];
       p.on("pageerror", e => errs.push(String(e)));
-      await p.goto(URL + "#m=tp_uart&g=tp_uart%2Ftcnt");
+      await p.goto(URL + START);
       await p.waitForSelector("#views.ready");
       const bg = await p.evaluate(() => getComputedStyle(document.querySelector(".vw-pane")).backgroundColor);
       const nwell = await p.evaluate(() => getComputedStyle(document.getElementById("views")).getPropertyValue("--ly-nwell").trim());
@@ -243,7 +250,8 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   await p2.goto(URL);
   const txt = await p2.locator("noscript").first().textContent().catch(() => "");
   const staticTables = await p2.locator(".vw-static table").count();
-  ok(staticTables >= 3 || /tp_ncore/.test(txt), "static fallback has the module, state machine and ISA tables");
+  const wantTables = 1 + (await (async () => { const b = await chromium.launch(); const q = await b.newPage(); await q.goto(URL); const n = await q.evaluate(() => TQViews.data.fsms.length + (TQViews.data.isa ? 1 : 0)); await b.close(); return n; })());
+  ok(staticTables === wantTables, "static fallback has the module, state machine and instruction tables (" + staticTables + "/" + wantTables + ")");
   await nojs.close();
 
   ok(errors.length === 0, "console errors: " + errors.slice(0, 5).join("; "));
