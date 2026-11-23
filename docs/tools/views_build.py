@@ -12,7 +12,7 @@ docs/tools/build_site.py then turns it into docs/site/views.html.
 Reads only files in the repository:
   docs/views/netlist.json   the gate netlist, per module, and the state machines (views_synth.py)
   docs/views/cells.json     every cell's liberty function, transistors and layout (views_synth.py)
-  docs/views/isa.json       the RISC-V / x86-64 lens, both columns assembled (views_isa.py)
+  docs/views/isa.json       the RISC-V instruction table, assembled (views_isa.py)
   src/**/*.sv               the RTL, for the source view and every link into it
 
 and writes one JSON file that docs/site/pages/views.html draws. Everything a
@@ -487,9 +487,9 @@ def noscript(d):
             out.append(f"<tr><td>{st['name']}{' (reset)' if st['reset'] else ''}</td><td>{st['code']}</td><td>{st['onehot']}</td><td>{', '.join(to)}</td></tr>")
         out.append("</table>")
     if d["isa"]:
-        out.append("<h3>RISC-V beside x86-64</h3><table><tr><th>RISC-V</th><th>encoding</th><th>x86-64</th><th>bytes</th></tr>")
+        out.append("<h3>RISC-V instructions</h3><table><tr><th>instruction</th><th>encoding</th><th>what it does</th></tr>")
         for r in d["isa"]["rows"]:
-            out.append(f"<tr><td><code>{html_esc(r['rv'])}</code></td><td><code>{r['rv_hex']}</code></td><td><code>{html_esc(r['x86']).replace(chr(10), '<br>')}</code></td><td><code>{r['x86_hex']}</code></td></tr>")
+            out.append(f"<tr><td><code>{html_esc(r['rv'])}</code></td><td><code>{r['rv_hex']}</code></td><td>{html_esc(r['note'])}</td></tr>")
         out.append("</table>")
     out.append("</div>")
     return "\n".join(out)

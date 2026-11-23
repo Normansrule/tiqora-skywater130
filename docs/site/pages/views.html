@@ -208,32 +208,32 @@
 <tr><td>S_TWAIT</td><td>3</td><td>6</td><td>S_FETCH, S_TWAIT</td></tr>
 <tr><td>S_SHIFT</td><td>7</td><td>7</td><td>S_ALIGN, S_FETCH, S_PASS, S_SHIFT</td></tr>
 </table>
-<h3>RISC-V beside x86-64</h3><table><tr><th>RISC-V</th><th>encoding</th><th>x86-64</th><th>bytes</th></tr>
-<tr><td><code>lui a0, 0x12345</code></td><td><code>12345537</code></td><td><code>mov eax, 0x12345000</code></td><td><code>b8 00 50 34 12</code></td></tr>
-<tr><td><code>auipc a0, 1</code></td><td><code>00001517</code></td><td><code>lea rax, [rip+0x1000]</code></td><td><code>48 8d 05 00 10 00 00</code></td></tr>
-<tr><td><code>jal ra, .+16</code></td><td><code>010000ef</code></td><td><code>call .+16</code></td><td><code>e8 0b 00 00 00</code></td></tr>
-<tr><td><code>jalr zero, 0(ra)</code></td><td><code>00008067</code></td><td><code>ret</code></td><td><code>c3</code></td></tr>
-<tr><td><code>beq a0, a1, .+8</code></td><td><code>00b50463</code></td><td><code>cmp eax, esi<br>je .+8</code></td><td><code>39 f0 74 06</code></td></tr>
-<tr><td><code>blt a0, a1, .+8</code></td><td><code>00b54463</code></td><td><code>cmp eax, esi<br>jl .+8</code></td><td><code>39 f0 7c 06</code></td></tr>
-<tr><td><code>bltu a0, a1, .+8</code></td><td><code>00b56463</code></td><td><code>cmp eax, esi<br>jb .+8</code></td><td><code>39 f0 72 06</code></td></tr>
-<tr><td><code>lw a0, 8(sp)</code></td><td><code>00812503</code></td><td><code>mov eax, dword ptr [rsp+8]</code></td><td><code>8b 44 24 08</code></td></tr>
-<tr><td><code>lb a0, 1(sp)</code></td><td><code>00110503</code></td><td><code>movsx eax, byte ptr [rsp+1]</code></td><td><code>0f be 44 24 01</code></td></tr>
-<tr><td><code>lbu a0, 1(sp)</code></td><td><code>00114503</code></td><td><code>movzx eax, byte ptr [rsp+1]</code></td><td><code>0f b6 44 24 01</code></td></tr>
-<tr><td><code>sw a0, 8(sp)</code></td><td><code>00a12423</code></td><td><code>mov dword ptr [rsp+8], eax</code></td><td><code>89 44 24 08</code></td></tr>
-<tr><td><code>sb a0, 1(sp)</code></td><td><code>00a100a3</code></td><td><code>mov byte ptr [rsp+1], al</code></td><td><code>88 44 24 01</code></td></tr>
-<tr><td><code>addi a0, a0, 5</code></td><td><code>00550513</code></td><td><code>add eax, 5</code></td><td><code>83 c0 05</code></td></tr>
-<tr><td><code>slli a0, a0, 3</code></td><td><code>00351513</code></td><td><code>shl eax, 3</code></td><td><code>c1 e0 03</code></td></tr>
-<tr><td><code>srai a0, a0, 3</code></td><td><code>40355513</code></td><td><code>sar eax, 3</code></td><td><code>c1 f8 03</code></td></tr>
-<tr><td><code>andi a0, a0, 255</code></td><td><code>0ff57513</code></td><td><code>and eax, 255</code></td><td><code>25 ff 00 00 00</code></td></tr>
-<tr><td><code>add a0, a0, a1</code></td><td><code>00b50533</code></td><td><code>add eax, esi</code></td><td><code>01 f0</code></td></tr>
-<tr><td><code>sub a0, a0, a1</code></td><td><code>40b50533</code></td><td><code>sub eax, esi</code></td><td><code>29 f0</code></td></tr>
-<tr><td><code>slt a0, a1, a2</code></td><td><code>00c5a533</code></td><td><code>cmp esi, edx<br>setl al<br>movzx eax, al</code></td><td><code>39 d6 0f 9c c0 0f b6 c0</code></td></tr>
-<tr><td><code>xor a0, a0, a1</code></td><td><code>00b54533</code></td><td><code>xor eax, esi</code></td><td><code>31 f0</code></td></tr>
-<tr><td><code>fence</code></td><td><code>0ff0000f</code></td><td><code>mfence</code></td><td><code>0f ae f0</code></td></tr>
-<tr><td><code>ecall</code></td><td><code>00000073</code></td><td><code>syscall</code></td><td><code>0f 05</code></td></tr>
-<tr><td><code>ebreak</code></td><td><code>00100073</code></td><td><code>int3</code></td><td><code>cc</code></td></tr>
-<tr><td><code>.insn r 0x0b, 3, 0, zero, a0, zero</code></td><td><code>0005300b</code></td><td><code>1: rdtsc<br>cmp eax, esi<br>jb 1b</code></td><td><code>0f 31 39 f0 72 fa</code></td></tr>
-<tr><td><code>.insn r 0x0b, 4, 0, zero, a0, a1</code></td><td><code>00b5400b</code></td><td><code>mov dword ptr [rdi], eax</code></td><td><code>89 07</code></td></tr>
+<h3>RISC-V instructions</h3><table><tr><th>instruction</th><th>encoding</th><th>what it does</th></tr>
+<tr><td><code>lui a0, 0x12345</code></td><td><code>12345537</code></td><td>load a 20-bit constant into the top of a register</td></tr>
+<tr><td><code>auipc a0, 1</code></td><td><code>00001517</code></td><td>PC-relative address: adds a 20-bit constant, shifted up, to this instruction's address</td></tr>
+<tr><td><code>jal ra, .+16</code></td><td><code>010000ef</code></td><td>call: jump, keeping the return address in ra</td></tr>
+<tr><td><code>jalr zero, 0(ra)</code></td><td><code>00008067</code></td><td>return</td></tr>
+<tr><td><code>beq a0, a1, .+8</code></td><td><code>00b50463</code></td><td>compare two registers and branch in one instruction; RISC-V has no flags</td></tr>
+<tr><td><code>blt a0, a1, .+8</code></td><td><code>00b54463</code></td><td>signed less-than</td></tr>
+<tr><td><code>bltu a0, a1, .+8</code></td><td><code>00b56463</code></td><td>unsigned less-than</td></tr>
+<tr><td><code>lw a0, 8(sp)</code></td><td><code>00812503</code></td><td>load a word</td></tr>
+<tr><td><code>lb a0, 1(sp)</code></td><td><code>00110503</code></td><td>load a byte, sign-extended</td></tr>
+<tr><td><code>lbu a0, 1(sp)</code></td><td><code>00114503</code></td><td>load a byte, zero-extended</td></tr>
+<tr><td><code>sw a0, 8(sp)</code></td><td><code>00a12423</code></td><td>store a word</td></tr>
+<tr><td><code>sb a0, 1(sp)</code></td><td><code>00a100a3</code></td><td>store a byte</td></tr>
+<tr><td><code>addi a0, a0, 5</code></td><td><code>00550513</code></td><td>add a 12-bit constant; no flags are set</td></tr>
+<tr><td><code>slli a0, a0, 3</code></td><td><code>00351513</code></td><td>shift left</td></tr>
+<tr><td><code>srai a0, a0, 3</code></td><td><code>40355513</code></td><td>arithmetic shift right</td></tr>
+<tr><td><code>andi a0, a0, 255</code></td><td><code>0ff57513</code></td><td>bitwise and with a constant</td></tr>
+<tr><td><code>add a0, a0, a1</code></td><td><code>00b50533</code></td><td>three operands: two sources and a separate destination</td></tr>
+<tr><td><code>sub a0, a0, a1</code></td><td><code>40b50533</code></td><td>subtract</td></tr>
+<tr><td><code>slt a0, a1, a2</code></td><td><code>00c5a533</code></td><td>set a0 to 1 if a1 &lt; a2 (signed), else 0</td></tr>
+<tr><td><code>xor a0, a0, a1</code></td><td><code>00b54533</code></td><td>exclusive or</td></tr>
+<tr><td><code>fence</code></td><td><code>0ff0000f</code></td><td>order memory accesses</td></tr>
+<tr><td><code>ecall</code></td><td><code>00000073</code></td><td>call the environment; on Tiqora it halts the core</td></tr>
+<tr><td><code>ebreak</code></td><td><code>00100073</code></td><td>breakpoint</td></tr>
+<tr><td><code>.insn r 0x0b, 3, 0, zero, a0, zero</code></td><td><code>0005300b</code></td><td>Xpulse TWAIT a0: sleep until the timebase reaches a0 (Tiqora's own custom-0 opcode)</td></tr>
+<tr><td><code>.insn r 0x0b, 4, 0, zero, a0, a1</code></td><td><code>00b5400b</code></td><td>Xpulse TARM a0, a1: arm trigger a1 to fire at time a0, in hardware</td></tr>
 </table>
 </div></noscript>
 
@@ -243,9 +243,9 @@
 <li><b>The transistors are the gate.</b> A switch-level simulation of each cell's transistors, for every input combination, must give the liberty Boolean function; flip-flops must load D on a rising clock and hold otherwise: <code>python3 docs/tools/views_switch.py</code>. The transistor view on this page uses the same rules, and <code>test/views/page_test.js</code> checks the two agree on every cell.</li>
 <li><b>The gates are the RTL.</b> The gate netlist and the RTL run side by side on the same programs, with random pin activity, and every output pin is compared on every clock: <code>make -C test views</code>.</li>
 <li><b>The diagrams are what the chip does.</b> The same runs log both state machines every clock; each step must be an arrow of the diagram, and the gate flip-flops must hold the one-hot code synthesis chose: <code>python3 test/views/fsm_check.py</code>.</li>
-<li><b>The RISC-V and x86-64 columns are real machine code.</b> Both are assembled, and each RISC-V opcode is checked against the value the core decodes: <code>python3 docs/tools/views_isa.py --check</code>.</li>
+<li><b>The instruction table is real machine code.</b> Every row is assembled, and each opcode is checked against the value the core decodes: <code>python3 docs/tools/views_isa.py --check</code>.</li>
 </ul>
-<p class=small><span class="ev illustrative">illustrative</span> The FinFET drawing in the layout view is a comparison sketch. Every transistor in this chip is a planar MOSFET; SkyWater 130 nm has no FinFETs. The x86-64 column is a translation aid: Tiqora runs RISC-V only and has no x86 decoder.</p>
+<p class=small><span class="ev illustrative">illustrative</span> The FinFET drawing in the layout view is a comparison sketch. Every transistor in this chip is a planar MOSFET; SkyWater 130 nm has no FinFETs.</p>
 <script>
 /* views.js — "Inside a gate": one design, five linked views.
 
@@ -866,7 +866,7 @@
     var b = paneFsm.body;
     b.innerHTML = "";
     var tabs = h("div", { class: "vw-tabs", role: "tablist", "aria-label": "Lingua franca views" });
-    [["fsm", "State machines"], ["links", "Connections"], ["isa", "RISC-V and x86-64"]].forEach(function (t) {
+    [["fsm", "State machines"], ["links", "Connections"], ["isa", "RISC-V instructions"]].forEach(function (t) {
       tabs.appendChild(h("button", { type: "button", role: "tab", "aria-selected": String(fsmTab === t[0]), id: "vw-tab-" + t[0],
         onclick: function () { fsmTab = t[0]; renderFsm(); } }, [t[1]]));
     });
@@ -982,7 +982,7 @@
     if (!V.isa) { panel.appendChild(h("p", { text: "No ISA data." })); return; }
     panel.appendChild(h("p", { class: "vw-meta", text: V.isa.about }));
     var tb = h("table", { class: "vw-isa" });
-    tb.appendChild(h("tr", {}, ["RISC-V (Tiqora runs this)", "encoding", "x86-64", "bytes", "what it does"].map(function (t) { return h("th", { text: t }); })));
+    tb.appendChild(h("tr", {}, ["instruction", "encoding", "format and fields", "what it does"].map(function (t) { return h("th", { text: t }); })));
     V.isa.rows.forEach(function (r) {
       var td0 = h("td", {}, [h("code", { text: r.rv })]);
       if (r.rtl) {
@@ -991,10 +991,21 @@
         td0.appendChild(h("br")); td0.appendChild(a);
       }
       tb.appendChild(h("tr", {}, [td0, h("td", {}, [h("code", { text: r.rv_hex })]),
-        h("td", {}, [h("pre", { text: r.x86 })]), h("td", {}, [h("code", { text: r.x86_hex })]), h("td", { text: r.note })]));
+        h("td", {}, [h("code", { text: fieldText(r.rv_fields) })]), h("td", { text: r.note })]));
     });
     panel.appendChild(h("div", { class: "vw-tablewrap" }, [tb]));
-    panel.appendChild(h("p", { class: "vw-meta", text: "Assembled with " + V.isa.assemblers.riscv + " and " + V.isa.assemblers.x86 + ". Every RISC-V instruction is 4 bytes; the x86-64 ones here take 1 to 8." }));
+    panel.appendChild(h("p", { class: "vw-meta", text: "Assembled with " + V.isa.assemblers.riscv + ". Every instruction is one 32-bit word; its opcode (bits 6:0) picks the format, and the core decodes it on the linked line." }));
+  }
+  // the RISC-V base formats by opcode; only R-type has every field, so the others show their format
+  var FORMAT = { 0x37: "U", 0x17: "U", 0x6f: "J", 0x67: "I", 0x63: "B", 0x03: "I", 0x23: "S", 0x13: "I", 0x33: "R", 0x0f: "I", 0x73: "I", 0x0b: "R" };
+  function fieldText(f) {
+    var t = FORMAT[f.opcode] || "?";
+    var out = "opcode " + binary(f.opcode, 7) + ", " + t + "-type";
+    if (t === "R") out += ": rd " + f.rd + " rs1 " + f.rs1 + " rs2 " + f.rs2 + " funct3 " + f.funct3 + " funct7 " + binary(f.funct7, 7);
+    else if (t === "I") out += ": rd " + f.rd + " rs1 " + f.rs1 + " funct3 " + f.funct3;
+    else if (t === "S" || t === "B") out += ": rs1 " + f.rs1 + " rs2 " + f.rs2 + " funct3 " + f.funct3;
+    else out += ": rd " + f.rd;
+    return out;
   }
 
   // ------------------------------------------------------------ render all

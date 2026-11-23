@@ -1,8 +1,7 @@
 {
- "about": "A reading aid for people who know x86: each RV32E instruction Tiqora decodes beside the closest x86-64 instruction. Written by hand; both columns are assembled by real assemblers (docs/tools/views_isa.py) and the RISC-V opcode of every row is checked against the core's decoder. Registers are paired a0=eax, a1=esi, a2=edx, sp=rsp, ra=the return address x86 keeps on the stack. Tiqora runs only the RISC-V column: it has no x86 decoder.",
+ "about": "The RV32E instructions Tiqora decodes, one example of each kind. Written by hand; every row is assembled by a real assembler (docs/tools/views_isa.py), and its opcode (bits 6:0) is checked against the constant the core's decoder uses. Each row links to the line of tp_ncore that decodes it.",
  "assemblers": {
-  "riscv": "zig 0.17.1 (clang)",
-  "x86": "GNU assembler 2.42"
+  "riscv": "zig 0.17.1 (clang)"
  },
  "rows": [
   {
@@ -17,13 +16,10 @@
     "rs1": 8,
     "rs2": 3
    },
-   "rv_hex": "12345537",
-   "x86": "mov eax, 0x12345000",
-   "x86_bytes": 5,
-   "x86_hex": "b8 00 50 34 12"
+   "rv_hex": "12345537"
   },
   {
-   "note": "PC-relative address; x86-64 counts from the next instruction, RISC-V from this one",
+   "note": "PC-relative address: adds a 20-bit constant, shifted up, to this instruction's address",
    "opc": "OPC_AUIPC",
    "rv": "auipc a0, 1",
    "rv_fields": {
@@ -34,13 +30,10 @@
     "rs1": 0,
     "rs2": 0
    },
-   "rv_hex": "00001517",
-   "x86": "lea rax, [rip+0x1000]",
-   "x86_bytes": 7,
-   "x86_hex": "48 8d 05 00 10 00 00"
+   "rv_hex": "00001517"
   },
   {
-   "note": "call: RISC-V keeps the return address in ra, x86 pushes it",
+   "note": "call: jump, keeping the return address in ra",
    "opc": "OPC_JAL",
    "rv": "jal ra, .+16",
    "rv_fields": {
@@ -51,10 +44,7 @@
     "rs1": 0,
     "rs2": 16
    },
-   "rv_hex": "010000ef",
-   "x86": "call .+16",
-   "x86_bytes": 5,
-   "x86_hex": "e8 0b 00 00 00"
+   "rv_hex": "010000ef"
   },
   {
    "note": "return",
@@ -68,13 +58,10 @@
     "rs1": 1,
     "rs2": 0
    },
-   "rv_hex": "00008067",
-   "x86": "ret",
-   "x86_bytes": 1,
-   "x86_hex": "c3"
+   "rv_hex": "00008067"
   },
   {
-   "note": "RISC-V compares and branches in one instruction; x86 sets flags first",
+   "note": "compare two registers and branch in one instruction; RISC-V has no flags",
    "opc": "OPC_BRANCH",
    "rv": "beq a0, a1, .+8",
    "rv_fields": {
@@ -85,10 +72,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b50463",
-   "x86": "cmp eax, esi\nje .+8",
-   "x86_bytes": 4,
-   "x86_hex": "39 f0 74 06"
+   "rv_hex": "00b50463"
   },
   {
    "note": "signed less-than",
@@ -102,10 +86,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b54463",
-   "x86": "cmp eax, esi\njl .+8",
-   "x86_bytes": 4,
-   "x86_hex": "39 f0 7c 06"
+   "rv_hex": "00b54463"
   },
   {
    "note": "unsigned less-than",
@@ -119,10 +100,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b56463",
-   "x86": "cmp eax, esi\njb .+8",
-   "x86_bytes": 4,
-   "x86_hex": "39 f0 72 06"
+   "rv_hex": "00b56463"
   },
   {
    "note": "load a word",
@@ -136,10 +114,7 @@
     "rs1": 2,
     "rs2": 8
    },
-   "rv_hex": "00812503",
-   "x86": "mov eax, dword ptr [rsp+8]",
-   "x86_bytes": 4,
-   "x86_hex": "8b 44 24 08"
+   "rv_hex": "00812503"
   },
   {
    "note": "load a byte, sign-extended",
@@ -153,10 +128,7 @@
     "rs1": 2,
     "rs2": 1
    },
-   "rv_hex": "00110503",
-   "x86": "movsx eax, byte ptr [rsp+1]",
-   "x86_bytes": 5,
-   "x86_hex": "0f be 44 24 01"
+   "rv_hex": "00110503"
   },
   {
    "note": "load a byte, zero-extended",
@@ -170,10 +142,7 @@
     "rs1": 2,
     "rs2": 1
    },
-   "rv_hex": "00114503",
-   "x86": "movzx eax, byte ptr [rsp+1]",
-   "x86_bytes": 5,
-   "x86_hex": "0f b6 44 24 01"
+   "rv_hex": "00114503"
   },
   {
    "note": "store a word",
@@ -187,10 +156,7 @@
     "rs1": 2,
     "rs2": 10
    },
-   "rv_hex": "00a12423",
-   "x86": "mov dword ptr [rsp+8], eax",
-   "x86_bytes": 4,
-   "x86_hex": "89 44 24 08"
+   "rv_hex": "00a12423"
   },
   {
    "note": "store a byte",
@@ -204,13 +170,10 @@
     "rs1": 2,
     "rs2": 10
    },
-   "rv_hex": "00a100a3",
-   "x86": "mov byte ptr [rsp+1], al",
-   "x86_bytes": 4,
-   "x86_hex": "88 44 24 01"
+   "rv_hex": "00a100a3"
   },
   {
-   "note": "add a constant; x86 also sets flags, RISC-V has none",
+   "note": "add a 12-bit constant; no flags are set",
    "opc": "OPC_OPIMM",
    "rv": "addi a0, a0, 5",
    "rv_fields": {
@@ -221,10 +184,7 @@
     "rs1": 10,
     "rs2": 5
    },
-   "rv_hex": "00550513",
-   "x86": "add eax, 5",
-   "x86_bytes": 3,
-   "x86_hex": "83 c0 05"
+   "rv_hex": "00550513"
   },
   {
    "note": "shift left",
@@ -238,10 +198,7 @@
     "rs1": 10,
     "rs2": 3
    },
-   "rv_hex": "00351513",
-   "x86": "shl eax, 3",
-   "x86_bytes": 3,
-   "x86_hex": "c1 e0 03"
+   "rv_hex": "00351513"
   },
   {
    "note": "arithmetic shift right",
@@ -255,10 +212,7 @@
     "rs1": 10,
     "rs2": 3
    },
-   "rv_hex": "40355513",
-   "x86": "sar eax, 3",
-   "x86_bytes": 3,
-   "x86_hex": "c1 f8 03"
+   "rv_hex": "40355513"
   },
   {
    "note": "bitwise and with a constant",
@@ -272,13 +226,10 @@
     "rs1": 10,
     "rs2": 31
    },
-   "rv_hex": "0ff57513",
-   "x86": "and eax, 255",
-   "x86_bytes": 5,
-   "x86_hex": "25 ff 00 00 00"
+   "rv_hex": "0ff57513"
   },
   {
-   "note": "RISC-V has three operands; x86 overwrites the first",
+   "note": "three operands: two sources and a separate destination",
    "opc": "OPC_OP",
    "rv": "add a0, a0, a1",
    "rv_fields": {
@@ -289,10 +240,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b50533",
-   "x86": "add eax, esi",
-   "x86_bytes": 2,
-   "x86_hex": "01 f0"
+   "rv_hex": "00b50533"
   },
   {
    "note": "subtract",
@@ -306,13 +254,10 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "40b50533",
-   "x86": "sub eax, esi",
-   "x86_bytes": 2,
-   "x86_hex": "29 f0"
+   "rv_hex": "40b50533"
   },
   {
-   "note": "set if less than: one RISC-V instruction, three x86",
+   "note": "set a0 to 1 if a1 < a2 (signed), else 0",
    "opc": "OPC_OP",
    "rv": "slt a0, a1, a2",
    "rv_fields": {
@@ -323,10 +268,7 @@
     "rs1": 11,
     "rs2": 12
    },
-   "rv_hex": "00c5a533",
-   "x86": "cmp esi, edx\nsetl al\nmovzx eax, al",
-   "x86_bytes": 8,
-   "x86_hex": "39 d6 0f 9c c0 0f b6 c0"
+   "rv_hex": "00c5a533"
   },
   {
    "note": "exclusive or",
@@ -340,10 +282,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b54533",
-   "x86": "xor eax, esi",
-   "x86_bytes": 2,
-   "x86_hex": "31 f0"
+   "rv_hex": "00b54533"
   },
   {
    "note": "order memory accesses",
@@ -357,10 +296,7 @@
     "rs1": 0,
     "rs2": 31
    },
-   "rv_hex": "0ff0000f",
-   "x86": "mfence",
-   "x86_bytes": 3,
-   "x86_hex": "0f ae f0"
+   "rv_hex": "0ff0000f"
   },
   {
    "note": "call the environment; on Tiqora it halts the core",
@@ -374,10 +310,7 @@
     "rs1": 0,
     "rs2": 0
    },
-   "rv_hex": "00000073",
-   "x86": "syscall",
-   "x86_bytes": 2,
-   "x86_hex": "0f 05"
+   "rv_hex": "00000073"
   },
   {
    "note": "breakpoint",
@@ -391,13 +324,10 @@
     "rs1": 0,
     "rs2": 1
    },
-   "rv_hex": "00100073",
-   "x86": "int3",
-   "x86_bytes": 1,
-   "x86_hex": "cc"
+   "rv_hex": "00100073"
   },
   {
-   "note": "Xpulse TWAIT a0: sleep until the timebase reaches a0. No x86 instruction does this; the nearest is a loop on the time-stamp counter",
+   "note": "Xpulse TWAIT a0: sleep until the timebase reaches a0 (Tiqora's own custom-0 opcode)",
    "opc": "OPC_CUSTOM0",
    "rv": ".insn r 0x0b, 3, 0, zero, a0, zero",
    "rv_fields": {
@@ -408,13 +338,10 @@
     "rs1": 10,
     "rs2": 0
    },
-   "rv_hex": "0005300b",
-   "x86": "1: rdtsc\ncmp eax, esi\njb 1b",
-   "x86_bytes": 6,
-   "x86_hex": "0f 31 39 f0 72 fa"
+   "rv_hex": "0005300b"
   },
   {
-   "note": "Xpulse TARM a0, a1: arm trigger a1 for time a0 in hardware; on x86 this would be a store to a timer peripheral's register, if the board had one",
+   "note": "Xpulse TARM a0, a1: arm trigger a1 to fire at time a0, in hardware",
    "opc": "OPC_CUSTOM0",
    "rv": ".insn r 0x0b, 4, 0, zero, a0, a1",
    "rv_fields": {
@@ -425,10 +352,7 @@
     "rs1": 10,
     "rs2": 11
    },
-   "rv_hex": "00b5400b",
-   "x86": "mov dword ptr [rdi], eax",
-   "x86_bytes": 2,
-   "x86_hex": "89 07"
+   "rv_hex": "00b5400b"
   }
  ]
 }

@@ -3,8 +3,8 @@ name: views
 # The "Inside a gate" page (docs/site/views.html) and every check behind it:
 # layout == transistors (KLayout LVS + a geometric check), transistors == the
 # liberty gate (switch level, every input), the gate netlist == the RTL
-# (lockstep, six runs), state diagrams == behaviour, the RISC-V / x86-64 lens
-# assembled, every link on the page, the page in a browser, and 17 mutants
+# (lockstep, eight runs), state diagrams == behaviour, the RISC-V instruction
+# table assembled, every link on the page, the page in a browser, and 17 mutants
 # each of those checks must catch. The PDK is not needed: docs/views/*.json
 # hold what docs/tools/views_synth.py took from it.
 

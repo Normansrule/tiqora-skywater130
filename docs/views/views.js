@@ -617,7 +617,7 @@
     var b = paneFsm.body;
     b.innerHTML = "";
     var tabs = h("div", { class: "vw-tabs", role: "tablist", "aria-label": "Lingua franca views" });
-    [["fsm", "State machines"], ["links", "Connections"], ["isa", "RISC-V and x86-64"]].forEach(function (t) {
+    [["fsm", "State machines"], ["links", "Connections"], ["isa", "RISC-V instructions"]].forEach(function (t) {
       tabs.appendChild(h("button", { type: "button", role: "tab", "aria-selected": String(fsmTab === t[0]), id: "vw-tab-" + t[0],
         onclick: function () { fsmTab = t[0]; renderFsm(); } }, [t[1]]));
     });
@@ -733,7 +733,7 @@
     if (!V.isa) { panel.appendChild(h("p", { text: "No ISA data." })); return; }
     panel.appendChild(h("p", { class: "vw-meta", text: V.isa.about }));
     var tb = h("table", { class: "vw-isa" });
-    tb.appendChild(h("tr", {}, ["RISC-V (Tiqora runs this)", "encoding", "x86-64", "bytes", "what it does"].map(function (t) { return h("th", { text: t }); })));
+    tb.appendChild(h("tr", {}, ["instruction", "encoding", "format and fields", "what it does"].map(function (t) { return h("th", { text: t }); })));
     V.isa.rows.forEach(function (r) {
       var td0 = h("td", {}, [h("code", { text: r.rv })]);
       if (r.rtl) {
@@ -742,10 +742,21 @@
         td0.appendChild(h("br")); td0.appendChild(a);
       }
       tb.appendChild(h("tr", {}, [td0, h("td", {}, [h("code", { text: r.rv_hex })]),
-        h("td", {}, [h("pre", { text: r.x86 })]), h("td", {}, [h("code", { text: r.x86_hex })]), h("td", { text: r.note })]));
+        h("td", {}, [h("code", { text: fieldText(r.rv_fields) })]), h("td", { text: r.note })]));
     });
     panel.appendChild(h("div", { class: "vw-tablewrap" }, [tb]));
-    panel.appendChild(h("p", { class: "vw-meta", text: "Assembled with " + V.isa.assemblers.riscv + " and " + V.isa.assemblers.x86 + ". Every RISC-V instruction is 4 bytes; the x86-64 ones here take 1 to 8." }));
+    panel.appendChild(h("p", { class: "vw-meta", text: "Assembled with " + V.isa.assemblers.riscv + ". Every instruction is one 32-bit word; its opcode (bits 6:0) picks the format, and the core decodes it on the linked line." }));
+  }
+  // the RISC-V base formats by opcode; only R-type has every field, so the others show their format
+  var FORMAT = { 0x37: "U", 0x17: "U", 0x6f: "J", 0x67: "I", 0x63: "B", 0x03: "I", 0x23: "S", 0x13: "I", 0x33: "R", 0x0f: "I", 0x73: "I", 0x0b: "R" };
+  function fieldText(f) {
+    var t = FORMAT[f.opcode] || "?";
+    var out = "opcode " + binary(f.opcode, 7) + ", " + t + "-type";
+    if (t === "R") out += ": rd " + f.rd + " rs1 " + f.rs1 + " rs2 " + f.rs2 + " funct3 " + f.funct3 + " funct7 " + binary(f.funct7, 7);
+    else if (t === "I") out += ": rd " + f.rd + " rs1 " + f.rs1 + " funct3 " + f.funct3;
+    else if (t === "S" || t === "B") out += ": rs1 " + f.rs1 + " rs2 " + f.rs2 + " funct3 " + f.funct3;
+    else out += ": rd " + f.rd;
+    return out;
   }
 
   // ------------------------------------------------------------ render all

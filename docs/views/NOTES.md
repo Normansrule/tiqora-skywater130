@@ -9,11 +9,11 @@ when a result was measured; every number says how it was obtained.
 
 ## Reading of the request
 
-Alek asked for a RISC-V design "with x86 compatibility". Tiqora stays an
-RV32E core in hardware. x86 appears only as a teaching lens: each RV32E
-instruction beside the nearest x86-64 instruction(s), both assembled for
-real. There is no x86 decoder in silicon. The page says so beside the table
-and in its footnote.
+Tiqora is an RV32E core. The first version of the page also showed each
+RISC-V instruction beside the nearest x86-64 one, as a reading aid; Alek
+dropped that on 2026-11-23 ("scratch the x86 stuff"), so the table is now
+RISC-V only: each instruction kind the core decodes, its encoding and
+fields, and the decoder line that handles it.
 
 FinFETs: SkyWater 130 nm is a planar process. The page's FinFET drawing is a
 labelled comparison sketch (`illustrative` badge), not part of the chip.
@@ -23,7 +23,7 @@ labelled comparison sketch (`illustrative` badge), not part of the chip.
 | stage | tool | needs | output |
 |---|---|---|---|
 | A | `docs/tools/views_synth.py <sc_hd dir>` | Yosys 0.33, the sky130 PDK, KLayout | `docs/views/netlist.json`, `docs/views/cells.json` |
-| lens | `docs/tools/views_isa.py` | ziglang, GNU as, pyelftools | `docs/views/isa.json` (from `isa_lens.json`) |
+| instructions | `docs/tools/views_isa.py` | ziglang, pyelftools | `docs/views/isa.json` (from `isa_lens.json`) |
 | B | `docs/tools/views_build.py` | Python only | `docs/site/data/views.json`, `docs/site/pages/views.html` |
 | site | `docs/tools/build_site.py` | Python only | `docs/site/views.html` |
 
@@ -44,7 +44,7 @@ Regenerate after an RTL change (stage A needs the PDK, so it runs locally):
 ## How each view is checked (`make -C test views`, also `.github/workflows/views.yaml`)
 
 Measured 2026-11-23 in the cloud container (Yosys 0.33, KLayout 0.30.14,
-Icarus 12.0, ziglang 0.17.1, GNU as 2.42, Playwright 1.63.0 / Chromium):
+Icarus 12.0, ziglang 0.17.1, Playwright 1.63.0 / Chromium):
 
 | link | command | result |
 |---|---|---|
@@ -53,7 +53,7 @@ Icarus 12.0, ziglang 0.17.1, GNU as 2.42, Playwright 1.63.0 / Chromium):
 | transistors == liberty gate | `python3 docs/tools/views_switch.py` | 72 cells, 2,526 input states, 0 mismatches |
 | gates == RTL | `make -C test views-lockstep` | 8 runs × 40,000 clocks (prog, xpulse, wrap, isa, c_flash, prog from the boot ROM, and c_flash and xpulse with 10 and 8 random mid-run resets), all 24 output and enable pins equal every clock |
 | diagrams == behaviour | `python3 test/views/fsm_check.py` | 640,000 per-clock state samples (2 machines × 320,000 clocks), 0 errors; qspi_ctrl 25/28 edges, 9/9 states; tp_ncore 24/28 edges, 8/8 states |
-| lens == machine code | `python3 docs/tools/views_isa.py --check` | 25 rows, every RISC-V opcode equals the tp_pkg constant the core decodes |
+| instruction table == machine code | `python3 docs/tools/views_isa.py --check` | 25 rows, every RISC-V opcode equals the tp_pkg constant the core decodes |
 | page links | `python3 test/views/check_views.py` | 28,543 references, 0 errors, build is deterministic |
 | page in a browser | `node test/views/page_test.js` | 348 checks: page simulator equals Python on all 2,548 states node by node; all 127 groups draw; every link, keyboard, light/dark, reduced motion, no-JS fallback |
 | mutants | `python3 test/views/mutants.py` | 17 mutants, 20 check-failures expected, 20 caught, 0 survived |

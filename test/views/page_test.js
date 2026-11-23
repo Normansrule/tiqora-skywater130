@@ -181,7 +181,7 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   await boxes.first().click();
   ok(/m=/.test(await page.evaluate(() => location.hash)), "a connections box opens its module");
   // ISA -> decode line
-  await page.locator("#vw-fsm-body button[role=tab]", { hasText: "RISC-V" }).click();
+  await page.locator("#vw-fsm-body button[role=tab]", { hasText: "RISC-V instructions" }).click();
   const rows = await page.locator("#vw-fsm-body table.vw-isa tr").count();
   const nisa = await page.evaluate(() => TQViews.data.isa.rows.length);
   ok(rows === nisa + 1, "ISA table has every row (" + (rows - 1) + "/" + nisa + ")");
