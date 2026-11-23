@@ -54,6 +54,7 @@ curious how small a whole computer can get.
 | [**Tours**](https://normansrule.github.io/tiqora-skywater130/tours.html) | six sequences recorded from the RTL, with play, step, scrub and captions; change the operands of an add and watch the register ring turn nibble by nibble |
 | [**Chip atlas**](https://normansrule.github.io/tiqora-skywater130/atlas.html) | every block from the elaborated RTL: ports, legal values, behaviour, tests, connections you can follow |
 | [**Physical design**](https://normansrule.github.io/tiqora-skywater130/physical.html) | measured cell area per block against the 3 × 2 die, what the layout run showed, and the routed layout to zoom into, down to every wire, with a clock edge you can send |
+| [**Inside a gate**](https://normansrule.github.io/tiqora-skywater130/views.html) | one design at four depths, linked: the RTL, the sky130 gates synthesis made from it, any gate as transistors you can switch, and its layout; plus both state machines and RISC-V beside x86-64. Every view is checked against the next ([notes](docs/views/NOTES.md)) |
 | [**Evidence**](https://normansrule.github.io/tiqora-skywater130/evidence.html) | the ladder from RTL tests to silicon, with the command behind every rung |
 
 Each page is one self-contained file: open `docs/site/index.html` from a clone and it works offline.

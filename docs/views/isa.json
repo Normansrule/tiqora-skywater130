@@ -1,0 +1,434 @@
+{
+ "about": "A reading aid for people who know x86: each RV32E instruction Tiqora decodes beside the closest x86-64 instruction. Written by hand; both columns are assembled by real assemblers (docs/tools/views_isa.py) and the RISC-V opcode of every row is checked against the core's decoder. Registers are paired a0=eax, a1=esi, a2=edx, sp=rsp, ra=the return address x86 keeps on the stack. Tiqora runs only the RISC-V column: it has no x86 decoder.",
+ "assemblers": {
+  "riscv": "zig 0.17.1 (clang)",
+  "x86": "GNU assembler 2.42"
+ },
+ "rows": [
+  {
+   "note": "load a 20-bit constant into the top of a register",
+   "opc": "OPC_LUI",
+   "rv": "lui a0, 0x12345",
+   "rv_fields": {
+    "funct3": 5,
+    "funct7": 9,
+    "opcode": 55,
+    "rd": 10,
+    "rs1": 8,
+    "rs2": 3
+   },
+   "rv_hex": "12345537",
+   "x86": "mov eax, 0x12345000",
+   "x86_bytes": 5,
+   "x86_hex": "b8 00 50 34 12"
+  },
+  {
+   "note": "PC-relative address; x86-64 counts from the next instruction, RISC-V from this one",
+   "opc": "OPC_AUIPC",
+   "rv": "auipc a0, 1",
+   "rv_fields": {
+    "funct3": 1,
+    "funct7": 0,
+    "opcode": 23,
+    "rd": 10,
+    "rs1": 0,
+    "rs2": 0
+   },
+   "rv_hex": "00001517",
+   "x86": "lea rax, [rip+0x1000]",
+   "x86_bytes": 7,
+   "x86_hex": "48 8d 05 00 10 00 00"
+  },
+  {
+   "note": "call: RISC-V keeps the return address in ra, x86 pushes it",
+   "opc": "OPC_JAL",
+   "rv": "jal ra, .+16",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 111,
+    "rd": 1,
+    "rs1": 0,
+    "rs2": 16
+   },
+   "rv_hex": "010000ef",
+   "x86": "call .+16",
+   "x86_bytes": 5,
+   "x86_hex": "e8 0b 00 00 00"
+  },
+  {
+   "note": "return",
+   "opc": "OPC_JALR",
+   "rv": "jalr zero, 0(ra)",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 103,
+    "rd": 0,
+    "rs1": 1,
+    "rs2": 0
+   },
+   "rv_hex": "00008067",
+   "x86": "ret",
+   "x86_bytes": 1,
+   "x86_hex": "c3"
+  },
+  {
+   "note": "RISC-V compares and branches in one instruction; x86 sets flags first",
+   "opc": "OPC_BRANCH",
+   "rv": "beq a0, a1, .+8",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 99,
+    "rd": 8,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b50463",
+   "x86": "cmp eax, esi\nje .+8",
+   "x86_bytes": 4,
+   "x86_hex": "39 f0 74 06"
+  },
+  {
+   "note": "signed less-than",
+   "opc": "OPC_BRANCH",
+   "rv": "blt a0, a1, .+8",
+   "rv_fields": {
+    "funct3": 4,
+    "funct7": 0,
+    "opcode": 99,
+    "rd": 8,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b54463",
+   "x86": "cmp eax, esi\njl .+8",
+   "x86_bytes": 4,
+   "x86_hex": "39 f0 7c 06"
+  },
+  {
+   "note": "unsigned less-than",
+   "opc": "OPC_BRANCH",
+   "rv": "bltu a0, a1, .+8",
+   "rv_fields": {
+    "funct3": 6,
+    "funct7": 0,
+    "opcode": 99,
+    "rd": 8,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b56463",
+   "x86": "cmp eax, esi\njb .+8",
+   "x86_bytes": 4,
+   "x86_hex": "39 f0 72 06"
+  },
+  {
+   "note": "load a word",
+   "opc": "OPC_LOAD",
+   "rv": "lw a0, 8(sp)",
+   "rv_fields": {
+    "funct3": 2,
+    "funct7": 0,
+    "opcode": 3,
+    "rd": 10,
+    "rs1": 2,
+    "rs2": 8
+   },
+   "rv_hex": "00812503",
+   "x86": "mov eax, dword ptr [rsp+8]",
+   "x86_bytes": 4,
+   "x86_hex": "8b 44 24 08"
+  },
+  {
+   "note": "load a byte, sign-extended",
+   "opc": "OPC_LOAD",
+   "rv": "lb a0, 1(sp)",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 3,
+    "rd": 10,
+    "rs1": 2,
+    "rs2": 1
+   },
+   "rv_hex": "00110503",
+   "x86": "movsx eax, byte ptr [rsp+1]",
+   "x86_bytes": 5,
+   "x86_hex": "0f be 44 24 01"
+  },
+  {
+   "note": "load a byte, zero-extended",
+   "opc": "OPC_LOAD",
+   "rv": "lbu a0, 1(sp)",
+   "rv_fields": {
+    "funct3": 4,
+    "funct7": 0,
+    "opcode": 3,
+    "rd": 10,
+    "rs1": 2,
+    "rs2": 1
+   },
+   "rv_hex": "00114503",
+   "x86": "movzx eax, byte ptr [rsp+1]",
+   "x86_bytes": 5,
+   "x86_hex": "0f b6 44 24 01"
+  },
+  {
+   "note": "store a word",
+   "opc": "OPC_STORE",
+   "rv": "sw a0, 8(sp)",
+   "rv_fields": {
+    "funct3": 2,
+    "funct7": 0,
+    "opcode": 35,
+    "rd": 8,
+    "rs1": 2,
+    "rs2": 10
+   },
+   "rv_hex": "00a12423",
+   "x86": "mov dword ptr [rsp+8], eax",
+   "x86_bytes": 4,
+   "x86_hex": "89 44 24 08"
+  },
+  {
+   "note": "store a byte",
+   "opc": "OPC_STORE",
+   "rv": "sb a0, 1(sp)",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 35,
+    "rd": 1,
+    "rs1": 2,
+    "rs2": 10
+   },
+   "rv_hex": "00a100a3",
+   "x86": "mov byte ptr [rsp+1], al",
+   "x86_bytes": 4,
+   "x86_hex": "88 44 24 01"
+  },
+  {
+   "note": "add a constant; x86 also sets flags, RISC-V has none",
+   "opc": "OPC_OPIMM",
+   "rv": "addi a0, a0, 5",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 19,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 5
+   },
+   "rv_hex": "00550513",
+   "x86": "add eax, 5",
+   "x86_bytes": 3,
+   "x86_hex": "83 c0 05"
+  },
+  {
+   "note": "shift left",
+   "opc": "OPC_OPIMM",
+   "rv": "slli a0, a0, 3",
+   "rv_fields": {
+    "funct3": 1,
+    "funct7": 0,
+    "opcode": 19,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 3
+   },
+   "rv_hex": "00351513",
+   "x86": "shl eax, 3",
+   "x86_bytes": 3,
+   "x86_hex": "c1 e0 03"
+  },
+  {
+   "note": "arithmetic shift right",
+   "opc": "OPC_OPIMM",
+   "rv": "srai a0, a0, 3",
+   "rv_fields": {
+    "funct3": 5,
+    "funct7": 32,
+    "opcode": 19,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 3
+   },
+   "rv_hex": "40355513",
+   "x86": "sar eax, 3",
+   "x86_bytes": 3,
+   "x86_hex": "c1 f8 03"
+  },
+  {
+   "note": "bitwise and with a constant",
+   "opc": "OPC_OPIMM",
+   "rv": "andi a0, a0, 255",
+   "rv_fields": {
+    "funct3": 7,
+    "funct7": 7,
+    "opcode": 19,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 31
+   },
+   "rv_hex": "0ff57513",
+   "x86": "and eax, 255",
+   "x86_bytes": 5,
+   "x86_hex": "25 ff 00 00 00"
+  },
+  {
+   "note": "RISC-V has three operands; x86 overwrites the first",
+   "opc": "OPC_OP",
+   "rv": "add a0, a0, a1",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 51,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b50533",
+   "x86": "add eax, esi",
+   "x86_bytes": 2,
+   "x86_hex": "01 f0"
+  },
+  {
+   "note": "subtract",
+   "opc": "OPC_OP",
+   "rv": "sub a0, a0, a1",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 32,
+    "opcode": 51,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "40b50533",
+   "x86": "sub eax, esi",
+   "x86_bytes": 2,
+   "x86_hex": "29 f0"
+  },
+  {
+   "note": "set if less than: one RISC-V instruction, three x86",
+   "opc": "OPC_OP",
+   "rv": "slt a0, a1, a2",
+   "rv_fields": {
+    "funct3": 2,
+    "funct7": 0,
+    "opcode": 51,
+    "rd": 10,
+    "rs1": 11,
+    "rs2": 12
+   },
+   "rv_hex": "00c5a533",
+   "x86": "cmp esi, edx\nsetl al\nmovzx eax, al",
+   "x86_bytes": 8,
+   "x86_hex": "39 d6 0f 9c c0 0f b6 c0"
+  },
+  {
+   "note": "exclusive or",
+   "opc": "OPC_OP",
+   "rv": "xor a0, a0, a1",
+   "rv_fields": {
+    "funct3": 4,
+    "funct7": 0,
+    "opcode": 51,
+    "rd": 10,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b54533",
+   "x86": "xor eax, esi",
+   "x86_bytes": 2,
+   "x86_hex": "31 f0"
+  },
+  {
+   "note": "order memory accesses",
+   "opc": "OPC_FENCE",
+   "rv": "fence",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 7,
+    "opcode": 15,
+    "rd": 0,
+    "rs1": 0,
+    "rs2": 31
+   },
+   "rv_hex": "0ff0000f",
+   "x86": "mfence",
+   "x86_bytes": 3,
+   "x86_hex": "0f ae f0"
+  },
+  {
+   "note": "call the environment; on Tiqora it halts the core",
+   "opc": "OPC_SYSTEM",
+   "rv": "ecall",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 115,
+    "rd": 0,
+    "rs1": 0,
+    "rs2": 0
+   },
+   "rv_hex": "00000073",
+   "x86": "syscall",
+   "x86_bytes": 2,
+   "x86_hex": "0f 05"
+  },
+  {
+   "note": "breakpoint",
+   "opc": "OPC_SYSTEM",
+   "rv": "ebreak",
+   "rv_fields": {
+    "funct3": 0,
+    "funct7": 0,
+    "opcode": 115,
+    "rd": 0,
+    "rs1": 0,
+    "rs2": 1
+   },
+   "rv_hex": "00100073",
+   "x86": "int3",
+   "x86_bytes": 1,
+   "x86_hex": "cc"
+  },
+  {
+   "note": "Xpulse TWAIT a0: sleep until the timebase reaches a0. No x86 instruction does this; the nearest is a loop on the time-stamp counter",
+   "opc": "OPC_CUSTOM0",
+   "rv": ".insn r 0x0b, 3, 0, zero, a0, zero",
+   "rv_fields": {
+    "funct3": 3,
+    "funct7": 0,
+    "opcode": 11,
+    "rd": 0,
+    "rs1": 10,
+    "rs2": 0
+   },
+   "rv_hex": "0005300b",
+   "x86": "1: rdtsc\ncmp eax, esi\njb 1b",
+   "x86_bytes": 6,
+   "x86_hex": "0f 31 39 f0 72 fa"
+  },
+  {
+   "note": "Xpulse TARM a0, a1: arm trigger a1 for time a0 in hardware; on x86 this would be a store to a timer peripheral's register, if the board had one",
+   "opc": "OPC_CUSTOM0",
+   "rv": ".insn r 0x0b, 4, 0, zero, a0, a1",
+   "rv_fields": {
+    "funct3": 4,
+    "funct7": 0,
+    "opcode": 11,
+    "rd": 0,
+    "rs1": 10,
+    "rs2": 11
+   },
+   "rv_hex": "00b5400b",
+   "x86": "mov dword ptr [rdi], eax",
+   "x86_bytes": 2,
+   "x86_hex": "89 07"
+  }
+ ]
+}
