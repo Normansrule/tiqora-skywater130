@@ -5,17 +5,17 @@
  "modes": {
   "define": "TIQORA_MODES",
   "modules_um2": {
-   "qspi_ctrl": 6516.2,
+   "qspi_ctrl": 6452.4,
    "sync_capture": 890.9,
-   "sync_compare": 5800.6,
+   "sync_compare": 6571.3,
    "sync_event_fifo": 2655.0,
    "sync_timebase": 4922.2,
-   "sync_unit": 4559.4,
+   "sync_unit": 4568.1,
    "tp_bootrom": 1127.3,
    "tp_bus": 1332.5,
    "tp_drive": 0.0,
    "tp_mac": 14938.1,
-   "tp_ncore": 12059.1,
+   "tp_ncore": 12020.3,
    "tp_nregfile": 11164.5,
    "tp_periph": 1498.9,
    "tp_simd": 8094.0,
@@ -23,23 +23,23 @@
    "tp_uart": 2683.8,
    "tt_um_normansrule_tiqora": 28.8
   },
-  "total_hierarchical_um2": 78507.7952
+  "total_hierarchical_um2": 79184.6944
  },
  "modules_um2": {
-  "qspi_ctrl": 6602.6,
+  "qspi_ctrl": 6515.0,
   "sync_capture": 890.9,
-  "sync_compare": 5800.6,
+  "sync_compare": 6571.3,
   "sync_event_fifo": 2655.0,
   "sync_timebase": 4922.2,
-  "sync_unit": 4559.4,
+  "sync_unit": 4568.1,
   "tp_bootrom": 1127.3,
   "tp_bus": 1332.5,
   "tp_drive": 0.0,
-  "tp_ncore": 11208.2,
+  "tp_ncore": 11213.3,
   "tp_nregfile": 11164.5,
   "tp_periph": 1498.9,
   "tp_soc": 236.5,
-  "tp_uart": 2688.8,
+  "tp_uart": 2683.8,
   "tt_um_normansrule_tiqora": 28.8
  },
  "sources": {
@@ -53,16 +53,16 @@
   "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
   "src/periph/tp_uart.sv": "78ace14205063d0d561eafebfddce4e07de18e9eaf88a92be1a7e097acf79ba5",
   "src/sync/sync_capture.sv": "2a14d3051ed4d0f9c8d4c6158cb148cfe515bceb8111fc9da123d9b3f984a907",
-  "src/sync/sync_compare.sv": "0910608252174b2b17e2909903257ec0e2a1c7cd8b2cdeb8785888bdad3308c3",
+  "src/sync/sync_compare.sv": "2b545b050393d5c6d9215d9e14bcc064e0685d592704f5f36786d3cea5ce6d1c",
   "src/sync/sync_event_fifo.sv": "8fbd9d34936c2624b9292253f31aa6ad31866a2c1c32879ca7a76ef24724c03a",
   "src/sync/sync_timebase.sv": "87d599d0c74435307ca6f45290b608ac9e6fee0e42ccab91e2e8dd5ba3bb32f6",
-  "src/sync/sync_unit.sv": "2a4f9c3df3e71c382c9d11803a12b3c293fab6094ead429536c0edfc38972130",
+  "src/sync/sync_unit.sv": "564db1eff03cefa1af4d2158b689d46b40737b733151113690d425300208d44a",
   "src/tp_drive.sv": "225c674410fb4615620c26e5aaea0222739363ec4f32183b87e7f8453c4abbbf",
   "src/tp_pkg.sv": "1c8167b387388377799f36d46499db1ab6034849828553cf241d7ca1215ced53",
   "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
   "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c"
  },
  "tool": "Yosys 0.33",
- "total_hierarchical_um2": 54716.2272,
+ "total_hierarchical_um2": 55408.1408,
  "what": "sky130_fd_sc_hd cell area per module, hierarchical synthesis before placement (the flattened netlist the flow builds is smaller: synthesis optimizes across boundaries)"
 }

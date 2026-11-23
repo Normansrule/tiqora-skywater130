@@ -413,7 +413,7 @@ functions in `sw/tiqora.h`:
 |---|---|---|
 | `TIME rd` | `tp_time()` | read the 32-bit timebase |
 | `TPOP rd` | `tp_pop()` | pop the oldest timestamped event (0 if empty) |
-| `TSTAT rd` | `tp_stat()` | queue count, flags, armed channels, live pin levels |
+| `TSTAT rd` | `tp_stat()` | queue count, flags (bit 6 overflow and bit 7 LATE, both sticky until reset), armed channels, live pin levels |
 | `TWAIT rs1` | `tp_wait(t)` | park the core until time `t` (wrap-safe) |
 | `TARM rs1, rs2` | `tp_arm(t, ch)` | fire trigger `ch` exactly at tick `t` |
 | `TPULSE rs1` | `tp_pulse(mask)` | fire the triggers in `mask` now |
@@ -663,7 +663,7 @@ read every line of, down to the transistors, with a timing unit most microcontro
 |---|---|---:|
 | `make isa` | every RV32E base instruction, vs. Python-computed results | 51 |
 | `make unit` | timing unit blocks, rotating register file, UART, GPIO | 50 |
-| `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover | 18 |
+| `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover, sticky LATE bit | 26 |
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
 | `make wrap` | `TWAIT` held correctly across the timebase rollover | 10 |

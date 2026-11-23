@@ -32,7 +32,7 @@ Each testbench ends with a line like `51 checks, 0 failures`, and `make sim` sto
 | unit | 50 | timing-unit blocks, rotating register file (including 4,000 random clocks against a model, every phase), UART, GPIO |
 | soc | 12 | boots, arms a deadline, the trigger lands on the exact tick |
 | isa | 51 | every RV32E base instruction vs Python-computed results |
-| stress | 18 | 8 simultaneous captures, queue overflow, 2³² rollover |
+| stress | 26 | 8 simultaneous captures, queue overflow, 2³² rollover, sticky LATE bit |
 | wrap | 10 | `TWAIT` across the timebase rollover |
 | xpulse | 15 | all eleven timing instructions |
 | boot | 18 | the UART bootloader, end to end, with RAM timing checked; lengths of 8 MB + 1 and 0xFFFF_FFFF are refused with `!` and nothing stored, exactly 8 MB is accepted; a RAM program re-enters it by jumping to 0x4000_0000 with hostile registers, then a second program loads |
