@@ -245,7 +245,7 @@ def parse_fsms(log):
                 if mm:
                     cur[section].append(mm.group(2).strip())
             elif section == "states":
-                mm = re.match(r"(\d+): \d+'([-01]+)(\s+<RESET STATE>)?$", t)
+                mm = re.match(r"(\d+):\s+\d+'([-01]+)(\s+<RESET STATE>)?$", t)
                 if mm:
                     cur["states"].append({"index": int(mm.group(1)), "pattern": mm.group(2), "reset": bool(mm.group(3))})
             elif section == "transitions":
