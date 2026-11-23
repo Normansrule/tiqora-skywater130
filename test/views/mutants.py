@@ -7,9 +7,10 @@ Every mutant runs in a fresh copy of the repository (no .git), so the
 working tree is never touched. A mutant "survives" when the check that
 should catch it passes anyway; any survivor fails this script.
 
-  rtl-tx-idle       RTL: the UART line idles low                     -> lockstep (gates no longer equal RTL)
+  rtl-tx-idle       RTL: the line chip.json names edited (Tiqora: the UART
+                    idles low; Serial: transmitted bits inverted)     -> lockstep (gates no longer equal RTL)
   netlist-gate      gate netlist: one gate in the UART's output cone
-                    swapped for another with the same pins            -> lockstep (on the C self-test, which prints)
+                    swapped for another with the same pins            -> lockstep (on chip.json's "sends" run, which transmits)
   rtl-stale         RTL: a comment edited, data not rebuilt           -> views_build --check
   spice-gate-net    SPICE: a transistor's gate on the wrong net       -> views_switch, views_lvs
   spice-width       SPICE: a transistor's width changed               -> views_lvs, mini_lvs
@@ -22,10 +23,12 @@ should catch it passes anyway; any survivor fails this script.
   fsm-onehot        state diagram: two states' one-hot bits swapped   -> fsm_check
   link-rtl-line     page data: a register points at the wrong RTL line -> check_views
   link-state-flop   page data: a state points at another flip-flop    -> check_views
-  link-isa-line     page data: an instruction points at the wrong decode line -> check_views
-  isa-opcode        lens: a row names the wrong opcode constant       -> views_isa --check
-  pkg-opcode        tp_pkg: an opcode constant changed                -> views_isa --check
+  link-isa-line*    page data: an instruction points at the wrong decode line -> check_views
+  isa-opcode*       lens: a row names the wrong opcode constant       -> views_isa --check
+  pkg-opcode*       tp_pkg: an opcode constant changed                -> views_isa --check
   page-pmos         page: the browser's simulator turns PMOS on at 1  -> page_test.js (Playwright)
+
+* only on a chip with a processor (chip.json "isa"); Tiqora-Serial has none.
 """
 import json, os, re, shutil, subprocess, sys, tempfile
 
@@ -299,8 +302,12 @@ def main():
         base = os.path.join(tmp, "base")
         shutil.copytree(ROOT, base, ignore=shutil.ignore_patterns(".git", "sim_build", "__pycache__", ".zig-cache*"), symlinks=True)
         # sanity: every check passes on the unmutated copy (otherwise "caught" would mean nothing)
-        for chk in [f"{PY} docs/tools/views_build.py --check", f"{PY} test/views/check_views.py docs/site/data/views.json",
-                    f"{PY} docs/tools/views_isa.py --check"]:
+        # (the lockstep runs too, so a mutant "caught" by lockstep cannot just mean the bench was already failing)
+        base_checks = [f"{PY} docs/tools/views_build.py --check", f"{PY} test/views/check_views.py docs/site/data/views.json"]
+        if CHIP.get("isa"):
+            base_checks.append(f"{PY} docs/tools/views_isa.py --check")
+        base_checks += [lockstep(base, run) for run in ("quick", "sends")]
+        for chk in base_checks:
             rc, out = run(chk, base)
             if rc:
                 print("FAIL baseline:", chk, "\n", out[-800:])
@@ -309,6 +316,7 @@ def main():
             if only and name not in only:
                 continue
             if name in ISA_ONLY and not CHIP.get("isa"):
+                print(f"mutant {name:16s} not applicable (no processor on this chip)")
                 continue
             if name == "page-pmos" and not pw:
                 print(f"mutant {name:16s} skipped (no Playwright)")

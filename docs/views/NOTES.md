@@ -103,6 +103,18 @@ S_PASS from S_MEM, S_XP and S_SHIFT, and a reset from S_SHIFT).
 - **Isolation cells.** Synthesis used `lpflow_inputiso1p_1` cells as plain
   logic (11 in tp_uart alone); they are ordinary liberty cells and are
   checked like the rest.
+- **Bugs found porting the page to Tiqora-Serial** (2026-11-23), fixed in
+  both repositories: only the 2-pixel lines of a transistor symbol took a
+  click (on Serial's first gate, `a211oi_1`, the centre hit the
+  background); and the connections box for `g_cpu.u_core` (inside a generate
+  block) matched no hierarchy path, so the CPU core could not be opened from
+  it. The old check ("at least 3 boxes") passed anyway; it now wants exactly
+  one working box per submodule (old lookup: 1 failure; fixed: 348/348).
+- **Mutant baseline includes lockstep.** Before a mutant counts as caught by
+  lockstep, the unmutated copy must pass both lockstep runs.
+- **Per-chip facts in `docs/views/chip.json`.** Every tool and check is shared
+  byte for byte with Tiqora-Serial; only `chip.json`, `page.html` and
+  `test/views/tb_lockstep.sv` differ.
 - **c_flash.hex does not rebuild byte-identical here.** Rebuilding it (the
   `c` target of `make -C test`) with ziglang 0.17.1 changes 28 lines of the
   committed `test/c_flash.hex`. Not
