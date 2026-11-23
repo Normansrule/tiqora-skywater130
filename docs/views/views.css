@@ -86,6 +86,7 @@
 .fets .fet .bub { fill: var(--surface); stroke: var(--muted); stroke-width: 1.5; }
 .fets .fet.sel line { stroke: var(--accent); }
 .fets .fet { cursor: pointer; }
+.fets .fet .hit { fill: transparent; stroke: none; }
 .fets .net { font-size: 9px; pointer-events: none; }
 .vw-svg text { pointer-events: none; }
 .gates g[role="button"] text { pointer-events: auto; }

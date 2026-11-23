@@ -181,7 +181,13 @@ function ok(cond, what) { checks++; if (!cond) { fails++; console.log("FAIL " + 
   // connections -> module
   await page.locator("#vw-fsm-body button[role=tab]", { hasText: "Connections" }).click();
   const boxes = page.locator("#vw-fsm-body svg.links g.mb[role=button]");
-  ok(await boxes.count() >= 3, "connections view shows submodules");
+  const nsub = await page.evaluate(() => {          // the module the view should draw, and its submodules
+    const D = TQViews.data, m = new URLSearchParams(location.hash.slice(1)).get("m");
+    const p = m && D.modules[m] && D.modules[m].links.length ? m : D.chip.links_root, s = new Set();
+    D.modules[p].links.forEach(l => { s.add(l[0]); s.add(l[1]); });
+    return s.size;
+  });
+  ok(nsub >= 2 && await boxes.count() === nsub, "connections view draws one box per submodule (" + nsub + ")");
   await boxes.first().click();
   ok(/m=/.test(await page.evaluate(() => location.hash)), "a connections box opens its module");
   // ISA -> decode line (chips with a processor)

@@ -475,6 +475,8 @@
       var g = val[f[2]];
       var on = (f[1] === "n" && g === 1) || (f[1] === "p" && g === 0);
       var grp = s("g", { transform: "translate(" + x + "," + y + ")", class: "fet " + f[1] + (on ? " on" : " off") + (sel.t === f[0] ? " sel" : "") });
+      // a transparent box under the symbol, so the whole transistor takes a click, not only its 2-pixel lines
+      grp.appendChild(s("rect", { x: -20, y: -24, width: 26, height: 48, class: "hit" }));
       // drain on top, source below, gate from the left (a bubble on PMOS)
       grp.appendChild(s("line", { x1: 0, y1: -24, x2: 0, y2: -10, class: "term" }));
       grp.appendChild(s("line", { x1: 0, y1: 10, x2: 0, y2: 24, class: "term" }));
@@ -718,7 +720,7 @@
     });
     names.forEach(function (nm) {
       var typ = null;
-      V.hierarchy.forEach(function (hn) { if (hn.path.split(".").pop() === nm) typ = hn.module; });
+      V.hierarchy.forEach(function (hn) { if (hn.path.slice(-nm.length - 1) === "." + nm) typ = hn.module; });   // nm may cross a generate block (g_cpu.u_core)
       var p = pos[nm];
       var g = s("g", { class: "mb", transform: "translate(" + p[0] + "," + p[1] + ")" }, [
         s("rect", { x: -62, y: -20, width: 124, height: 40, rx: 4 }),
