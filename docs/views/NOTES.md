@@ -180,7 +180,7 @@ that alone takes some arrow and must be caught by that gate.
   got an answer). `tp_bus.sv` answers data reads and writes only for flash,
   PSRAM, the timing unit and peripherals. A fix (answer 0 at once for every
   other address; measured area 52,105 µm² with it against 52,110 µm² without,
-  `syn/area_sky130.sh`, Yosys 0.33) and a test `make -C test unmapped`
+  `syn/area_sky130.sh`, Yosys 0.33) and a test (`test/tb_unmapped.sv`, its own make target there)
   (8/8 with the fix, 0/8 and hung without) are on branch `bus-unmapped`,
   not merged: the README documents the stall and a tour shows it, so the
   choice is the owner's. `fsmcov` stays off the ROM.
