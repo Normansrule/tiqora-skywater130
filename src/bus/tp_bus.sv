@@ -133,13 +133,23 @@ module tp_bus
     assign q_dev   = use_data ? (d_dev == tp_pkg::DEV_PSRAM) : (i_dev == tp_pkg::DEV_PSRAM);
 
     // ---- responses ----
-    assign imem_rvalid = imem_ready && ((imem_req && i_is_rom) || (q_rvalid && !owner) || i_hold);
-    assign imem_rdata  = i_is_rom ? rom_data : q_rdata;
+    // Unmapped space (and the boot ROM, which has no data port) answers at
+    // once with 0 and drops writes. Before this, a load or store there was
+    // never answered and the core waited in S_MEM forever; a fetch there
+    // gets 0x00000000, an illegal instruction, so ILLEGAL shows the stray
+    // jump instead of the chip going silent (test/tb_unmapped.sv).
+    logic d_is_none, i_is_none;
+    assign d_is_none = !(d_is_sync || d_is_periph || d_is_ext);
+    assign i_is_none = !(i_is_rom || i_is_ext);
 
-    assign dmem_rvalid = (dmem_req && (d_is_sync || d_is_periph)) ||  // same cycle
+    assign imem_rvalid = imem_ready && ((imem_req && (i_is_rom || i_is_none)) || (q_rvalid && !owner) || i_hold);
+    assign imem_rdata  = i_is_rom ? rom_data : (i_is_none ? 32'h0 : q_rdata);
+
+    assign dmem_rvalid = (dmem_req && (d_is_sync || d_is_periph || d_is_none)) ||  // same cycle
                          (q_rvalid && owner);
     assign dmem_rdata  = d_is_sync   ? reg_rdata :
-                         d_is_periph ? p_rdata   : q_rdata;
+                         d_is_periph ? p_rdata   :
+                         d_is_none   ? 32'h0     : q_rdata;
 
     // Only addr[31:28] (device) and addr[23:0] (offset) are decoded; the
     // gap in the middle is unmapped address space by design.
