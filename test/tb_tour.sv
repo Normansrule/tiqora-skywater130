@@ -45,7 +45,7 @@ module tb_tour;
     endtask
 
     // ---------------------------------------------------------------- trace
-    integer cycle = -4, fd = 0, hang_phase = 0;
+    integer cycle = -4, fd = 0, hang_phase = 0, hang_mem = 0, hang_mem_max = 0;
     reg [8*256:1] tracefile;
     always @(negedge clk) if (fd != 0) begin
         $fwrite(fd, "%0d%s %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h %h\n",
@@ -138,17 +138,25 @@ module tb_tour;
         chk(pop_val[1][30:28] == 3'd1 && pop_val[1][26:0] - pop_val[0][26:0] == 27'd4,
             "second TPOP: channel 1, timestamp exactly 4 ticks later");
         chk(pop_val[2] == 32'd0, "third TPOP: queue empty, reads 0");
-        // ---- the error tour: an unmapped load stalls; reset recovers ----
+        // ---- the error tour: an unmapped load reads 0, a jump there raises ILLEGAL ----
         $readmemh("tour_hang.hex", u_flash.mem);
         // ui_in[2:0] are the QSPI read latency while reset is held: put them
         // back to 0, or the chip boots with latency 7 and reads shifted words
         rst_n = 1'b0; cycle = -4; hang_phase = 1; ui_in = 8'h08;
         repeat (4) @(posedge clk);
         rst_n = 1'b1;
-        n = 0;
-        while (n < 1500) begin @(posedge clk); n = n + 1; end
-        chk(dut.u_soc.g_cpu.u_core.state == 3'd5 && dut.u_soc.g_cpu.u_core.dmem_addr == 32'h5000_0000 &&
-            !uo_out[5] && !uo_out[6], "a load from 0x5000_0000 stalls in MEM: no HALT, no ILLEGAL");
+        n = 0; hang_mem = 0; hang_mem_max = 0;
+        while (!uo_out[6] && n < 1500) begin
+            @(posedge clk); n = n + 1;
+            hang_mem = (dut.u_soc.g_cpu.u_core.state == 3'd5 && dut.u_soc.g_cpu.u_core.dmem_addr == 32'h5000_0000) ? hang_mem + 1 : 0;
+            if (hang_mem > hang_mem_max) hang_mem_max = hang_mem;
+        end
+        repeat (40) @(posedge clk);
+        chk(hang_mem_max > 0 && hang_mem_max < 8, "a load from 0x5000_0000 is answered within one pass (no stall in MEM)");
+        chk({u_psram.mem[3], u_psram.mem[2], u_psram.mem[1], u_psram.mem[0]} == 32'h0,
+            "the load reads 0: stored over 0x22222221 in RAM A");
+        chk(uo_out[6] && !uo_out[5] && dut.u_soc.g_cpu.u_core.pc[31:28] == 4'd5,
+            "jumping to 0x5000_0000 fetches 0: ILLEGAL rises, no HALT");
         rst_n = 1'b0; repeat (4) @(posedge clk);
         chk(dut.u_soc.g_cpu.u_core.state == 3'd0 && dut.u_soc.u_qspi.waking, "reset recovers: FETCH, memory wake-up restarts");
         rst_n = 1'b1; repeat (8) @(posedge clk);

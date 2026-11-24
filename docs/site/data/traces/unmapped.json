@@ -5,36 +5,52 @@
    "blocks": [
     "tp_ncore"
    ],
-   "text": "A second program, run from reset: lui x1, 0x50000 then lw x2, 0(x1). Device 5 does not exist on this chip."
+   "text": "A second program, run from reset: point x1 at 0x50000000, load from it, store what came back to RAM A, then jump there. Device 5 does not exist on this chip."
   },
   {
-   "at": 1697,
+   "at": 1713,
    "blocks": [
     "tp_ncore",
     "tp_bus"
    ],
-   "text": "The load enters MEM with dmem_addr = 0x50000000. tp_bus decodes devices 0 to 4 only, so nothing will ever answer."
+   "text": "The load enters MEM with dmem_addr = 0x50000000. tp_bus sees that no device decodes it and answers at once with 0, so the core leaves MEM on the next clock."
   },
   {
-   "at": 2097,
+   "at": 1858,
    "blocks": [
+    "tp_ncore",
     "tp_bus"
    ],
-   "text": "Still in MEM 400 clocks later. No HALT, no ILLEGAL: from the pins this looks like a chip that stopped. There is no bus timeout or bus-error trap in this design."
+   "text": "jalr x0, 0(x1): the core fetches from 0x50000000. The bus answers this fetch at once too, with the all-zero word."
   },
   {
-   "at": 3021,
+   "at": 1873,
+   "blocks": [
+    "tp_ncore"
+   ],
+   "text": "All zeros is not a RISC-V instruction, so ILLEGAL (uo_out[6]) rises and stays high. From the pins you can see that something went wrong; the chip keeps running."
+  },
+  {
+   "at": 1914,
    "blocks": [
     "tp_ncore",
     "qspi_ctrl"
    ],
-   "text": "Reset is the only way out: the core returns to FETCH and the memory wake-up starts again."
+   "text": "Reset clears ILLEGAL; the core returns to FETCH and the memory wake-up starts again."
   }
  ],
  "checks": [
   {
    "ok": true,
-   "text": "a load from 0x5000_0000 stalls in MEM: no HALT, no ILLEGAL"
+   "text": "a load from 0x5000_0000 is answered within one pass (no stall in MEM)"
+  },
+  {
+   "ok": true,
+   "text": "the load reads 0: stored over 0x22222221 in RAM A"
+  },
+  {
+   "ok": true,
+   "text": "jumping to 0x5000_0000 fetches 0: ILLEGAL rises, no HALT"
   },
   {
    "ok": true,
@@ -43,18 +59,22 @@
  ],
  "cycles": [
   1521,
-  3028
+  1921
  ],
- "id": "stall",
+ "id": "unmapped",
  "kind": "recorded",
  "kind_text": "Recorded from an RTL simulation, not computed in the browser",
  "marks": [
   {
-   "at": 1697,
-   "label": "stalled"
+   "at": 1713,
+   "label": "answered"
   },
   {
-   "at": 3021,
+   "at": 1873,
+   "label": "ILLEGAL"
+  },
+  {
+   "at": 1914,
    "label": "reset"
   }
  ],
@@ -66,7 +86,7 @@
   "sources": {
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
    "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/bus/tp_bus.sv": "d4952bc29530e89dc68a6aed4c7a31dcb3d1dcb5571579ae2f6f2225e3e00464",
    "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
@@ -81,9 +101,9 @@
    "src/tp_soc.sv": "2324c1ec52722979035ea481db4c1e2399e9e07ee6f41486fe5413dbe512fb44",
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c",
    "sw/mkprog.py": "d136bf982ed30945167bdeffcd82cff4e01e9606d2f51f861d063eaac0cadd58",
-   "sw/mktour.py": "c4bd2961a162b979dcc678927abf6d7717aac0bf2f748dcf6a60ddfcd59e5811",
+   "sw/mktour.py": "82268b158af3cc5ce0bf20845a28834742b83dad177048b5ac643f8c5fdb6543",
    "test/qspi_model.sv": "c8f24f74801151fbc4eef06f64acc52034e1377ef6ff753144c2a96e9a2a8412",
-   "test/tb_tour.sv": "ed58d31ae8c4d3fab52626d1c2e5e99eb00c1613ef899608edc58e1d17f183cf"
+   "test/tb_tour.sv": "9c3d17511d3ce436bee79f397eda9a990f9af98c5a6a89ec452660e47f3d5769"
   },
   "testbench": "test/tb_tour.sv"
  },
@@ -122,10 +142,106 @@
     ],
     [
      1697,
+     0
+    ],
+    [
+     1700,
+     1
+    ],
+    [
+     1705,
+     2
+    ],
+    [
+     1713,
      5
     ],
     [
-     3021,
+     1714,
+     1
+    ],
+    [
+     1721,
+     2
+    ],
+    [
+     1729,
+     0
+    ],
+    [
+     1747,
+     1
+    ],
+    [
+     1753,
+     2
+    ],
+    [
+     1761,
+     5
+    ],
+    [
+     1799,
+     0
+    ],
+    [
+     1844,
+     1
+    ],
+    [
+     1849,
+     2
+    ],
+    [
+     1857,
+     0
+    ],
+    [
+     1859,
+     1
+    ],
+    [
+     1865,
+     2
+    ],
+    [
+     1873,
+     0
+    ],
+    [
+     1874,
+     1
+    ],
+    [
+     1881,
+     2
+    ],
+    [
+     1889,
+     0
+    ],
+    [
+     1890,
+     1
+    ],
+    [
+     1897,
+     2
+    ],
+    [
+     1905,
+     0
+    ],
+    [
+     1906,
+     1
+    ],
+    [
+     1913,
+     2
+    ],
+    [
+     1914,
      0
     ]
    ],
@@ -157,11 +273,11 @@
      1
     ],
     [
-     3021,
+     1914,
      0
     ],
     [
-     3021,
+     1914,
      1
     ]
    ],
@@ -179,18 +295,26 @@
      0
     ],
     [
-     1697,
+     1713,
      1
     ],
     [
-     3021,
+     1714,
+     0
+    ],
+    [
+     1761,
+     1
+    ],
+    [
+     1799,
      0
     ]
    ],
    "id": "dmem_req",
    "kind": "bit",
    "label": "dmem_req",
-   "meaning": "data request waiting",
+   "meaning": "data request",
    "width": 1
   },
   {
@@ -201,18 +325,84 @@
      null
     ],
     [
-     1697,
+     1713,
      1342177280
     ],
     [
-     3021,
+     1714,
+     null
+    ],
+    [
+     1761,
+     268435456
+    ],
+    [
+     1799,
      null
     ]
    ],
    "id": "dmem_addr",
    "kind": "bus",
    "label": "dmem_addr",
-   "meaning": "address of the waiting load",
+   "meaning": "address of the load or store",
+   "width": 32
+  },
+  {
+   "block": "tp_ncore",
+   "changes": [
+    [
+     1521,
+     192
+    ],
+    [
+     1521,
+     0
+    ],
+    [
+     1673,
+     4
+    ],
+    [
+     1697,
+     8
+    ],
+    [
+     1713,
+     12
+    ],
+    [
+     1761,
+     16
+    ],
+    [
+     1857,
+     20
+    ],
+    [
+     1858,
+     1342177280
+    ],
+    [
+     1873,
+     1342177284
+    ],
+    [
+     1889,
+     1342177288
+    ],
+    [
+     1905,
+     1342177292
+    ],
+    [
+     1914,
+     0
+    ]
+   ],
+   "id": "pc",
+   "kind": "bus",
+   "label": "pc",
+   "meaning": "address being fetched",
    "width": 32
   },
   {
@@ -243,6 +433,14 @@
     [
      1521,
      0
+    ],
+    [
+     1873,
+     1
+    ],
+    [
+     1914,
+     0
     ]
    ],
    "id": "ill",
@@ -267,7 +465,7 @@
      0
     ],
     [
-     3021,
+     1914,
      1
     ]
    ],
@@ -278,6 +476,6 @@
    "width": 1
   }
  ],
- "summary": "A load from an unmapped address waits forever; only reset recovers. The test that records this also found that ui_in[2:0] must be 0 while reset is held.",
- "title": "A stall, and the only recovery"
+ "summary": "A load from an unmapped address reads 0 at once, a store there is dropped, and a jump there fetches the all-zero word, which raises ILLEGAL. The test that records this also found that ui_in[2:0] must be 0 while reset is held.",
+ "title": "An address with nothing behind it"
 }

@@ -490,12 +490,13 @@
     ]
    },
    {
-    "fixture": "stall",
+    "fixture": "unmapped",
     "signals": [
      "state",
      "rst_n",
      "dmem_req",
      "dmem_addr",
+     "pc",
      "halt",
      "ill",
      "waking"

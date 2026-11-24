@@ -12,6 +12,7 @@ docs/tools/traces.py turns into the explorer's fixtures.
 
     python3 sw/mktour.py [out.hex]          (make -C test tour runs it)
 """
+from mkisa import jalr
 from mkprog import (addi, add, lui, sw, lw, bne, ecall, R, OPC_OP,
                     TIME, TPOP, TSTAT, TWAIT, TARM, TCFG, TPW)
 
@@ -76,12 +77,16 @@ PROG = [
     (ecall(),               "ecall                 ; HALT"),
 ]
 FAIL = PROG.index(next(p for p in PROG if p[1].startswith("bne"))) + 16
-# The error tour: a load from an address no device decodes (0x5000_0000).
-# tp_bus answers only flash, RAM, the timing unit, GPIO/UART and the boot ROM,
-# so the core waits in MEM for an answer that never comes; only reset ends it.
+# The error tour: an address no device decodes (0x5000_0000). tp_bus answers
+# every unmapped access at once: a load reads 0, a store is dropped, and an
+# instruction fetch reads the all-zero word, which the core rejects as
+# illegal and so raises ILLEGAL (uo_out[6]). Nothing stops; the pin says why.
 HANG = [
     (lui(1, 0x50000),       "lui  x1, 0x50000      ; device 5: nothing is mapped there"),
-    (lw(2, 1, 0),           "lw   x2, 0(x1)        ; the bus never answers: the core stalls in MEM"),
+    (lui(3, 0x10000),       "lui  x3, 0x10000      ; x3 = QSPI RAM A (still holds 0x22222221)"),
+    (lw(2, 1, 0),           "lw   x2, 0(x1)        ; answered at once: x2 = 0"),
+    (sw(2, 3, 0),           "sw   x2, 0(x3)        ; RAM A word 0 becomes 0"),
+    (jalr(0, 1, 0),         "jalr x0, 0(x1)        ; jump there: the fetch reads 0, ILLEGAL rises"),
     (ecall(),               "ecall                 ; never reached"),
 ]
 ECALL = PROG.index(next(p for p in PROG if p[1].startswith("ecall")))

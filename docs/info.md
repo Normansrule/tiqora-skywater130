@@ -201,7 +201,8 @@ it needed 4 × 2 tiles (560 €). The rewrite added the UART and GPIO and fits 3
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
 | `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach |
 | `0x3000_0000` | — | GPIO and UART registers |
-| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`); fetch only, a load from it reads 0 |
+| `0x5000_0000` to `0xF000_0000` | — | nothing: a load reads 0, a store is dropped, and a fetch reads 0, which raises ILLEGAL |
 
 Only address bits 31:28 (device) and 23:0 (offset) are decoded, so each device repeats every
 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again.

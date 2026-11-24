@@ -270,27 +270,30 @@ def main():
         [c for c in checks if any(k in c["text"] for k in ("TPOP", "queue", "ILLEGAL"))], prov,
         {"event_format": {"31": "source: 0 pin, 1 TMARK", "30:28": "channel or tag", "27": "1 = rising edge", "26:0": "timestamp, low 27 bits of the timebase"}}))
 
-    # ---------------------------------------------------------- 6 stall and recovery
+    # ---------------------------------------------------------- 6 an address with nothing behind it
     hrel = tk.first(hang_rows, lambda r: r["rst_n"] == 1)
-    hmem = tk.first(hang_rows, lambda r: r["state"] == 5)
-    hres = tk.first(hang_rows, lambda r: r["rst_n"] == 0, after=hmem)
-    hwake = tk.first(hang_rows, lambda r: r["waking"] == 1, after=hres - 1)
+    hmem = tk.first(hang_rows, lambda r: r["state"] == 5 and r["dmem_req"] and r["dmem_addr"] == 0x50000000)
+    hjmp = tk.first(hang_rows, lambda r: r["pc"] >> 28 == 5)
+    hill = tk.first(hang_rows, lambda r: (r["uo_out"] >> 6) & 1, after=hjmp)
+    hres = tk.first(hang_rows, lambda r: r["rst_n"] == 0, after=hill)
     last_c = max(r["cycle"] for r in hang_rows)
-    caps = [{"at": hrel, "text": "A second program, run from reset: lui x1, 0x50000 then lw x2, 0(x1). Device 5 does not exist on this chip.", "blocks": ["tp_ncore"]},
-            {"at": hmem, "text": "The load enters MEM with dmem_addr = 0x50000000. tp_bus decodes devices 0 to 4 only, so nothing will ever answer.", "blocks": ["tp_ncore", "tp_bus"]},
-            {"at": hmem + 400, "text": "Still in MEM 400 clocks later. No HALT, no ILLEGAL: from the pins this looks like a chip that stopped. There is no bus timeout or bus-error trap in this design.", "blocks": ["tp_bus"]},
-            {"at": hres, "text": "Reset is the only way out: the core returns to FETCH and the memory wake-up starts again.", "blocks": ["tp_ncore", "qspi_ctrl"]}]
-    fixtures.append(tk.fixture("stall", "A stall, and the only recovery",
-        "A load from an unmapped address waits forever; only reset recovers. The test that records this also found that ui_in[2:0] must be 0 while reset is held.",
+    caps = [{"at": hrel, "text": "A second program, run from reset: point x1 at 0x50000000, load from it, store what came back to RAM A, then jump there. Device 5 does not exist on this chip.", "blocks": ["tp_ncore"]},
+            {"at": hmem, "text": "The load enters MEM with dmem_addr = 0x50000000. tp_bus sees that no device decodes it and answers at once with 0, so the core leaves MEM on the next clock.", "blocks": ["tp_ncore", "tp_bus"]},
+            {"at": hjmp, "text": "jalr x0, 0(x1): the core fetches from 0x50000000. The bus answers this fetch at once too, with the all-zero word.", "blocks": ["tp_ncore", "tp_bus"]},
+            {"at": hill, "text": "All zeros is not a RISC-V instruction, so ILLEGAL (uo_out[6]) rises and stays high. From the pins you can see that something went wrong; the chip keeps running.", "blocks": ["tp_ncore"]},
+            {"at": hres, "text": "Reset clears ILLEGAL; the core returns to FETCH and the memory wake-up starts again.", "blocks": ["tp_ncore", "qspi_ctrl"]}]
+    fixtures.append(tk.fixture("unmapped", "An address with nothing behind it",
+        "A load from an unmapped address reads 0 at once, a store there is dropped, and a jump there fetches the all-zero word, which raises ILLEGAL. The test that records this also found that ui_in[2:0] must be 0 while reset is held.",
         hang_rows, hang_rows[0]["cycle"], last_c,
         [state, {"id": "rst_n", "label": "rst_n", "width": 1, "kind": "bit", "fn": lambda r: r["rst_n"], "block": "tt_um_normansrule_tiqora", "meaning": "reset pin"},
-         {"id": "dmem_req", "label": "dmem_req", "width": 1, "kind": "bit", "fn": lambda r: r["dmem_req"], "block": "tp_ncore", "meaning": "data request waiting"},
-         {"id": "dmem_addr", "label": "dmem_addr", "width": 32, "kind": "bus", "fn": lambda r: r["dmem_addr"] if r["dmem_req"] else None, "block": "tp_ncore", "meaning": "address of the waiting load"},
+         {"id": "dmem_req", "label": "dmem_req", "width": 1, "kind": "bit", "fn": lambda r: r["dmem_req"], "block": "tp_ncore", "meaning": "data request"},
+         {"id": "dmem_addr", "label": "dmem_addr", "width": 32, "kind": "bus", "fn": lambda r: r["dmem_addr"] if r["dmem_req"] else None, "block": "tp_ncore", "meaning": "address of the load or store"},
+         {"id": "pc", "label": "pc", "width": 32, "kind": "bus", "fn": lambda r: r["pc"], "block": "tp_ncore", "meaning": "address being fetched"},
          {"id": "halt", "label": "HALT (uo_out[5])", "width": 1, "kind": "bit", "fn": bit("uo_out", 5), "block": "tp_ncore", "meaning": "ECALL/EBREAK reached"},
          {"id": "ill", "label": "ILLEGAL (uo_out[6])", "width": 1, "kind": "bit", "fn": bit("uo_out", 6), "block": "tp_ncore", "meaning": "illegal instruction seen"},
          {"id": "waking", "label": "waking", "width": 1, "kind": "bit", "fn": lambda r: r["waking"], "block": "qspi_ctrl", "meaning": "memory wake-up running"}],
-        caps, [{"at": hmem, "label": "stalled"}, {"at": hres, "label": "reset"}],
-        [c for c in checks if "stall" in c["text"] or "recovers" in c["text"]], prov))
+        caps, [{"at": hmem, "label": "answered"}, {"at": hill, "label": "ILLEGAL"}, {"at": hres, "label": "reset"}],
+        [c for c in checks if "0x5000_0000" in c["text"] or "reads 0: stored" in c["text"] or "recovers" in c["text"]], prov))
 
     # ---------------------------------------------------------- overview: the whole run
     caps = [{"at": first_ins, "text": "Program starts from flash address 0.", "blocks": ["tp_ncore"]},

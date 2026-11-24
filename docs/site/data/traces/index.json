@@ -27,9 +27,9 @@
    "title": "Capture, queue, overflow"
   },
   {
-   "file": "stall.json",
-   "id": "stall",
-   "title": "A stall, and the only recovery"
+   "file": "unmapped.json",
+   "id": "unmapped",
+   "title": "An address with nothing behind it"
   },
   {
    "file": "overview.json",
@@ -38,5 +38,5 @@
   }
  ],
  "schema": 1,
- "tour_checks": 15
+ "tour_checks": 17
 }
