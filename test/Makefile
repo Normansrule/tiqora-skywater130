@@ -11,6 +11,7 @@
 #   make isa        every RV32I instruction against Python-computed results
 #   make stress     simultaneous capture, queue overflow, 2^32 rollover
 #   make wrap       system-level rollover: TWAIT across the wrap
+#   make unmapped   loads, stores and a jump where nothing answers: no hang
 #   make xpulse     all eleven Xpulse instructions executed
 #   make boot       UART bootloader: load a program over serial into RAM, run it
 #   make wake       QSPI wake-up from cold, warm and pre-set memory states
@@ -70,9 +71,9 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: equiv warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
+.PHONY: equiv warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap unmapped xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer
 
-sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
+sim: unit soc isa stress wrap unmapped xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
 	@echo "all testbenches finished — check for FAILED above"
 
@@ -109,6 +110,7 @@ prog:
 	python3 ../sw/mkisa.py  isa.hex
 	python3 ../sw/mkwrap.py wrap.hex
 	python3 ../sw/mkxpulse.py xpulse.hex
+	python3 ../sw/mkunmapped.py unmapped.hex
 
 unit:
 	@sh iv.sh -g2012 -o tb_unit.vvp -s tb_unit $(RTL) tb_unit.sv
@@ -129,6 +131,11 @@ stress:
 wrap: prog
 	@sh iv.sh -g2012 -o tb_wrap.vvp -s tb_wrap $(RTL) qspi_model.sv tb_wrap.sv
 	sh vv.sh tb_wrap.vvp
+
+# loads, stores and a jump into address space nothing answers: no hang, ILLEGAL rises
+unmapped: prog
+	@sh iv.sh -g2012 -o tb_unmapped.vvp -s tb_unmapped $(RTL) qspi_model.sv tb_unmapped.sv
+	sh vv.sh tb_unmapped.vvp
 
 xpulse: prog
 	@sh iv.sh -g2012 -o tb_xpulse.vvp -s tb_xpulse $(RTL) qspi_model.sv tb_xpulse.sv
