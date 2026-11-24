@@ -69,7 +69,7 @@ TOPLEVEL = tb
 COCOTB_TEST_MODULES = test
 
 # --- pure Verilog, no cocotb ------------------------------------------
-.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer views views-lockstep views-page views-mutants
+.PHONY: warnings tour modes modes-lint sim lint synth area unit soc isa stress wrap xpulse boot wake c mcu bridge timing run act gl printf spi pytools readme latency adjust shared syncref docs prog clean-sim explorer views views-lockstep views-page views-mutants views-memlat
 
 sim: unit soc isa stress wrap xpulse boot wake c mcu bridge printf spi readme latency adjust modes tour shared syncref docs
 	@echo ""
@@ -108,6 +108,8 @@ prog:
 	python3 ../sw/mkisa.py  isa.hex
 	python3 ../sw/mkwrap.py wrap.hex
 	python3 ../sw/mkxpulse.py xpulse.hex
+	python3 ../sw/mkfsmcov.py fsmcov.hex
+	python3 ../sw/mkfsmcov.py fsmcov_loop.hex --loop
 
 unit:
 	@sh iv.sh -g2012 -o tb_unit.vvp -s tb_unit $(RTL) tb_unit.sv
@@ -145,10 +147,13 @@ clean-sim:
 # every link on the page resolves, the page itself in a browser, and mutants
 # that each of those checks must catch. Needs: pip klayout ziglang pyelftools,
 # GNU as, Icarus, node + Playwright (the page test is skipped without them).
-# program:seed[:option]; BOOT starts in the ROM, RESETS adds random mid-run resets
-VIEWS_RUNS = prog.hex:1 xpulse.hex:2 wrap.hex:3 isa.hex:4 c_flash.hex:5 prog.hex:6:BOOT c_flash.hex:7:RESETS xpulse.hex:8:RESETS
+# program:seed[:option]; BOOT starts in the ROM, RESETS adds random mid-run resets,
+# RESETHUNT aims resets at states that last only a few clocks. fsmcov.hex
+# (sw/mkfsmcov.py) shifts by every amount and loads at every width, for the
+# arrows ordinary programs never take.
+VIEWS_RUNS = prog.hex:1 xpulse.hex:2 wrap.hex:3 isa.hex:4 c_flash.hex:5 prog.hex:6:BOOT c_flash.hex:7:RESETS xpulse.hex:8:RESETS fsmcov.hex:9 fsmcov_loop.hex:10:RESETHUNT
 VIEWS_CYCLES ?= 40000
-views: views-lockstep
+views: views-lockstep views-memlat
 	cd .. && python3 docs/tools/views_switch.py
 	cd .. && python3 docs/tools/views_lvs.py
 	cd .. && python3 test/views/mini_lvs.py
@@ -170,6 +175,12 @@ views-lockstep: prog
 	  [ $$st -eq 0 ] || exit 1; \
 	done
 	python3 views/fsm_check.py views_gl/fsm_*.log
+
+# how long loads and stores stay in S_MEM over 300 random programs
+# (sw/mkrandmem.py, tb_memlat.sv): evidence for the S_MEM -> S_PASS gap that
+# docs/views/chip.json lists
+views-memlat:
+	cd .. && python3 test/memlat.py 300
 
 views-page:
 	@if node -e "require('playwright')" 2>/dev/null; then node views/page_test.js; else echo "views-page: Playwright not found, browser test skipped"; fi

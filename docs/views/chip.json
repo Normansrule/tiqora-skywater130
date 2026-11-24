@@ -15,5 +15,11 @@
   "rtl_to": "tx_busy ? tsh[0] : 1'b0;",
   "cone_module": "tp_uart",
   "cone_port": "tx"
+ },
+ "fsm_gaps": {
+  "tp_ncore": {
+   "5->2": "S_MEM to S_PASS: S_MEM is entered on phase 0 and leaves for S_PASS only on phase 7, so the memory must answer in a multiple of 8 clocks. Not seen in 3,000 random programs (test/memlat.py): every stay was 1, 18, 26, 30, 38, 45 or 50 clocks. Evidence, not a proof.",
+   "6->2": "S_XP to S_PASS: unreachable. S_XP is entered on phase 0 and always leaves after one clock, on phase 0, so to_wb is S_ALIGN."
+  }
  }
 }

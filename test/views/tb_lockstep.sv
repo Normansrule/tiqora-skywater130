@@ -17,6 +17,10 @@
 //   +PROG=<hex for flash>  +CYCLES=<n>  +SEED=<n>  +FSMLOG=<file>  +BOOT (start in the ROM)
 //   +RESETS (also pull rst_n low for 3 clocks at random moments, about once
 //   every 4,096 clocks, so the reset transition out of busy states is taken)
+//   +RESETHUNT (pull rst_n low for 3 clocks, at most once per 1,024, while a state
+//   lasts only a few clocks: the core's S_SHIFT and qspi_ctrl's Q_PREFIX,
+//   Q_END and Q_DESEL; every other one waits for Q_END, the rarest. Random
+//   resets almost never land in them, so their reset arrows went untaken.)
 `default_nettype none
 `timescale 1ns/1ps
 
@@ -60,7 +64,10 @@ module tb_lockstep;
     wire [7:0] g_core = g.u_soc.\g_cpu.u_core .state;
     wire [8:0] g_qspi = g.u_soc.u_qspi.state;
 
-    integer cycles, seed, fd, cyc, mism, fsm_steps, resets, hold;
+    integer cycles, seed, fd, cyc, mism, fsm_steps, resets, hold, quiet, last_reset;
+    function automatic hunted(input [2:0] core, input [3:0] qspi);
+        hunted = (core == 3'd7) || (qspi == 4'd1) || (qspi == 4'd4) || (qspi == 4'd5);
+    endfunction
     reg [1023:0] prog, fsmlog;
     reg [2:0] last_core;
     reg [3:0] last_qspi;
@@ -78,7 +85,7 @@ module tb_lockstep;
         rst_n = 1'b1;
         repeat (2) @(posedge clk);
         ui_in[7] = 1'b0;
-        mism = 0; fsm_steps = 0; resets = 0; hold = 0;
+        mism = 0; fsm_steps = 0; resets = 0; hold = 0; quiet = 0; last_reset = 0;
         last_core = r_core; last_qspi = r_qspi;
         for (cyc = 0; cyc < cycles; cyc = cyc + 1) begin
             @(negedge clk);
@@ -98,12 +105,21 @@ module tb_lockstep;
             // stimulus: capture pins and the UART line wiggle at random; the
             // boot-select pin (ui_in[7]) only moves in reset, never here
             if (($random(seed) & 15) == 0) ui_in[5:0] = $random(seed);
+            // ui[2:0] set the QSPI read latency while reset is held (README
+            // pinout). A board straps them; a random value here makes every
+            // fetch after a mid-run reset land a byte off, and the program
+            // runs garbage. Hold them at 0 from a reset until 4 clocks after.
+            if (quiet > 0) begin ui_in[2:0] = 3'd0; quiet = quiet - 1; end
             // mid-run resets: both copies see the same rst_n, so the pins must still agree
             if (hold > 0) begin
                 hold = hold - 1;
                 if (hold == 0) rst_n = 1'b1;
             end else if ($test$plusargs("RESETS") && ($random(seed) & 4095) == 0) begin
-                rst_n = 1'b0; hold = 3; resets = resets + 1;
+                rst_n = 1'b0; hold = 3; quiet = 8; ui_in[2:0] = 3'd0; resets = resets + 1; last_reset = cyc;
+            end else if ($test$plusargs("RESETHUNT") && cyc - last_reset > 1024 &&
+                         (resets % 2 ? r_qspi == 4'd4 : hunted(r_core, r_qspi) && ($random(seed) & 15) == 0)) begin
+                // every other hunted reset waits for Q_END, which lasts a single clock and is rare
+                rst_n = 1'b0; hold = 3; quiet = 8; ui_in[2:0] = 3'd0; resets = resets + 1; last_reset = cyc;
             end
         end
         if (fd != 0) $fclose(fd);
