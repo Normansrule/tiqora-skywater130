@@ -9,7 +9,7 @@ Run everything with `cd test && make sim && make && make lint`, plus `make act` 
 |---|---|---:|
 | `make isa` | every RV32E base instruction, vs. Python-computed results | 51 |
 | `make unit` | timing unit blocks, rotating register file, UART, GPIO | 50 |
-| `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover | 18 |
+| `make stress` | 8 simultaneous captures, queue overflow, 2³² rollover, sticky LATE bit | 26 |
 | `make xpulse` | all eleven Xpulse instructions | 15 |
 | `make soc` | boots, arms a deadline, trigger lands on the exact tick | 12 |
 | `make wrap` | `TWAIT` held correctly across the timebase rollover | 10 |

@@ -117,6 +117,7 @@ static inline void tp_pw(uint32_t ticks) {
 #define TP_STAT_EMPTY(s)      (((s) >> 4) & 1u)
 #define TP_STAT_FULL(s)       (((s) >> 5) & 1u)
 #define TP_STAT_OVERFLOW(s)   (((s) >> 6) & 1u)
+#define TP_STAT_LATE(s)       (((s) >> 7) & 1u)   // sticky: a deadline fired after its tick
 #define TP_STAT_ARMED(s)      (((s) >> 8) & 0xFu)
 #define TP_STAT_TRIGGERS(s)   (((s) >> 12) & 0xFu)
 #define TP_STAT_LEVELS(s)     (((s) >> 16) & 0xFFu)

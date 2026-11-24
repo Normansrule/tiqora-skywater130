@@ -92,13 +92,14 @@ module tb_stress;
     reg  [31:0] armt_c = 32'd0, pwin_c = 32'd0;
     reg  [1:0]  sel_c = 2'd0;
     wire [1:0]  trig_c, armed_c;
+    wire        late_c;
 
     sync_compare #(.NCMP(2), .PWW(16)) u_cmp (
         .clk(clk), .rst(rst), .now(now_c),
         .arm_we(arm_c), .arm_time(armt_c), .arm_sel(sel_c),
         .pulse_we(pulse_c), .pulse_mask(2'b00),
         .pw_we(pw_c), .pw_in(pwin_c),
-        .trig(trig_c), .armed(armed_c)
+        .trig(trig_c), .armed(armed_c), .late(late_c)
     );
 
     // ---- helpers -------------------------------------------------
@@ -117,6 +118,17 @@ module tb_stress;
             req_b = 1'b1; we_b = 1'b1; addr_b = a; wdata_b = d;
             @(negedge clk);
             req_b = 1'b0; we_b = 1'b0;
+        end
+    endtask
+
+    // read any register of the deep unit (not SR_EVENT: that pops)
+    task rd_a(input [3:0] a, output [31:0] d);
+        begin
+            @(negedge clk);
+            req_a = 1'b1; we_a = 1'b0; addr_a = a;
+            #1 d = rdata_a;
+            @(negedge clk);
+            req_a = 1'b0;
         end
     endtask
 
@@ -279,6 +291,7 @@ module tb_stress;
             $display("        fired at %08x, wanted 00000010",
                      fire_tick[31:0]);
         chk(armed_c[0] === 1'b0, "the channel disarmed after firing");
+        chk(late_c === 1'b0, "an on-time fire across the wrap leaves LATE clear");
 
         // and it must not fire a second time
         seen = 1'b0;
@@ -289,6 +302,53 @@ module tb_stress;
             if (trig_c[0]) seen = 1'b1;
         end
         chk(!seen, "a disarmed channel stays quiet");
+
+        // -------------------------------------------------------------
+        $display("\n[sticky LATE flag: STAT bit 7]");
+        // comparator alone: a deadline 5 ticks in the past fires off its tick
+        @(negedge clk);
+        armt_c = now_c - 32'd5;
+        sel_c  = 2'd1;
+        arm_c  = 1'b1;
+        @(negedge clk);
+        arm_c = 1'b0;
+        repeat (2) @(negedge clk);
+        chk(trig_c[1] === 1'b1 && late_c === 1'b1,
+            "a deadline already passed when armed fires at once and raises LATE");
+
+        // the whole unit, through the register port and its own timebase
+        rd_a(SR_STAT, st);
+        chk(st[7] === 1'b0, "LATE is clear after reset");
+        wr_a(SR_PULSE, 32'd1);               // a direct fire has no deadline
+        repeat (12) @(negedge clk);
+        rd_a(SR_TIME, st);
+        wr_a(SR_CMP0, st + 32'd60);          // on time, 60 ticks ahead
+        repeat (80) @(negedge clk);
+        rd_a(SR_STAT, st);
+        chk(st[8] === 1'b0 && st[7] === 1'b0,
+            "a direct pulse and an on-time deadline leave LATE clear");
+        rd_a(SR_TIME, st);
+        wr_a(SR_CMP1, st + 32'd1000);
+        wr_a(SR_ADJ, 32'd5000);              // step the timebase over it
+        repeat (4) @(negedge clk);
+        rd_a(SR_STAT, st);
+        chk(st[9] === 1'b0 && st[7] === 1'b1,
+            "a TADJ step over an armed deadline fires it and raises LATE");
+        rd_a(SR_TIME, st);
+        wr_a(SR_CMP0, st + 32'd60);          // a later on-time fire
+        repeat (80) @(negedge clk);
+        rd_a(SR_STAT, st);
+        chk(st[8] === 1'b0 && st[7] === 1'b1, "LATE stays set after an on-time fire");
+        @(negedge clk); rst = 1'b1;
+        @(negedge clk); rst = 1'b0;
+        rd_a(SR_STAT, st);
+        chk(st[7] === 1'b0 && late_c === 1'b0, "reset clears LATE");
+        rd_a(SR_TIME, st);
+        wr_a(SR_CMP0, st - 32'd100);         // armed 100 ticks in the past
+        repeat (4) @(negedge clk);
+        rd_a(SR_STAT, st);
+        chk(st[8] === 1'b0 && st[7] === 1'b1,
+            "a deadline armed in the past raises LATE through the register port");
 
         // -------------------------------------------------------------
         $display("\n%0d checks, %0d failures", checks, errors);
