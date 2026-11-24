@@ -349,7 +349,8 @@ it needed 4 × 2 tiles (560 €). The rewrite added the UART and GPIO and fits 3
 | `0x1080_0000` | 8 MB | QSPI RAM B (CS2) |
 | `0x2000_0000` | 44 B | timing unit registers, the same ones the Xpulse instructions reach (offsets in `src/tp_pkg.sv`, `SR_*`) |
 | `0x3000_0000` | — | GPIO and UART registers |
-| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`) |
+| `0x4000_0000` | 192 B | boot ROM: the UART bootloader (`sw/mkboot.py`); fetch only, a load from it reads 0 |
+| `0x5000_0000` to `0xF000_0000` | — | nothing: a load reads 0, a store is dropped, and a fetch reads 0, which raises ILLEGAL (`make -C test unmapped`) |
 
 Only address bits 31:28 (which device) and 23:0 (where in it) are decoded (`src/bus/tp_bus.sv`),
 so each device repeats every 16 MB inside its 256 MB slot: `0x1100_0000` is RAM A again. The
@@ -369,12 +370,12 @@ they were left in, then reads the first word:
 
 <sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=fetch). With reduced motion on, it is a still of the whole window.</sub>
 
-**An address with nothing behind it.** A load from `0x5000_0000` waits forever; only reset
-recovers:
+**An address with nothing behind it.** A load from `0x5000_0000` is answered at once with 0;
+a jump there fetches the all-zero word, which raises ILLEGAL:
 
-![Recorded from the RTL: a load from an unmapped address stalls in MEM until reset](docs/images/motion/stall.svg)
+![Recorded from the RTL: a load from an unmapped address reads 0, and a jump there raises ILLEGAL](docs/images/motion/unmapped.svg)
 
-<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=stall). With reduced motion on, it is a still of the whole window.</sub>
+<sub>Recorded from `make -C test tour` and drawn by `docs/tools/motion.py`. [Step through it](https://normansrule.github.io/tiqora-skywater130/tours.html#seq=unmapped). With reduced motion on, it is a still of the whole window.</sub>
 
 ### GPIO and UART registers (`0x3000_0000` + offset)
 

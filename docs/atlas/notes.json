@@ -68,7 +68,7 @@
    "latency": "18.3 clocks per instruction on straight-line code and 40.3 on bench_kernel (measured, v20 RTL simulation, make run PROG=... RUNARGS=+PROFILE). After a TWAIT deadline, software resumes 10 to 17 clocks later depending on the rotation phase (make latency).",
    "reset": "Starts at RESET_PC 0x0000_0000 (flash), or at BOOT_PC 0x4000_0000 when ui_in[7] is high as reset is released.",
    "errors": "An instruction it does not implement is skipped and latches ILLEGAL (uo_out[6]); rd is not written. ECALL and EBREAK halt the core and raise HALT (uo_out[5]); only reset restarts it.",
-   "stall": "Waits as long as the bus does. A load or store to an address no device decodes (for example 0x5000_0000) never gets dmem_rvalid, so the core waits in MEM until reset (checked by make tour).",
+   "stall": "Waits as long as the bus does. A load or store to an address no device decodes (for example 0x5000_0000) is answered at once with 0, and a fetch from one reads the all-zero word, which raises ILLEGAL (checked by make tour and make unmapped).",
    "port_notes": {
     "imem_addr": "[32] byte address of the instruction; bits 1:0 are 0",
     "dmem_be": "[4] byte enables of a store: 0001, 0010, 0100, 1000, 0011, 1100 or 1111",
@@ -115,7 +115,7 @@
    "handshake": "Request/valid on each side; the QSPI side's request is dropped in the clock the controller answers so it does not start twice.",
    "latency": "Timing unit, GPIO/UART and boot ROM: same clock. Flash and RAM: the QSPI transaction time.",
    "reset": "Not busy, owner = fetch, no held word.",
-   "errors": "Device numbers 5 to 15 are unmapped. Nothing answers them, so the requester waits until reset (see the core's stall note). Address bits 27:24 are ignored.",
+   "errors": "Device numbers 5 to 15 are unmapped, and the boot ROM (4) has no data port. tp_bus answers those accesses itself, on the same clock: loads and fetches read 0, stores are dropped. A fetch of 0 raises ILLEGAL in the core. Address bits 27:24 are ignored.",
    "stall": "Instruction fetch waits while a data access owns the QSPI controller.",
    "port_notes": {
     "q_addr": "[24] byte offset inside flash or RAM",

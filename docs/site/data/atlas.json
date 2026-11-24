@@ -6,17 +6,17 @@
   "modes": {
    "define": "TIQORA_MODES",
    "modules_um2": {
-    "qspi_ctrl": 6452.4,
+    "qspi_ctrl": 6520.0,
     "sync_capture": 890.9,
     "sync_compare": 6573.8,
     "sync_event_fifo": 2655.0,
     "sync_timebase": 4922.2,
     "sync_unit": 4568.1,
     "tp_bootrom": 1127.3,
-    "tp_bus": 1332.5,
+    "tp_bus": 1467.7,
     "tp_drive": 0.0,
     "tp_mac": 14938.1,
-    "tp_ncore": 12020.3,
+    "tp_ncore": 12031.5,
     "tp_nregfile": 11164.5,
     "tp_periph": 1498.9,
     "tp_simd": 8094.0,
@@ -24,19 +24,19 @@
     "tp_uart": 2683.8,
     "tt_um_normansrule_tiqora": 28.8
    },
-   "total_hierarchical_um2": 79187.1968
+   "total_hierarchical_um2": 79401.152
   },
   "modules_um2": {
-   "qspi_ctrl": 6515.0,
+   "qspi_ctrl": 6556.3,
    "sync_capture": 890.9,
    "sync_compare": 6562.5,
    "sync_event_fifo": 2655.0,
    "sync_timebase": 4922.2,
    "sync_unit": 4568.1,
    "tp_bootrom": 1127.3,
-   "tp_bus": 1332.5,
+   "tp_bus": 1467.7,
    "tp_drive": 0.0,
-   "tp_ncore": 11213.3,
+   "tp_ncore": 11243.3,
    "tp_nregfile": 11164.5,
    "tp_periph": 1498.9,
    "tp_soc": 236.5,
@@ -48,7 +48,7 @@
    "src/accel/tp_simd.sv": "9402e7b46eacc351e09dbffd4a7b6be695621db7aa0aa8ca2218dfc2cc0d471c",
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
    "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/bus/tp_bus.sv": "d4952bc29530e89dc68a6aed4c7a31dcb3d1dcb5571579ae2f6f2225e3e00464",
    "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
@@ -64,7 +64,7 @@
    "src/tt_um_normansrule_tiqora.sv": "6cbb8a2d7085554793ee8abaed1756dd5afa103a738b63fea86200ab675d8b5c"
   },
   "tool": "Yosys 0.33",
-  "total_hierarchical_um2": 55399.3824,
+  "total_hierarchical_um2": 55605.8304,
   "what": "sky130_fd_sc_hd cell area per module, hierarchical synthesis before placement (the flattened netlist the flow builds is smaller: synthesis optimizes across boundaries)"
  },
  "blocks": [
@@ -435,7 +435,7 @@
     "TWAIT: parked until a deadline",
     "HALT: after ECALL or EBREAK"
    ],
-   "stall": "Waits as long as the bus does. A load or store to an address no device decodes (for example 0x5000_0000) never gets dmem_rvalid, so the core waits in MEM until reset (checked by make tour).",
+   "stall": "Waits as long as the bus does. A load or store to an address no device decodes (for example 0x5000_0000) is answered at once with 0, and a fetch from one reads the all-zero word, which raises ILLEGAL (checked by make tour and make unmapped).",
    "summary": "Executes RV32E plus the eleven Xpulse timing instructions, four bits per clock, least significant nibble first.",
    "tests": [
     "isa",
@@ -655,7 +655,7 @@
    ],
    "category": "control",
    "children": [],
-   "errors": "Device numbers 5 to 15 are unmapped. Nothing answers them, so the requester waits until reset (see the core's stall note). Address bits 27:24 are ignored.",
+   "errors": "Device numbers 5 to 15 are unmapped, and the boot ROM (4) has no data port. tp_bus answers those accesses itself, on the same clock: loads and fetches read 0, stores are dropped. A fetch of 0 raises ILLEGAL in the core. Address bits 27:24 are ignored.",
    "example": "A load from 0x3000_0004 (GPIO_IN) answers in the same clock; a load from 0x1000_0000 starts a QSPI RAM read and answers when it completes.",
    "ff_bits": 3,
    "file": "src/bus/tp_bus.sv",
@@ -3947,7 +3947,7 @@
    "src/accel/tp_simd.sv": "9402e7b46eacc351e09dbffd4a7b6be695621db7aa0aa8ca2218dfc2cc0d471c",
    "src/boot/tp_bootrom.sv": "4802d695ba726aa0366a0183f03574aca18d20e337f7304852adf622a451943c",
    "src/bus/qspi_ctrl.sv": "618677eba0c95636ac70bdc11c5ea951784d699bf37ba761fa1c598e82629605",
-   "src/bus/tp_bus.sv": "c8c49e4f52732bfe01b08818a988ff596e81e8decd66dafa5a1c47404e0f9428",
+   "src/bus/tp_bus.sv": "d4952bc29530e89dc68a6aed4c7a31dcb3d1dcb5571579ae2f6f2225e3e00464",
    "src/core/tp_ncore.sv": "38d0f55ca5ed31e9e3548c644c622d6c79096b3296fd7fb33a8b089b590887a5",
    "src/core/tp_nregfile.sv": "09d6e11f07b673f51755a38a308f5d2edf0bdc9bcba88131bf019d48cdde7d54",
    "src/periph/tp_periph.sv": "4e03d33ef778b7c16813018834e31d1e2184896e36a4397fe2517664a1191a51",
